@@ -10,7 +10,7 @@ function Users() {
   // Fetch users from backend
   useEffect(() => {
     axios
-      .get("http://localhost/api/users.php")
+      .get("http://localhost/admin/api/users.php")
 
       .then((res) => {
         setUsers(res.data);

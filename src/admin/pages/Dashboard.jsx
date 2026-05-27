@@ -9,7 +9,7 @@ function Dashboard() {
 
   useEffect(() => {
     axios
-      .get("http://localhost/api/users.php")
+      .get("http://localhost/admin/api/users.php")
 
       .then((res) => {
         console.log(res.data);
