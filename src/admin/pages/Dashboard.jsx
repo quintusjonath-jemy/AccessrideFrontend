@@ -23,6 +23,12 @@ function Dashboard() {
       });
   }, []);
 
+  const statusStyles = {
+    active: "bg-green-100 text-green-700",
+    emergency: "bg-red-100 text-red-600",
+    navigating: "bg-yellow-100 text-yellow-700",
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -44,12 +50,7 @@ function Dashboard() {
           color="text-blue-600"
         />
 
-        <StatsCard
-          title="Active 
-          Devices"
-          value="842"
-          color="text-green-600"
-        />
+        <StatsCard title="Active Devices" value="842" color="text-green-600" />
 
         <StatsCard title="SOS Alerts" value="12" color="text-red-500" />
 
@@ -88,49 +89,52 @@ function Dashboard() {
               {loading ? (
                 <tr>
                   <td colSpan="4" className="text-center py-10 text-gray-400">
-                    Loading user activity...
+                    <div className="flex justify-center items-center gap-3">
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      Loading user activity...
+                    </div>
                   </td>
                 </tr>
               ) : (
                 Array.isArray(users) &&
-                users.slice(0, 5).map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b hover:bg-gray-50 transition"
-                  >
-                    {/* User */}
-                    <td className="py-4 font-medium text-gray-800">
-                      {user.name || user.user_name}
-                    </td>
+                users.slice(0, 5).map((user) => {
+                  const status = (user.status || "").toLowerCase().trim();
 
-                    {/* status */}
-                    <td>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          user.status === "Active"
-                            ? "bg-green-100 text-green-700"
-                            : user.status === "Emergency"
-                              ? "bg-red-100 text-red-600"
-                              : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {user.status || "unknown"}
-                      </span>
-                    </td>
+                  return (
+                    <tr
+                      key={user.id}
+                      className="border-b hover:bg-gray-50 transition"
+                    >
+                      {/* User */}
+                      <td className="py-4 font-medium text-gray-800">
+                        {user.name || user.user_name}
+                      </td>
 
-                    {/* Location */}
-                    <td className="text-gray-500">
-                      📍 {user.location || "Unknown"}
-                    </td>
+                      {/* Status */}
+                      <td>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            statusStyles[status] || "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {user.status || "unknown"}
+                        </span>
+                      </td>
 
-                    {/* Action */}
-                    <td>
-                      <button className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded-lg text-sm transition">
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      {/* Location */}
+                      <td className="text-gray-500">
+                        📍 {user.location || "Unknown"}
+                      </td>
+
+                      {/* Action */}
+                      <td>
+                        <button className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded-lg text-sm transition">
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
