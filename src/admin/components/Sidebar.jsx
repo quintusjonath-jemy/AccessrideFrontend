@@ -28,15 +28,19 @@ function Sidebar() {
           </li>
         </Link>
 
-        <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-          <FaMapMarkerAlt />
-          Navigation
-        </li>
+        <Link to="/navigation">
+          <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
+            <FaMapMarkerAlt />
+            Navigation
+          </li>
+        </Link>
 
-        <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-          <FaBell />
-          Alerts
-        </li>
+        <Link to="/alerts">
+          <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
+            <FaBell />
+            Alerts
+          </li>
+        </Link>
 
         <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
           <FaCog />
