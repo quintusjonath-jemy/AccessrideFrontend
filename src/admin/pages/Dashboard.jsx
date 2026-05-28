@@ -5,9 +5,17 @@ import axios from "axios";
 
 function Dashboard() {
   const [users, setUsers] = useState([]);
+
+  const [stats, setStats] = useState({
+    totalDrivers: 0,
+    totalRides: 0,
+    activeRides: 0,
+  });
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
+    // USERS
     axios
       .get("http://localhost/admin/api/users.php")
 
@@ -20,6 +28,18 @@ function Dashboard() {
       .catch((err) => {
         console.log(err);
         setLoading(false);
+      });
+
+    // DASHBOARD STATS
+    axios
+      .get("http://localhost/admin/api/dashboard_stats.php")
+
+      .then((res) => {
+        setStats(res.data);
+      })
+
+      .catch((err) => {
+        console.log(err);
       });
   }, []);
 
@@ -50,14 +70,22 @@ function Dashboard() {
           color="text-blue-600"
         />
 
-        <StatsCard title="Active Devices" value="842" color="text-green-600" />
-
-        <StatsCard title="SOS Alerts" value="12" color="text-red-500" />
+        <StatsCard
+          title="Total Drivers"
+          value={stats.totalDrivers}
+          color="text-yellow-600"
+        />
 
         <StatsCard
-          title="Navigation Sessions"
-          value="154"
-          color="text-yellow-500"
+          title="Total Rides"
+          value={stats.totalRides}
+          color="text-purple-600"
+        />
+
+        <StatsCard
+          title="Active Rides"
+          value={stats.activeRides}
+          color="text-green-600"
         />
       </div>
 
@@ -128,7 +156,10 @@ function Dashboard() {
 
                       {/* Action */}
                       <td>
-                        <button className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded-lg text-sm transition">
+                        <button
+                          onClick={() => setSelectedUser(user)}
+                          className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded-lg text-sm transition"
+                        >
                           View
                         </button>
                       </td>
@@ -175,6 +206,38 @@ function Dashboard() {
         <div className="mt-8">
           <ActivityChart />
         </div>
+
+        {selectedUser && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+            <div className="bg-white w-[400px] rounded-xl p-6 shadow-xl">
+              <h2 className="text-xl font-bold mb-4">User Details</h2>
+
+              <div className="space-y-2 text-gray-700">
+                <p>
+                  <b>Name:</b> {selectedUser.name || selectedUser.user_name}
+                </p>
+                <p>
+                  <b>Email:</b> {selectedUser.email}
+                </p>
+                <p>
+                  <b>Status:</b> {selectedUser.status}
+                </p>
+                <p>
+                  <b>Location:</b> {selectedUser.location}
+                </p>
+              </div>
+
+              <div className="flex justify-end mt-5">
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="bg-gray-200 px-4 py-2 rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
