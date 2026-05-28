@@ -1,64 +1,186 @@
-function Navigation() {
+import axios from "axios";
+import { useEffect, useState } from "react";
+import LiveMap from "../components/LiveMap";
+
+import { MapPinned, Navigation, Car } from "lucide-react";
+
+function NavigationPage() {
+  const [rides, setRides] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  // FETCH RIDES
+  useEffect(() => {
+    axios
+      .get("http://localhost/admin/api/rides.php")
+
+      .then((res) => {
+        setRides(Array.isArray(res.data) ? res.data : []);
+
+        setLoading(false);
+      })
+
+      .catch((err) => {
+        console.log(err);
+
+        setLoading(false);
+      });
+  }, []);
+
+  // STATUS COLORS
+  const statusStyles = {
+    pending: "bg-yellow-100 text-yellow-700",
+
+    accepted: "bg-blue-100 text-blue-700",
+
+    active: "bg-green-100 text-green-700",
+
+    completed: "bg-gray-100 text-gray-700",
+
+    cancelled: "bg-red-100 text-red-600",
+  };
+
   return (
     <div>
+      {/* HEADER */}
 
-      <h1 className="text-3xl font-bold mb-6">
-        Navigation Monitoring
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-[#0B1929]">
+            Navigation Management
+          </h1>
 
-      <div className="bg-white rounded-2xl shadow-md p-5">
+          <p className="text-gray-500 mt-1">Monitor active ride navigation</p>
+        </div>
 
+        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold transition">
+          <Navigation className="w-4 h-4" />
+          Live Navigation
+        </button>
+      </div>
+
+      <div className="mb-6">
+        <LiveMap rides={rides} />
+      </div>
+
+      {/* RIDES TABLE */}
+
+      <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
         <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left px-6 py-4 text-sm text-gray-500">
+                Rider
+              </th>
 
-          <thead>
-            <tr className="border-b text-left text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500">
+                Pickup
+              </th>
 
-              <th className="pb-3">User</th>
-              <th>Destination</th>
-              <th>Status</th>
-              <th>Action</th>
+              <th className="text-left px-6 py-4 text-sm text-gray-500">
+                Destination
+              </th>
 
+              <th className="text-left px-6 py-4 text-sm text-gray-500">
+                Status
+              </th>
+
+              <th className="text-right px-6 py-4 text-sm text-gray-500">
+                Action
+              </th>
             </tr>
           </thead>
 
           <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="text-center py-10 text-gray-400">
+                  <div className="flex justify-center items-center gap-3">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    Loading navigation data...
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              rides.map((ride) => {
+                const rideStatus = (ride.status || "").toLowerCase().trim();
 
-            <tr className="border-b">
-              <td className="py-4">John</td>
-              <td>Hospital</td>
-              <td className="text-green-600">
-                Safe
-              </td>
+                return (
+                  <tr
+                    key={ride.id}
+                    className="border-t border-gray-100 hover:bg-gray-50 transition"
+                  >
+                    {/* USER */}
 
-              <td>
-                <button className="bg-blue-600 text-white px-3 py-1 rounded">
-                  Track
-                </button>
-              </td>
-            </tr>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Car className="w-5 h-5 text-blue-600" />
+                        </div>
 
-            <tr>
-              <td className="py-4">Sarah</td>
-              <td>Bus Station</td>
-              <td className="text-yellow-500">
-                Navigating
-              </td>
+                        <div>
+                          <p className="font-semibold text-gray-800">
+                            {ride.user_name || "Unknown"}
+                          </p>
 
-              <td>
-                <button className="bg-blue-600 text-white px-3 py-1 rounded">
-                  View
-                </button>
-              </td>
-            </tr>
+                          <p className="text-sm text-gray-400">
+                            Ride #{ride.id}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
 
+                    {/* PICKUP */}
+
+                    <td className="px-6 py-4 text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <MapPinned className="w-4 h-4 text-green-500" />
+
+                        {ride.pickup_location}
+                      </div>
+                    </td>
+
+                    {/* DESTINATION */}
+
+                    <td className="px-6 py-4 text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Navigation className="w-4 h-4 text-red-500" />
+
+                        {ride.dropoff_location}
+                      </div>
+                    </td>
+
+                    {/* STATUS */}
+
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          statusStyles[rideStatus] ||
+                          "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {ride.status}
+                      </span>
+                    </td>
+
+                    {/* ACTION */}
+
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end">
+                        <button className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm transition">
+                          Track Ride
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
-
         </table>
-
       </div>
-
     </div>
-  )
+  );
 }
 
-export default Navigation
+export default NavigationPage;
