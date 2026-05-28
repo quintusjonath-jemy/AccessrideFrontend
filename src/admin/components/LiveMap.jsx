@@ -4,10 +4,10 @@ import mapboxgl from "mapbox-gl";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
-mapboxgl.accessToken = "";
+mapboxgl.accessToken =
+  "";
 
 function LiveMap({ rides }) {
-
   const mapContainer = useRef(null);
 
   const map = useRef(null);
@@ -16,11 +16,9 @@ function LiveMap({ rides }) {
 
   // CREATE MAP
   useEffect(() => {
-
     if (map.current) return;
 
     map.current = new mapboxgl.Map({
-
       container: mapContainer.current,
 
       style: "mapbox://styles/mapbox/streets-v12",
@@ -29,32 +27,25 @@ function LiveMap({ rides }) {
 
       zoom: 11,
     });
-
   }, []);
-
 
   // LIVE MARKERS
   useEffect(() => {
-
     if (!map.current) return;
 
     // REMOVE OLD MARKERS
-    markersRef.current.forEach((marker) =>
-      marker.remove()
-    );
+    markersRef.current.forEach((marker) => marker.remove());
 
     markersRef.current = [];
 
     rides.forEach((ride) => {
 
-      // DEMO LIVE MOVEMENT
-      // Later replace with real GPS
+      // LIVE MOVEMENT with real GPS
+      const lng = parseFloat(ride.longitude);
 
-      const lng =
-        79.85 + Math.random() * 0.08;
+      const lat = parseFloat(ride.latitude);
 
-      const lat =
-        6.90 + Math.random() * 0.08;
+      if (!lng || !lat) return;
 
       // CREATE CUSTOM MARKER
       const el = document.createElement("div");
@@ -88,24 +79,20 @@ function LiveMap({ rides }) {
                 🏁 ${ride.dropoff_location}
               </p>
             </div>
-          `)
+          `),
         )
 
         .addTo(map.current);
 
       markersRef.current.push(marker);
-
     });
-
   }, [rides]);
 
   return (
-
     <div
       ref={mapContainer}
       className="w-full h-[450px] rounded-2xl overflow-hidden shadow-md"
     />
-
   );
 }
 
