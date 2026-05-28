@@ -2,6 +2,7 @@ import StatsCard from "../components/StatsCard";
 import ActivityChart from "../components/ActivityChart";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 function Dashboard() {
   const [users, setUsers] = useState([]);
@@ -13,6 +14,7 @@ function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
     // USERS
@@ -36,6 +38,17 @@ function Dashboard() {
 
       .then((res) => {
         setStats(res.data);
+      })
+
+      .catch((err) => {
+        console.log(err);
+      });
+
+    axios
+      .get("http://localhost/admin/api/alerts.php")
+
+      .then((res) => {
+        setAlerts(Array.isArray(res.data) ? res.data : []);
       })
 
       .catch((err) => {
@@ -98,9 +111,11 @@ function Dashboard() {
           <div className="flex justify-between mb-5">
             <h2 className="text-xl font-bold">User Activity</h2>
 
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition">
-              View All
-            </button>
+            <Link to="/users">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition">
+                View All
+              </button>
+            </Link>
           </div>
 
           <table className="w-full">
@@ -177,29 +192,45 @@ function Dashboard() {
           <h2 className="text-xl font-bold mb-5">Recent Alerts</h2>
 
           <div className="space-y-4">
-            <div className="bg-red-50 p-4 rounded-xl">
-              <p className="font-semibold text-red-600">SOS Triggered</p>
+            {alerts.slice(0, 5).map((alert) => {
+              const alertType = (alert.alert_type || "").toLowerCase().trim();
 
-              <p className="text-sm text-gray-500">
-                User Sarah requested emergency help
-              </p>
-            </div>
+              const alertStyles = {
+                sos: "bg-red-50 border-red-200 text-red-600",
 
-            <div className="bg-yellow-50 p-4 rounded-xl">
-              <p className="font-semibold text-yellow-600">Low Battery</p>
+                low_battery: "bg-yellow-50 border-yellow-200 text-yellow-600",
 
-              <p className="text-sm text-gray-500">
-                Device #104 battery below 10%
-              </p>
-            </div>
+                navigation: "bg-blue-50 border-blue-200 text-blue-600",
 
-            <div className="bg-blue-50 p-4 rounded-xl">
-              <p className="font-semibold text-blue-600">Navigation Started</p>
+                driver_emergency:
+                  "bg-orange-50 border-orange-200 text-orange-600",
 
-              <p className="text-sm text-gray-500">
-                User Mike started navigation
-              </p>
-            </div>
+                system: "bg-gray-50 border-gray-200 text-gray-600",
+              };
+
+              return (
+                <div
+                  key={alert.id}
+                  className={`p-4 rounded-xl border ${
+                    alertStyles[alertType] ||
+                    "bg-gray-50 border-gray-200 text-gray-600"
+                  }`}
+                >
+                  {/* Alert Title */}
+                  <p className="font-semibold capitalize">
+                    {alert.alert_type.replace("_", " ")}
+                  </p>
+
+                  {/* Message */}
+                  <p className="text-sm mt-1 text-gray-500">{alert.message}</p>
+
+                  {/* User */}
+                  <p className="text-xs mt-2 text-gray-400">
+                    User: {alert.user_name || "Unknown"}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
