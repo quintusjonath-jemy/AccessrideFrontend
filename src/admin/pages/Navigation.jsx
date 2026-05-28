@@ -11,20 +11,32 @@ function NavigationPage() {
 
   // FETCH RIDES
   useEffect(() => {
-    axios
-      .get("http://localhost/admin/api/rides.php")
+    const fetchRides = () => {
+      axios
+        .get("http://localhost/admin/api/rides.php")
 
-      .then((res) => {
-        setRides(Array.isArray(res.data) ? res.data : []);
+        .then((res) => {
+          setRides(Array.isArray(res.data) ? res.data : []);
 
-        setLoading(false);
-      })
+          setLoading(false);
+        })
 
-      .catch((err) => {
-        console.log(err);
+        .catch((err) => {
+          console.log(err);
 
-        setLoading(false);
-      });
+          setLoading(false);
+        });
+    };
+
+    // FIRST LOAD
+    fetchRides();
+
+    // LIVE REFRESH
+    const interval = setInterval(() => {
+      fetchRides();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // STATUS COLORS
@@ -51,6 +63,21 @@ function NavigationPage() {
           </h1>
 
           <p className="text-gray-500 mt-1">Monitor active ride navigation</p>
+        </div>
+
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-xl font-bold">Live Vehicle Tracking</h2>
+
+            <p className="text-gray-500 text-sm">
+              Real-time navigation monitoring
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+            LIVE
+          </div>
         </div>
 
         <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold transition">
