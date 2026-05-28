@@ -5,8 +5,10 @@ import {
   FaMapMarkerAlt,
   FaCog,
   FaSignOutAlt,
+  FaCar,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 function Sidebar() {
   return (
@@ -14,37 +16,106 @@ function Sidebar() {
       <h1 className="text-2xl font-bold text-yellow-400 mb-10">AccessRide</h1>
 
       <ul className="space-y-4">
-        <Link to="/">
-          <li className="flex items-center gap-3 bg-yellow-400 text-black p-3 rounded-lg cursor-pointer">
+        <li className="list-none">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-lg transition ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:bg-gray-800"
+              }`
+            }
+          >
             <FaHome />
-            Dashboard
-          </li>
-        </Link>
 
-        <Link to="/users">
-          <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
+            <span>Dashboard</span>
+          </NavLink>
+        </li>
+
+        <li className="list-none">
+          <NavLink
+            to="/users"
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-lg transition ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:bg-gray-800"
+              }`
+            }
+          >
             <FaUsers />
-            Users
-          </li>
-        </Link>
 
-        <Link to="/navigation">
-          <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
+            <span>Users</span>
+          </NavLink>
+        </li>
+
+        <li className="list-none">
+          <NavLink
+            to="/drivers"
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-lg transition ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:bg-gray-800"
+              }`
+            }
+          >
+            <FaCar />
+
+            <span>Drivers</span>
+          </NavLink>
+        </li>
+
+        <li className="list-none">
+          <NavLink
+            to="/navigation"
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-lg transition ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:bg-gray-800"
+              }`
+            }
+          >
             <FaMapMarkerAlt />
-            Navigation
-          </li>
-        </Link>
 
-        <Link to="/alerts">
-          <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-            <FaBell />
-            Alerts
-          </li>
-        </Link>
+            <span>Navigation</span>
+          </NavLink>
+        </li>
 
-        <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-          <FaCog />
-          Settings
+        <li className="list-none">
+          <NavLink
+            to="/alerts"
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-lg transition ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:bg-gray-800"
+              }`
+            }
+          >
+            <FaCar />
+
+            <span>Alerts</span>
+          </NavLink>
+        </li>
+
+       <li className="list-none">
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-lg transition ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:bg-gray-800"
+              }`
+            }
+          >
+            <FaCog />
+
+            <span>Settings</span>
+          </NavLink>
         </li>
       </ul>
 
