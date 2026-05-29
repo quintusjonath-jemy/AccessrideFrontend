@@ -6,6 +6,7 @@ import Dashboard from "./admin/pages/Dashboard";
 import Navigation from "./admin/pages/Navigation";
 import Users from "./admin/pages/Users";
 import Drivers from "./admin/pages/Drivers";
+import Rides from "./admin/pages/Rides";
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
           <Route path="/alerts" element={<Alerts />} />
 
           <Route path="/drivers" element={<Drivers />} />
+
+          <Route path="/rides" element={<Rides />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>
