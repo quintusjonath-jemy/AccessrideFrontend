@@ -7,6 +7,7 @@ import Navigation from "./admin/pages/Navigation";
 import Users from "./admin/pages/Users";
 import Drivers from "./admin/pages/Drivers";
 import Rides from "./admin/pages/Rides";
+import Settings from "./admin/pages/Settings";
 
 function App() {
   return (
@@ -24,6 +25,8 @@ function App() {
           <Route path="/drivers" element={<Drivers />} />
 
           <Route path="/rides" element={<Rides />} />
+
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>
