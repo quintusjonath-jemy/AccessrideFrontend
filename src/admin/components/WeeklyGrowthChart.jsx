@@ -32,9 +32,7 @@ function WeeklyGrowthChart() {
 
   useEffect(() => {
     axios
-      .get(
-        `http://localhost/admin/api/weekly_growth.php?filter=${filter}`,
-      )
+      .get(`http://localhost/admin/api/weekly_growth.php?filter=${filter}`)
 
       .then((res) => {
         setUsers(res.data.users || []);
@@ -84,10 +82,12 @@ function WeeklyGrowthChart() {
   };
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-md mt-6">
+    <div className="bg-white/90 backdrop-blur-lg p-6 rounded-3xl shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300">
       <div className="flex justify-between items-center mb-5">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Platform Growth</h2>
+          <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
+            Platform Growth
+          </h2>
 
           <p className="text-sm text-gray-400 mt-1">
             Newly registered users and drivers
@@ -99,17 +99,57 @@ function WeeklyGrowthChart() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500"
+          className=" bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-xl shadow-md border-none outline-none cursor-pointer text-sm font-semibold hover:scale-105 hover:shadow-lg transition-all duration-300"
         >
-          <option value="day">Day</option>
+          <option value="day" className="text-black bg-white">
+            Day
+          </option>
 
-          <option value="week">Week</option>
+          <option value="week" className="text-black bg-white">
+            Week
+          </option>
 
-          <option value="month">Month</option>
+          <option value="month" className="text-black bg-white">
+            Month
+          </option>
         </select>
       </div>
 
-      <Line data={data} />
+      <div className="h-[350px] mt-4">
+        <Line
+          data={data}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+              legend: {
+                position: "top",
+              },
+            },
+
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
+
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: "#f1f5f9",
+                },
+              },
+
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          }}
+        />
+      </div>
     </div>
   );
 }
