@@ -132,7 +132,7 @@ function Rides() {
                           </p>
 
                           <p className="text-sm text-gray-400">
-                            User ID: {ride.user_id}
+                            User: {ride.user_name || "Unknown User"}
                           </p>
                         </div>
                       </div>
@@ -141,7 +141,7 @@ function Rides() {
                     {/* DRIVER */}
 
                     <td className="px-6 py-4 text-gray-600">
-                      Driver #{ride.driver_id}
+                      {ride.driver_name || "Unknown Driver"}
                     </td>
 
                     {/* STATUS */}

@@ -3,9 +3,11 @@ import ActivityChart from "../components/ActivityChart";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
   const [users, setUsers] = useState([]);
+  const [rides, setRides] = useState([]);
 
   const [stats, setStats] = useState({
     totalDrivers: 0,
@@ -15,6 +17,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [alerts, setAlerts] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // USERS
@@ -30,6 +33,18 @@ function Dashboard() {
       .catch((err) => {
         console.log(err);
         setLoading(false);
+      });
+
+    // RIDES
+    axios
+      .get("http://localhost/admin/api/rides.php")
+
+      .then((res) => {
+        setRides(Array.isArray(res.data) ? res.data : []);
+      })
+
+      .catch((err) => {
+        console.log(err);
       });
 
     // DASHBOARD STATS
@@ -55,12 +70,6 @@ function Dashboard() {
         console.log(err);
       });
   }, []);
-
-  const statusStyles = {
-    active: "bg-green-100 text-green-700",
-    emergency: "bg-red-100 text-red-600",
-    navigating: "bg-yellow-100 text-yellow-700",
-  };
 
   return (
     <div>
@@ -104,15 +113,21 @@ function Dashboard() {
 
       {/* Main Content */}
 
-      <div className="grid lg:grid-cols-3 gap-5 mt-8">
-        {/* Activity Table */}
+      <div className="grid lg:grid-cols-3 gap-5 mt-6">
+        {/* Ride Activity */}
 
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-md p-5">
-          <div className="flex justify-between mb-5">
-            <h2 className="text-xl font-bold">Ride Activity</h2>
+          <div className="flex justify-between items-center mb-5">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">Ride Activity</h2>
 
-            <Link to="/users">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition">
+              <p className="text-sm text-gray-400 mt-1">
+                Live ride monitoring and tracking
+              </p>
+            </div>
+
+            <Link to="/rides">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                 View All
               </button>
             </Link>
@@ -121,9 +136,16 @@ function Dashboard() {
           <table className="w-full">
             <thead>
               <tr className="text-left text-gray-500 border-b">
-                <th className="pb-3">User</th>
-                <th>status</th>
-                <th>Location</th>
+                <th className="pb-3">Ride ID</th>
+
+                <th>Driver</th>
+
+                <th>User</th>
+
+                <th>Status</th>
+
+                <th className="p1-3">Location</th>
+
                 <th>Action</th>
               </tr>
             </thead>
@@ -131,51 +153,93 @@ function Dashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-10 text-gray-400">
+                  <td colSpan="5" className="text-center py-10 text-gray-400">
                     <div className="flex justify-center items-center gap-3">
                       <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                      Loading user activity...
+                      Loading ride activity...
                     </div>
                   </td>
                 </tr>
               ) : (
-                Array.isArray(users) &&
-                users.slice(0, 5).map((user) => {
-                  const status = (user.status || "").toLowerCase().trim();
+                Array.isArray(rides) &&
+                rides.slice(0, 5).map((ride) => {
+                  const rideStatus = (ride.status || "").toLowerCase().trim();
+
+                  const statusStyles = {
+                    active: "bg-green-100 text-green-700",
+
+                    pending: "bg-yellow-100 text-yellow-700",
+
+                    completed: "bg-blue-100 text-blue-700",
+
+                    cancelled: "bg-red-100 text-red-700",
+                  };
 
                   return (
                     <tr
-                      key={user.id}
+                      key={ride.id}
                       className="border-b hover:bg-gray-50 transition"
                     >
+                      {/* Ride ID */}
+
+                      <td className="py-4 font-semibold text-gray-800">
+                        RID #{ride.id}
+                      </td>
+
+                      {/* Driver */}
+
+                      <td className="text-gray-700 font-medium">
+                        {ride.driver_name || "Unknown Driver"}
+                      </td>
+
                       {/* User */}
-                      <td className="py-4 font-medium text-gray-800">
-                        {user.name || user.user_name}
+
+                      <td className="text-gray-700 font-medium">
+                        {ride.user_name || "Unknown User"}
                       </td>
 
                       {/* Status */}
+
                       <td>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            statusStyles[status] || "bg-gray-100 text-gray-700"
+                            statusStyles[rideStatus] ||
+                            "bg-gray-100 text-gray-700"
                           }`}
                         >
-                          {user.status || "unknown"}
+                          {ride.status}
                         </span>
                       </td>
 
                       {/* Location */}
-                      <td className="text-gray-500">
-                        📍 {user.location || "Unknown"}
+
+                      <td className="px-6 py-4 text-gray-500">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            📍 {ride.pickup_location}
+                          </div>
+
+                          <div className="flex items-center gap-2 text-sm text-red-500">
+                            🏁 {ride.dropoff_location}
+                          </div>
+                        </div>
                       </td>
 
                       {/* Action */}
+
                       <td>
                         <button
-                          onClick={() => setSelectedUser(user)}
+                          onClick={() =>
+                            navigate("/navigation", {
+                              state: {
+                                rideId: ride.id,
+                                driverId: ride.driver_id,
+                              },
+                            })
+                          }
                           className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded-lg text-sm transition"
                         >
-                          View
+                          Track
                         </button>
                       </td>
                     </tr>
@@ -192,7 +256,7 @@ function Dashboard() {
           <h2 className="text-xl font-bold mb-5">Recent Alerts</h2>
 
           <div className="space-y-4">
-            {alerts.slice(0, 5).map((alert) => {
+            {alerts.slice(0, 4).map((alert) => {
               const alertType = (alert.alert_type || "").toLowerCase().trim();
 
               const alertStyles = {
@@ -234,7 +298,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-4">
           <ActivityChart />
         </div>
 
