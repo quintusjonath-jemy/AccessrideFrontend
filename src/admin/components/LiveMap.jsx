@@ -91,7 +91,7 @@ function LiveMap({ rides }) {
   return (
     <div
       ref={mapContainer}
-      className="w-full h-[450px] rounded-2xl overflow-hidden shadow-md"
+      className="w-full h-[85vh] rounded-2xl overflow-hidden shadow-md"
     />
   );
 }

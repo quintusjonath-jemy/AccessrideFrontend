@@ -109,7 +109,7 @@ function Dashboard() {
 
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-md p-5">
           <div className="flex justify-between mb-5">
-            <h2 className="text-xl font-bold">User Activity</h2>
+            <h2 className="text-xl font-bold">Ride Activity</h2>
 
             <Link to="/users">
               <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition">

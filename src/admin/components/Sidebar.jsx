@@ -6,6 +6,7 @@ import {
   FaCog,
   FaSignOutAlt,
   FaCar,
+  FaRoad,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
@@ -86,6 +87,23 @@ function Sidebar() {
 
         <li className="list-none">
           <NavLink
+            to="/rides"
+            className={({ isActive }) =>
+              `flex items-center gap-3 p-3 rounded-lg transition ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold"
+                  : "hover:bg-gray-800"
+              }`
+            }
+          >
+            <FaRoad />
+
+            <span>Ride</span>
+          </NavLink>
+        </li>
+
+        <li className="list-none">
+          <NavLink
             to="/alerts"
             className={({ isActive }) =>
               `flex items-center gap-3 p-3 rounded-lg transition ${
@@ -95,13 +113,13 @@ function Sidebar() {
               }`
             }
           >
-            <FaCar />
+            <FaBell />
 
             <span>Alerts</span>
           </NavLink>
         </li>
 
-       <li className="list-none">
+        <li className="list-none">
           <NavLink
             to="/settings"
             className={({ isActive }) =>

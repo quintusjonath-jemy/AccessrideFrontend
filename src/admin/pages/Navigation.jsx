@@ -1,13 +1,19 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import LiveMap from "../components/LiveMap";
-
+import { useLocation } from "react-router-dom";
 import { MapPinned, Navigation, Car } from "lucide-react";
 
 function NavigationPage() {
   const [rides, setRides] = useState([]);
 
   const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+
+  const trackedRide = location.state?.rideId;
+
+  const trackedDriver = location.state?.driverId;
 
   // FETCH RIDES
   useEffect(() => {
@@ -52,6 +58,10 @@ function NavigationPage() {
     cancelled: "bg-red-100 text-red-600",
   };
 
+  const filteredRides = trackedDriver
+    ? rides.filter((ride) => ride.driver_id == trackedDriver)
+    : rides;
+
   return (
     <div>
       {/* HEADER */}
@@ -78,125 +88,44 @@ function NavigationPage() {
         </div>
       </div>
 
-      <div className="mb-6">
-        <LiveMap rides={rides} />
-      </div>
+      <div className="relative h-[85vh] rounded-3xl overflow-hidden shadow-2xl">
+        {/* LIVE MAP */}
+        <LiveMap rides={filteredRides} />
 
-      {/* RIDES TABLE */}
+        {/* FLOATING LIVE PANEL */}
+        <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-5 w-72 border border-gray-100">
+          <h2 className="text-lg font-bold text-[#0B1929] mb-4">
+            Live Navigation
+          </h2>
 
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
-                Rider
-              </th>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-500">Active Rides</p>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
-                Pickup
-              </th>
+                <h3 className="text-2xl font-bold text-green-600">
+                  {filteredRides.length}
+                </h3>
+              </div>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
-                Destination
-              </th>
+              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                <Navigation className="text-green-600" />
+              </div>
+            </div>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
-                Status
-              </th>
+            <div className="border-t pt-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                Drivers Online
+              </div>
 
-              <th className="text-right px-6 py-4 text-sm text-gray-500">
-                Action
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="5" className="text-center py-10 text-gray-400">
-                  <div className="flex justify-center items-center gap-3">
-                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    Loading navigation data...
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              rides.map((ride) => {
-                const rideStatus = (ride.status || "").toLowerCase().trim();
-
-                return (
-                  <tr
-                    key={ride.id}
-                    className="border-t border-gray-100 hover:bg-gray-50 transition"
-                  >
-                    {/* USER */}
-
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                          <Car className="w-5 h-5 text-blue-600" />
-                        </div>
-
-                        <div>
-                          <p className="font-semibold text-gray-800">
-                            {ride.user_name || "Unknown"}
-                          </p>
-
-                          <p className="text-sm text-gray-400">
-                            Ride #{ride.id}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* PICKUP */}
-
-                    <td className="px-6 py-4 text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <MapPinned className="w-4 h-4 text-green-500" />
-
-                        {ride.pickup_location}
-                      </div>
-                    </td>
-
-                    {/* DESTINATION */}
-
-                    <td className="px-6 py-4 text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Navigation className="w-4 h-4 text-red-500" />
-
-                        {ride.dropoff_location}
-                      </div>
-                    </td>
-
-                    {/* STATUS */}
-
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          statusStyles[rideStatus] ||
-                          "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {ride.status}
-                      </span>
-                    </td>
-
-                    {/* ACTION */}
-
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end">
-                        <button className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm transition">
-                          Track Ride
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                SOS Monitoring Active
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
