@@ -26,7 +26,6 @@ function Dashboard() {
       .get("http://localhost/admin/api/users.php")
 
       .then((res) => {
-        console.log(res.data);
         setUsers(Array.isArray(res.data) ? res.data : []);
         setLoading(false);
       })
