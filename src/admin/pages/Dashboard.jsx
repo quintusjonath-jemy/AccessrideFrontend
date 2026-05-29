@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import WeeklyGrowthChart from "../components/WeeklyGrowthChart";
 
 function Dashboard() {
   const [users, setUsers] = useState([]);
@@ -144,7 +145,7 @@ function Dashboard() {
 
                 <th>Status</th>
 
-                <th className="p1-3">Location</th>
+                <th className="px-7">Location</th>
 
                 <th>Action</th>
               </tr>
@@ -298,11 +299,15 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-4">
+        {/* Charts Section */}
+
+        <div className="grid lg:grid-cols-2 gap-5 mt-4 lg:col-span-3">
+          <WeeklyGrowthChart />
+
           <ActivityChart />
         </div>
 
-        {selectedUser && (
+        {/* {selectedUser && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
             <div className="bg-white w-[400px] rounded-xl p-6 shadow-xl">
               <h2 className="text-xl font-bold mb-4">User Details</h2>
@@ -332,7 +337,7 @@ function Dashboard() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

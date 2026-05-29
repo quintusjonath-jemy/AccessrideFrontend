@@ -59,6 +59,16 @@ function Rides() {
         </button>
       </div>
 
+      {/* Search */}
+
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-5">
+        <input
+          type="text"
+          placeholder="Search rides..."
+          className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-yellow-400"
+        />
+      </div>
+
       {/* RIDES TABLE */}
 
       <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
