@@ -2,13 +2,18 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 function ProfileSettings() {
-
   const [admin, setAdmin] = useState({
     id: 1,
     name: "",
     email: "",
     phone: "",
   });
+
+  const [image, setImage] = useState(null);
+
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+  };
 
   const [loading, setLoading] = useState(true);
 
@@ -25,34 +30,39 @@ function ProfileSettings() {
         console.log(err);
         setLoading(false);
       });
-
   }, []);
 
   const handleChange = (e) => {
-
     setAdmin({
       ...admin,
       [e.target.name]: e.target.value,
     });
-
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
-    try {
+    const formData = new FormData();
 
-      await axios.put(
-        "http://localhost/admin/api/admin.php",
-        admin
+    formData.append("id", admin.id);
+    formData.append("name", admin.name);
+    formData.append("email", admin.email);
+    formData.append("phone", admin.phone);
+
+    if (image) {
+      formData.append("profile_image", image);
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost/admin/api/admin.php?action=profile",
+        formData,
       );
 
-      alert("Profile Updated");
-
-    } catch (error) {
-
-      console.log(error);
+      console.log(res.data);
+      alert("Profile updated successfully");
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -62,16 +72,21 @@ function ProfileSettings() {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-md">
+      <h1 className="text-2xl font-bold mb-6">Profile Settings</h1>
 
-      <h1 className="text-2xl font-bold mb-6">
-        Profile Settings
-      </h1>
+      <img
+        src={
+          image
+            ? URL.createObjectURL(image)
+            : admin.profile_image
+              ? `http://localhost/admin/uploads/${admin.profile_image}`
+              : "https://via.placeholder.com/150"
+        }
+        alt="Profile"
+        className="w-24 h-24 rounded-full object-cover border"
+      />
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4"
-      >
-
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
           name="name"
@@ -99,15 +114,15 @@ function ProfileSettings() {
           className="w-full border p-3 rounded-lg"
         />
 
+        <input type="file" accept="image/*" onChange={handleImageChange} />
+
         <button
           type="submit"
           className="bg-blue-600 text-white px-5 py-3 rounded-lg"
         >
           Save Changes
         </button>
-
       </form>
-
     </div>
   );
 }
