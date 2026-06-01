@@ -563,7 +563,7 @@
 import { Link } from "react-router-dom";
 import { User, Lock, Bell, Settings as SettingsIcon } from "lucide-react";
 
-function Settings() {
+const Settings = () => {
   const items = [
     {
       title: "Profile",

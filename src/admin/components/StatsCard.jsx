@@ -1,4 +1,4 @@
-function StatsCard({ title, value, color }) {
+const StatsCard = ({ title, value, color }) => {
   return (
     <div className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition">
 

@@ -25,7 +25,7 @@ ChartJS.register(
   Legend,
 );
 
-function ActivityChart() {
+const ActivityChart = () => {
   const [chartData, setChartData] = useState([]);
   const [filter, setFilter] = useState("week");
 

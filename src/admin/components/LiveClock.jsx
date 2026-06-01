@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-function LiveClock() {
+const LiveClock = () => {
 
   const [time, setTime] = useState(new Date())
 

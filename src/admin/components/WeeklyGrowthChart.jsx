@@ -25,7 +25,7 @@ ChartJS.register(
   Legend,
 );
 
-function WeeklyGrowthChart() {
+const WeeklyGrowthChart = () => {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("week");
   const [drivers, setDrivers] = useState([]);

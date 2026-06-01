@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { Eye, Pencil, Trash2, UserPlus } from "lucide-react";
 
-function Users() {
+const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 

@@ -13,7 +13,7 @@ import SecuritySettings from "./admin/pages/settings/SecuritySettings";
 import SystemSettings from "./admin/pages/settings/SystemSettings";
 import Users from "./admin/pages/Users";
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <MainLayout>
