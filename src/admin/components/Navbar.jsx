@@ -1,7 +1,20 @@
-import { FaBell, FaUserCircle } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
+import axios from "axios";
+import { useState, useEffect } from "react";
 import LiveClock from "./LiveClock";
 
-function Navbar() {
+const Navbar = () => {
+  const [admin, setAdmin] = useState({});
+
+  useEffect(() => {
+    axios
+      .get("http://localhost/admin/api/admin.php")
+      .then((res) => {
+        setAdmin(res.data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
   return (
     <div className="bg-white shadow-sm p-4 flex justify-between items-center">
       <input
@@ -15,8 +28,21 @@ function Navbar() {
 
         <div className="flex items-center gap-2">
           <LiveClock />
-          <FaUserCircle className="text-3xl" />
-          <span className="font-medium">Admin</span>
+          <img
+            src={
+              admin.profile_image
+                ? `http://localhost/admin/uploads/${admin.profile_image}`
+                : "https://via.placeholder.com/150"
+            }
+            alt="Admin"
+            className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
+          />
+
+          <div>
+            <h4 className="font-semibold text-gray-800">{admin.name}</h4>
+
+            <p className="text-xs text-gray-500">Administrator</p>
+          </div>
         </div>
       </div>
     </div>

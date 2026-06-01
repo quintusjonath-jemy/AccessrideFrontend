@@ -2,7 +2,7 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import { useLocation } from "react-router-dom";
 
-function MainLayout({ children }) {
+const MainLayout = ({ children }) => {
   const location = useLocation();
 
   // CHECK NAVIGATION PAGE

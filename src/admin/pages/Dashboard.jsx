@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import WeeklyGrowthChart from "../components/WeeklyGrowthChart";
 
-function Dashboard() {
+const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [rides, setRides] = useState([]);
 

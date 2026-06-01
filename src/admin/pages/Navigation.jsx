@@ -4,7 +4,7 @@ import LiveMap from "../components/LiveMap";
 import { useLocation } from "react-router-dom";
 import { MapPinned, Navigation, Car } from "lucide-react";
 
-function NavigationPage() {
+const NavigationPage = () => {
   const [rides, setRides] = useState([]);
 
   const [loading, setLoading] = useState(true);

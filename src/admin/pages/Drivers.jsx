@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Car, Eye, Trash2, UserPlus } from "lucide-react";
 
-function Drivers() {
+const Drivers = () => {
   const [drivers, setDrivers] = useState([]);
 
   const [loading, setLoading] = useState(true);

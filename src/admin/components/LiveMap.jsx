@@ -7,7 +7,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 mapboxgl.accessToken =
   "";
 
-function LiveMap({ rides }) {
+const LiveMap = ({ rides }) => {
   const mapContainer = useRef(null);
 
   const map = useRef(null);

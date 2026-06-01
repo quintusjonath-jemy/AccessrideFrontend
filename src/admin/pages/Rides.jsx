@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Car, Eye, Trash2, Plus } from "lucide-react";
 
-function Rides() {
+const Rides = () => {
   const [rides, setRides] = useState([]);
 
   const [loading, setLoading] = useState(true);

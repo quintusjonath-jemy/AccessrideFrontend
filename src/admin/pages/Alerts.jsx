@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { Bell, CheckCircle } from "lucide-react";
 
-function Alerts() {
+const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const activeAlerts = alerts.filter(

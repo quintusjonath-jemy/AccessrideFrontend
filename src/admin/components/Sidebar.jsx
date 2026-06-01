@@ -11,7 +11,7 @@ import {
 import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 
-function Sidebar() {
+const Sidebar = () => {
   return (
     <div className="w-64 bg-[#111827] text-white min-h-screen p-5">
       <h1 className="text-2xl font-bold text-yellow-400 mb-10">AccessRide</h1>

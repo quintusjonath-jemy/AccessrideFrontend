@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-function ProfileSettings() {
+const ProfileSettings = () => {
   const [admin, setAdmin] = useState({
     id: 1,
     name: "",
@@ -85,6 +85,7 @@ function ProfileSettings() {
         alt="Profile"
         className="w-24 h-24 rounded-full object-cover border"
       />
+      <br />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -114,7 +115,12 @@ function ProfileSettings() {
           className="w-full border p-3 rounded-lg"
         />
 
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <input
+          className="border p-3"
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+        />
 
         <button
           type="submit"
