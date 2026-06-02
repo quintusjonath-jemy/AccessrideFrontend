@@ -5,20 +5,19 @@ import { useLocation } from "react-router-dom";
 const MainLayout = ({ children }) => {
   const location = useLocation();
 
-  // CHECK NAVIGATION PAGE
   const isNavigationPage = location.pathname === "/navigation";
 
   return (
-    <div className="flex bg-gray-100 min-h-screen">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar />
 
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {!isNavigationPage && <Navbar />}
 
-        <div className="p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-6">{children}</div>
       </div>
     </div>
   );
-}
+};
 
 export default MainLayout;
