@@ -17,12 +17,16 @@ function startListening() {
 function sendSOS() {
   document.getElementById("messageBox").classList.remove("hidden");
 
-  fetch("backend/sos.php", {
+  fetch("http://localhost/AccessrideBackend/sos.php", {
     method: "POST"
   })
-  .then(res => res.text())
+  .then(res => res.json()) // better than text
   .then(data => {
     console.log(data);
+    alert(data.message); // show response
+  })
+  .catch(err => {
+    console.error("Error:", err);
   });
 }
 
