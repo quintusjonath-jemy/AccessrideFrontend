@@ -17,17 +17,49 @@ function startListening() {
 function sendSOS() {
   document.getElementById("messageBox").classList.remove("hidden");
 
-  fetch("http://localhost/AccessrideBackend/sos.php", {
-    method: "POST"
-  })
-  .then(res => res.json()) // better than text
-  .then(data => {
-    console.log(data);
-    alert(data.message); // show response
-  })
-  .catch(err => {
-    console.error("Error:", err);
-  });
+  // Get user location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        
+        // Get user_id from localStorage or session
+        const user_id = localStorage.getItem("user_id") || sessionStorage.getItem("user_id");
+        const driver_id = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id") || null;
+
+        const sosData = {
+          user_id: user_id,
+          driver_id: driver_id,
+          latitude: latitude,
+          longitude: longitude
+        };
+
+        fetch("http://localhost/AccessrideBackend/Emergency/sos.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(sosData)
+        })
+        .then(res => res.json())
+        .then(data => {
+          console.log(data);
+          alert(data.message);
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          alert("Failed to send SOS");
+        });
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Could not get location. Please enable location services.");
+      }
+    );
+  } else {
+    alert("Geolocation is not supported by your browser");
+  }
 }
 
 // Cancel SOS
