@@ -181,7 +181,7 @@ const Users = () => {
           placeholder="Search users..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2"
+          className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-yellow-400"
         />
       </div>
 
