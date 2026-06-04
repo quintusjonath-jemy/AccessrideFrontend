@@ -1,30 +1,44 @@
-import { useState } from "react";
-import {
-  FaWheelchairMove,
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaLock,
-  FaMicrophone,
-} from "react-icons/fa";
+import React, { useState } from "react";
+import { UserPlus, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 
 function Register() {
-  const [fullname, setFullname] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isDriver, setIsDriver] = useState(false);
 
-  const registerUser = () => {
-    if (
-      !fullname ||
-      !email ||
-      !phone ||
-      !password ||
-      !confirmPassword
-    ) {
-      alert("Please fill all fields");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    vehicleType: "Sedan",
+    plateNumber: "",
+    licenseNumber: "",
+    insurance: "",
+    agree: false,
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleRegister = () => {
+    const {
+      fullName,
+      email,
+      phone,
+      password,
+      confirmPassword,
+      agree,
+    } = formData;
+
+    if (!fullName || !email || !phone || !password || !confirmPassword) {
+      alert("Please fill all required fields");
       return;
     }
 
@@ -33,171 +47,292 @@ function Register() {
       return;
     }
 
-    alert("Registration Successful!");
+    if (!agree) {
+      alert("You must agree to the terms");
+      return;
+    }
 
-    setFullname("");
-    setEmail("");
-    setPhone("");
-    setPassword("");
-    setConfirmPassword("");
+    alert(
+      `Registration successful for ${fullName}. Please verify your email/phone.`
+    );
+
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      vehicleType: "Sedan",
+      plateNumber: "",
+      licenseNumber: "",
+      insurance: "",
+      agree: false,
+    });
+
+    setIsDriver(false);
   };
 
-  const handleVoiceRegister = () => {
-    alert("Voice Registration Activated");
+  const voiceReadForm = () => {
+    if (!window.speechSynthesis) {
+      alert("Speech synthesis not supported");
+      return;
+    }
+
+    const fields = [
+      `Name: ${formData.fullName || "empty"}`,
+      `Email: ${formData.email || "empty"}`,
+      `Phone: ${formData.phone || "empty"}`,
+      `Password: ${formData.password ? "set" : "not set"}`,
+    ];
+
+    let index = 0;
+
+    const speakNext = () => {
+      if (index >= fields.length) return;
+
+      const utterance = new SpeechSynthesisUtterance(fields[index]);
+
+      utterance.onend = () => {
+        index++;
+        speakNext();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    };
+
+    speakNext();
   };
 
   return (
-    <div className="bg-linear-to-br from-blue-100 to-gray-200 min-h-screen flex items-center justify-center p-5">
-      <div className="w-full max-w-lg">
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-blue-900 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
-              <FaWheelchairMove className="text-white text-4xl" />
+    <div className="min-h-screen bg-linear-to-br from-blue-100 to-gray-200 flex items-center justify-center p-6">
+      <main className="w-full max-w-2xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-slate-100">
+          {/* Header */}
+          <header className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-blue-900 rounded-2xl flex items-center justify-center">
+                <UserPlus className="text-white" size={28} />
+              </div>
+
+              <div>
+                <h1 className="text-2xl font-extrabold text-blue-900">
+                  Create Your Account
+                </h1>
+                <p className="text-gray-500 text-sm">
+                  Register as a Rider or Driver
+                </p>
+              </div>
             </div>
 
-            <h1 className="text-4xl font-bold text-blue-900 mt-5">
-              Create Account
-            </h1>
-
-            <p className="text-gray-500 mt-2 text-lg">
-              Join AccessRide Today
-            </p>
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-blue-900 font-semibold mb-2">
-              Full Name
-            </label>
-
-            <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-3 focus-within:border-blue-900">
-              <FaUser className="text-gray-400" />
-
-              <input
-                type="text"
-                placeholder="Enter your full name"
-                value={fullname}
-                onChange={(e) => setFullname(e.target.value)}
-                className="w-full ml-3 outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-blue-900 font-semibold mb-2">
-              Email Address
-            </label>
-
-            <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-3 focus-within:border-blue-900">
-              <FaEnvelope className="text-gray-400" />
-
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full ml-3 outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-blue-900 font-semibold mb-2">
-              Phone Number
-            </label>
-
-            <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-3 focus-within:border-blue-900">
-              <FaPhone className="text-gray-400" />
-
-              <input
-                type="tel"
-                placeholder="Enter your phone number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full ml-3 outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="mb-5">
-            <label className="block text-blue-900 font-semibold mb-2">
-              Password
-            </label>
-
-            <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-3 focus-within:border-blue-900">
-              <FaLock className="text-gray-400" />
-
-              <input
-                type="password"
-                placeholder="Create password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full ml-3 outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-blue-900 font-semibold mb-2">
-              Confirm Password
-            </label>
-
-            <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-3 focus-within:border-blue-900">
-              <FaLock className="text-gray-400" />
-
-              <input
-                type="password"
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) =>
-                  setConfirmPassword(e.target.value)
-                }
-                className="w-full ml-3 outline-none"
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={registerUser}
-            className="w-full bg-blue-900 hover:bg-blue-800 text-white py-4 rounded-2xl text-xl font-bold shadow-lg transition duration-300"
-          >
-            Create Account
-          </button>
-
-          <div className="text-center mt-10">
-            <button
-              onClick={handleVoiceRegister}
-              className="w-24 h-24 bg-yellow-400 hover:bg-yellow-300 rounded-full shadow-lg text-4xl text-yellow-900 transition duration-300 hover:scale-105"
+            <Link
+              to="/"
+              className="text-blue-900 font-medium hover:underline"
             >
-              <FaMicrophone className="mx-auto" />
+              Back to Sign In
+            </Link>
+          </header>
+
+          {/* Role Toggle */}
+          <div className="flex gap-2 mb-6 justify-center">
+            <button
+              type="button"
+              onClick={() => setIsDriver(false)}
+              className={`px-4 py-2 rounded-full font-semibold ${
+                !isDriver
+                  ? "bg-blue-900 text-white"
+                  : "bg-white text-blue-900 border border-gray-200"
+              }`}
+            >
+              Register as Rider
             </button>
 
-            <p className="text-blue-900 font-semibold text-xl mt-4">
-              Use Voice to Registration
-            </p>
-          </div>
-
-          <div className="flex items-center my-8">
-            <div className="flex-1 h-px bg-gray-300"></div>
-
-            <span className="px-4 text-gray-400 text-sm">
-              OR
-            </span>
-
-            <div className="flex-1 h-px bg-gray-300"></div>
-          </div>
-
-          <div className="text-center text-gray-500">
-            Already have an account?{" "}
-            <Link
-            to="/login"
-              className="text-blue-900 font-bold hover:underline"
+            <button
+              type="button"
+              onClick={() => setIsDriver(true)}
+              className={`px-4 py-2 rounded-full font-semibold ${
+                isDriver
+                  ? "bg-blue-900 text-white"
+                  : "bg-white text-blue-900 border border-gray-200"
+              }`}
             >
-              Login
-            </Link>
+              Register as Driver
+            </button>
           </div>
+
+          {/* Form */}
+          <form className="space-y-4">
+            <div>
+              <label className="block text-blue-900 font-semibold mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-blue-900 font-semibold mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-blue-900 font-semibold mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="e.g. +1 555 555 5555"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-blue-900 font-semibold mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-blue-900 font-semibold mb-1">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+              />
+            </div>
+
+            {/* Driver Fields */}
+            {isDriver && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-blue-900 font-semibold mb-1">
+                    Vehicle Type
+                  </label>
+
+                  <select
+                    name="vehicleType"
+                    value={formData.vehicleType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                  >
+                    <option>Sedan</option>
+                    <option>SUV</option>
+                    <option>Wheelchair Accessible</option>
+                    <option>Van</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-blue-900 font-semibold mb-1">
+                    License Plate
+                  </label>
+
+                  <input
+                    type="text"
+                    name="plateNumber"
+                    value={formData.plateNumber}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-blue-900 font-semibold mb-1">
+                    Driver License Number
+                  </label>
+
+                  <input
+                    type="text"
+                    name="licenseNumber"
+                    value={formData.licenseNumber}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-blue-900 font-semibold mb-1">
+                    Insurance Document URL
+                  </label>
+
+                  <input
+                    type="text"
+                    name="insurance"
+                    value={formData.insurance}
+                    onChange={handleChange}
+                    placeholder="https://..."
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="agree"
+                checked={formData.agree}
+                onChange={handleChange}
+                className="h-4 w-4"
+              />
+
+              <label className="text-sm text-gray-600">
+                I agree to the AccessRide terms and privacy
+              </label>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleRegister}
+              className="w-full bg-blue-900 text-white py-3 rounded-lg font-semibold hover:bg-blue-800"
+            >
+              Create Account
+            </button>
+
+            {!isDriver && (
+              <div className="flex flex-col items-center mt-4">
+                <button
+                  type="button"
+                  onClick={voiceReadForm}
+                  className="w-24 h-24 bg-yellow-400 hover:bg-yellow-300 rounded-full shadow-lg flex items-center justify-center"
+                >
+                  <Mic size={40} className="text-yellow-900" />
+                </button>
+
+                <span className="text-blue-900 font-semibold text-xl mt-4">
+                  Use voice to register
+                </span>
+              </div>
+            )}
+          </form>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -6,6 +6,8 @@ import Dashboard from "./admin/pages/Dashboard";
 import Navigation from "./admin/pages/Navigation";
 import LoginPage from "./login/Login";
 import RegisterPage from "./login/Register";
+import AdminLogin from "./login/AdminLogin";
+import DriverLogin from "./login/DriverLogin";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/driver-login" element={<DriverLogin />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>
