@@ -1,11 +1,27 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-import { Eye, Pencil, Trash2, UserPlus } from "lucide-react";
+import { Eye, EyeClosed, Pencil, Trash2, UserPlus } from "lucide-react";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [search, setSearch] = useState("");
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    status: "active",
+    location: "",
+  });
+
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      user.email.toLowerCase().includes(search.toLowerCase()),
+  );
 
   // Fetch users from backend
   useEffect(() => {
@@ -32,8 +48,56 @@ const Users = () => {
       case "emergency":
         return "bg-red-100 text-red-600";
 
+      case "blocked":
+        return "bg-yellow-200 text-yellow-700";
+
       default:
         return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  const addUser = async () => {
+    try {
+      const res = await axios.post(
+        "http://localhost/admin/api/users.php",
+        newUser,
+      );
+
+      if (res.data.success) {
+        const refresh = await axios.get("http://localhost/admin/api/users.php");
+
+        setUsers(refresh.data);
+
+        setShowAddModal(false);
+
+        setNewUser({
+          name: "",
+          email: "",
+          status: "active",
+          location: "",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const updateUser = async () => {
+    try {
+      const res = await axios.put(
+        "http://localhost/admin/api/users.php",
+        selectedUser,
+      );
+
+      if (res.data.success) {
+        const refresh = await axios.get("http://localhost/admin/api/users.php");
+
+        setUsers(refresh.data);
+
+        setShowEditModal(false);
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -45,13 +109,30 @@ const Users = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost/api/users.php?id=${id}`);
+      await axios.delete(`http://localhost/admin/api/users.php?id=${id}`);
 
       // Remove deleted user from UI
       setUsers(users.filter((user) => user.id !== id));
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const toggleUserStatus = async (user) => {
+    const action =
+      user.status?.toLowerCase() === "blocked" ? "unblock" : "block";
+
+    const confirmAction = window.confirm(
+      `Are you sure you want to ${action} ${user.name}?`,
+    );
+
+    if (!confirmAction) return;
+
+    await axios.get(`http://localhost/admin/api/users.php?hide=${user.id}`);
+
+    const refresh = await axios.get("http://localhost/admin/api/users.php");
+
+    setUsers(refresh.data);
   };
 
   return (
@@ -67,7 +148,10 @@ const Users = () => {
           <p className="text-gray-500 mt-1">Manage blind assistance users</p>
         </div>
 
-        <button className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-xl font-semibold transition">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-xl font-semibold"
+        >
           <UserPlus className="w-4 h-4" />
           Add User
         </button>
@@ -79,7 +163,9 @@ const Users = () => {
         <input
           type="text"
           placeholder="Search users..."
-          className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-yellow-400"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full border border-gray-200 rounded-lg px-4 py-2"
         />
       </div>
 
@@ -119,7 +205,7 @@ const Users = () => {
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
+              filteredUsers.map((user) => (
                 <tr
                   key={user.id}
                   className="border-t border-gray-100 hover:bg-gray-50 transition"
@@ -140,11 +226,26 @@ const Users = () => {
 
                   <td className="px-6 py-4">
                     <div className="flex justify-end gap-2">
-                      <button className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
-                        <Eye className="w-4 h-4" />
+                      <button
+                        onClick={() => toggleUserStatus(user)}
+                        className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
+                          user.status?.toLowerCase() === "blocked"
+                            ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
+                            : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                        }`}
+                      >
+                        {user.status?.toLowerCase() === "blocked"
+                          ? <EyeClosed className="w-4 h-4" />
+                          : <Eye className="w-4 h-4" />}
                       </button>
-
-                      <button className="p-2 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100">
+                      
+                      <button
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowEditModal(true);
+                        }}
+                        className="p-2 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
+                      >
                         <Pencil className="w-4 h-4" />
                       </button>
 
@@ -162,8 +263,72 @@ const Users = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Add User Modal */}
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-[450px]">
+            <h2 className="text-xl font-bold mb-5">Add New User</h2>
+
+            <div className="space-y-4">
+              <input
+                placeholder="Name"
+                value={newUser.name}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    name: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              />
+
+              <input
+                placeholder="Email"
+                value={newUser.email}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    email: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              />
+
+              <input
+                placeholder="Location"
+                value={newUser.location}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    location: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 bg-gray-200 rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={addUser}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg"
+              >
+                Add User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default Users;

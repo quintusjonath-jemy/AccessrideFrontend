@@ -153,20 +153,7 @@ function SystemSettings() {
                 className="sr-only peer"
               />
 
-              <div
-                className="w-11 h-6 bg-gray-300 rounded-full peer 
-                  peer-checked:bg-green-500
-                  after:content-['']
-                  after:absolute
-                  after:top-[2px]
-                  after:left-[2px]
-                  after:bg-white
-                  after:w-5
-                  after:h-5
-                  after:rounded-full
-                  after:transition-all
-                  peer-checked:after:translate-x-5"
-              ></div>
+              <div className="w-11 h-6 bg-gray-300 rounded-full peer  peer-checked:bg-green-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-all peer-checked:after:translate-x-5"></div>
             </label>
           </div>
 
@@ -189,29 +176,16 @@ function SystemSettings() {
                 className="sr-only peer"
               />
 
-              <div
-                className="w-11 h-6 bg-gray-300 rounded-full peer 
-                  peer-checked:bg-blue-500
-                  after:content-['']
-                  after:absolute
-                  after:top-[2px]
-                  after:left-[2px]
-                  after:bg-white
-                  after:w-5
-                  after:h-5
-                  after:rounded-full
-                  after:transition-all
-                  peer-checked:after:translate-x-5"
-              ></div>
+              <div className="w-11 h-6 bg-gray-300 rounded-full peer  peer-checked:bg-blue-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-all peer-checked:after:translate-x-5"></div>
             </label>
           </div>
         </div>
 
         <button
           onClick={handleSave}
-          className="bg-blue-600 text-white px-5 py-3 rounded-lg"
+          className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:scale-[1.02] transition"
         >
-          Save Settings
+          Save System Settings
         </button>
       </div>
     </div>
