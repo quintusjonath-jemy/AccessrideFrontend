@@ -8,12 +8,19 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
   const [search, setSearch] = useState("");
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
     status: "active",
+    location: "",
+  });
+
+  const [selectedUser, setSelectedUser] = useState({
+    id: "",
+    name: "",
+    email: "",
+    status: "",
     location: "",
   });
 
@@ -82,6 +89,13 @@ const Users = () => {
     }
   };
 
+  const handleEditChange = (e) => {
+    setSelectedUser({
+      ...selectedUser,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   const updateUser = async () => {
     try {
       const res = await axios.put(
@@ -95,9 +109,11 @@ const Users = () => {
         setUsers(refresh.data);
 
         setShowEditModal(false);
+
+        alert("User updated successfully");
       }
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -234,11 +250,13 @@ const Users = () => {
                             : "bg-blue-100 text-blue-600 hover:bg-blue-200"
                         }`}
                       >
-                        {user.status?.toLowerCase() === "blocked"
-                          ? <EyeClosed className="w-4 h-4" />
-                          : <Eye className="w-4 h-4" />}
+                        {user.status?.toLowerCase() === "blocked" ? (
+                          <EyeClosed className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           setSelectedUser(user);
@@ -322,6 +340,72 @@ const Users = () => {
                 className="px-4 py-2 bg-yellow-500 text-white rounded-lg"
               >
                 Add User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white w-[500px] rounded-2xl p-6 shadow-xl">
+            <h2 className="text-xl font-bold mb-5">Edit User</h2>
+
+            <div className="space-y-4">
+              <input
+                type="text"
+                name="name"
+                value={selectedUser.name}
+                onChange={handleEditChange}
+                className="w-full border p-3 rounded-lg"
+                placeholder="Name"
+              />
+
+              <input
+                type="email"
+                name="email"
+                value={selectedUser.email}
+                onChange={handleEditChange}
+                className="w-full border p-3 rounded-lg"
+                placeholder="Email"
+              />
+
+              <input
+                type="text"
+                name="location"
+                value={selectedUser.location}
+                onChange={handleEditChange}
+                className="w-full border p-3 rounded-lg"
+                placeholder="Location"
+              />
+
+              <select
+                name="status"
+                value={selectedUser.status}
+                onChange={handleEditChange}
+                className="w-full border p-3 rounded-lg"
+              >
+                <option value="active">Active</option>
+                <option value="emergency">Emergency</option>
+                <option value="blocked">Blocked</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 bg-gray-200 rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={updateUser}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg"
+              >
+                Save Changes
               </button>
             </div>
           </div>
