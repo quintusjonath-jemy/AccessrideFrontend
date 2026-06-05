@@ -49,7 +49,7 @@
 
   <!-- MAP -->
   <div class="h-60 bg-gray-300 relative">
-    <img src="/src/Driverdashboard/mapimg.jpg"
+    <img src="/src/Driverdashboard/map.jpg" alt="map"
          class="w-full h-full object-cover opacity-60">
   </div>
 
@@ -98,22 +98,22 @@
 
   <!-- BOTTOM NAV -->
   <div class="flex justify-around py-3 border-t bg-white">
-    <div class="text-yellow-500 text-center">
-      🏠
+    <button type="button" onclick="navigate('home')" class="flex flex-col items-center text-yellow-500">
+      <span class="text-xl">🏠</span>
       <p class="text-xs">Home</p>
-    </div>
-    <div class="text-gray-500 text-center">
-      🚗
-      <p class="text-xs">Trips</p>
-    </div>
-    <div class="text-gray-500 text-center">
-      💰
+    </button>
+    <button type="button" onclick="navigate('tips')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+      <span class="text-xl">💡</span>
+      <p class="text-xs">Tips</p>
+    </button>
+    <button type="button" onclick="navigate('earnings')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+      <span class="text-xl">💰</span>
       <p class="text-xs">Earnings</p>
-    </div>
-    <div class="text-gray-500 text-center">
-      👤
+    </button>
+    <button type="button" onclick="navigate('profile')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+      <span class="text-xl">👤</span>
       <p class="text-xs">Profile</p>
-    </div>
+    </button>
   </div>
 
 </div>
@@ -134,6 +134,11 @@ function rejectRide() {
   fetch("http://localhost/AccessrideBackend/reject.php", {
     method: "POST"
   });
+}
+
+function navigate(section) {
+  alert(`Navigating to ${section.charAt(0).toUpperCase() + section.slice(1)}`);
+  // Add route handling or page update logic here
 }
 </script>
 
