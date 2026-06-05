@@ -2,31 +2,54 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import { Car, Eye, Trash2, Plus } from "lucide-react";
+import { Car, Trash2, Plus, Pencil } from "lucide-react";
 
 const Rides = () => {
   const [rides, setRides] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
+  const [search, setSearch] = useState("");
+
+  const [users, setUsers] = useState([]);
+
+  const [drivers, setDrivers] = useState([]);
+
+  const [searchType, setSearchType] = useState("pickup");
+
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const [rideForm, setRideForm] = useState({
+    driver_id: "",
+    user_id: "",
+    pickup_location: "",
+    dropoff_location: "",
+    status: "pending",
+    fare: "",
+    distance_km: "",
+  });
+
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const [selectedRide, setSelectedRide] = useState(null);
+
   const navigate = useNavigate();
 
   // FETCH RIDES
   useEffect(() => {
-    axios
-      .get("http://localhost/admin/api/rides.php")
+    axios.get("http://localhost/admin/api/rides.php").then((res) => {
+      setRides(Array.isArray(res.data) ? res.data : []);
 
-      .then((res) => {
-        setRides(Array.isArray(res.data) ? res.data : []);
+      setLoading(false);
+    });
 
-        setLoading(false);
-      })
+    axios.get("http://localhost/admin/api/users.php").then((res) => {
+      setUsers(res.data);
+    });
 
-      .catch((err) => {
-        console.log(err);
-
-        setLoading(false);
-      });
+    axios.get("http://localhost/admin/api/drivers.php").then((res) => {
+      setDrivers(res.data);
+    });
   }, []);
 
   // STATUS COLORS
@@ -39,6 +62,58 @@ const Rides = () => {
 
     cancelled: "bg-red-100 text-red-700",
   };
+
+  const addRide = async () => {
+    if (!rideForm.user_id || !rideForm.driver_id) {
+      alert("Please select a user and driver");
+
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost/admin/api/rides.php", rideForm);
+
+      const res = await axios.get("http://localhost/admin/api/rides.php");
+
+      setRides(res.data);
+
+      setShowAddModal(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const updateRide = async () => {
+    try {
+      await axios.put("http://localhost/admin/api/rides.php", selectedRide);
+
+      const res = await axios.get("http://localhost/admin/api/rides.php");
+
+      setRides(res.data);
+
+      setShowEditModal(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const deleteRide = async (id) => {
+    if (!window.confirm("Delete this ride?")) return;
+
+    await axios.delete(`http://localhost/admin/api/rides.php?id=${id}`);
+
+    setRides(rides.filter((ride) => ride.id !== id));
+  };
+
+  const filteredRides = rides.filter((ride) => {
+    if (!search) return true;
+
+    if (searchType === "pickup") {
+      return ride.pickup_location?.toLowerCase().includes(search.toLowerCase());
+    }
+
+    return ride.dropoff_location?.toLowerCase().includes(search.toLowerCase());
+  });
 
   return (
     <div>
@@ -53,7 +128,10 @@ const Rides = () => {
           </p>
         </div>
 
-        <button className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-xl font-semibold transition">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-xl font-semibold transition"
+        >
           <Plus className="w-4 h-4" />
           Add Ride
         </button>
@@ -62,11 +140,25 @@ const Rides = () => {
       {/* Search */}
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-5">
-        <input
-          type="text"
-          placeholder="Search rides..."
-          className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-yellow-400"
-        />
+        <div className="flex gap-3">
+          <select
+            value={searchType}
+            onChange={(e) => setSearchType(e.target.value)}
+            className="border rounded-lg px-4 py-2"
+          >
+            <option value="pickup">Location Wise</option>
+
+            <option value="destination">Destination Wise</option>
+          </select>
+
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search rides..."
+            className="flex-1 border border-gray-200 rounded-lg px-4 py-2"
+          />
+        </div>
       </div>
 
       {/* RIDES TABLE */}
@@ -120,7 +212,7 @@ const Rides = () => {
                 </td>
               </tr>
             ) : (
-              rides.map((ride) => {
+              filteredRides.map((ride) => {
                 const rideStatus = (ride.status || "").toLowerCase().trim();
 
                 return (
@@ -211,11 +303,23 @@ const Rides = () => {
                           Track
                         </button>
 
-                        <button className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
-                          <Eye className="w-4 h-4" />
+                        <button
+                          onClick={() => {
+                            setSelectedRide({
+                              ...ride,
+                            });
+
+                            setShowEditModal(true);
+                          }}
+                          className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100"
+                        >
+                          <Pencil className="w-4 h-4" />
                         </button>
 
-                        <button className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+                        <button
+                          onClick={() => deleteRide(ride.id)}
+                          className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -227,8 +331,286 @@ const Rides = () => {
           </tbody>
         </table>
       </div>
+
+       {/* Add rides */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-[500px]">
+            <h2 className="text-xl font-bold mb-5">Add Ride</h2>
+
+            <div className="space-y-3">
+              <select
+                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                value={rideForm.user_id}
+                onChange={(e) =>
+                  setRideForm({
+                    ...rideForm,
+                    user_id: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select User</option>
+
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                value={rideForm.driver_id}
+                onChange={(e) =>
+                  setRideForm({
+                    ...rideForm,
+                    driver_id: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Driver</option>
+
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                placeholder="Pickup Location"
+                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                onChange={(e) =>
+                  setRideForm({
+                    ...rideForm,
+                    pickup_location: e.target.value,
+                  })
+                }
+              />
+
+              <input
+                placeholder="Destination"
+                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                onChange={(e) =>
+                  setRideForm({
+                    ...rideForm,
+                    dropoff_location: e.target.value,
+                  })
+                }
+              />
+
+              <input
+                type="number"
+                placeholder="Distance KM"
+                value={rideForm.distance_km}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                onChange={(e) => {
+                  const distance = e.target.value;
+
+                  setRideForm({
+                    ...rideForm,
+                    distance_km: distance,
+                    fare: distance
+                      ? (parseFloat(distance) * 80).toFixed(2)
+                      : "",
+                  });
+                }}
+              />
+
+              <input
+                type="text"
+                value={`Rs. ${rideForm.fare || 0}`}
+                className=" w-full border p-3 rounded-lg bg-gray-100 text-gray-700 font-semibold"
+                onChange={(e) => {
+                  const distance = e.target.value;
+
+                  setRideForm({
+                    ...rideForm,
+                    distance_km: distance,
+                    fare: distance
+                      ? (parseFloat(distance) * 80).toFixed(2)
+                      : "",
+                  });
+                }}
+              />
+
+              <select
+                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                onChange={(e) =>
+                  setRideForm({
+                    ...rideForm,
+                    status: e.target.value,
+                  })
+                }
+              >
+                <option value="pending">Pending</option>
+
+                <option value="accepted">Accepted</option>
+
+                <option value="active">Active</option>
+
+                <option value="completed">Completed</option>
+
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={addRide}
+                className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
+              >
+                Save Ride
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit rides */}
+
+      {showEditModal && selectedRide && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-[550px]">
+            <h2 className="text-xl font-bold mb-5">Edit Ride</h2>
+
+            <div className="space-y-3">
+              {/* User */}
+
+              <select
+                value={selectedRide.user_id}
+                onChange={(e) =>
+                  setSelectedRide({
+                    ...selectedRide,
+                    user_id: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              >
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Driver */}
+
+              <select
+                value={selectedRide.driver_id}
+                onChange={(e) =>
+                  setSelectedRide({
+                    ...selectedRide,
+                    driver_id: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              >
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Pickup */}
+
+              <input
+                value={selectedRide.pickup_location}
+                onChange={(e) =>
+                  setSelectedRide({
+                    ...selectedRide,
+                    pickup_location: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              />
+
+              {/* Destination */}
+
+              <input
+                value={selectedRide.dropoff_location}
+                onChange={(e) =>
+                  setSelectedRide({
+                    ...selectedRide,
+                    dropoff_location: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              />
+
+              {/* Distance */}
+
+              <input
+                type="number"
+                value={selectedRide.distance_km}
+                onChange={(e) => {
+                  const distance = e.target.value;
+
+                  setSelectedRide({
+                    ...selectedRide,
+                    distance_km: distance,
+                    fare: (parseFloat(distance || 0) * 80).toFixed(2),
+                  });
+                }}
+                className="w-full border p-3 rounded-lg"
+              />
+
+              {/* Fare */}
+
+              <input
+                value={`Rs. ${selectedRide.fare}`}
+                readOnly
+                className="w-full border p-3 rounded-lg bg-gray-100"
+              />
+
+              {/* Status */}
+
+              <select
+                value={selectedRide.status}
+                onChange={(e) =>
+                  setSelectedRide({
+                    ...selectedRide,
+                    status: e.target.value,
+                  })
+                }
+                className="w-full border p-3 rounded-lg"
+              >
+                <option value="pending">Pending</option>
+                <option value="accepted">Accepted</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={updateRide}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                Update Ride
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default Rides;
