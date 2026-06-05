@@ -196,7 +196,7 @@ function Register() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="e.g. +1 555 555 5555"
+                placeholder="e.g. +94 77 123 4567"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
               />
             </div>

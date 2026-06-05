@@ -232,6 +232,22 @@ const Login = () => {
                 />
               </div>
 
+              <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  Remember me
+                </label>
+                <a
+                  href="#"
+                  className="text-blue-900 hover:underline"
+                >
+                  Forgot Password?
+                </a>
+              </div>
+
               <button
                 onClick={driverLogin}
                 className="w-full bg-blue-900 hover:bg-blue-800 text-white py-4 rounded-2xl text-xl font-bold"
@@ -259,6 +275,26 @@ const Login = () => {
                   Send OTP
                 </button>
               </div>
+
+              <div className="flex items-center my-8">
+                <div className="flex-1 h-px bg-gray-300"></div>
+                <span className="px-4 text-gray-400 text-sm">OR</span>
+                <div className="flex-1 h-px bg-gray-300"></div>
+              </div>
+
+              <div className="text-center text-gray-500 text-base">
+                Don't have an account?{' '}
+                <a
+                  href="/register?driver=true"
+                  className="text-blue-900 font-bold hover:underline"
+                >
+                  Create Account
+                </a>
+              </div>
+
+              <p className="text-gray-500 text-xs mt-5 text-center">
+                Drivers must be approved before accessing the dashboard.
+              </p>
             </>
           )}
         </div>
