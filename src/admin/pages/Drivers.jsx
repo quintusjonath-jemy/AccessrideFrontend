@@ -140,6 +140,31 @@ const Drivers = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this driver?",
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const res = await axios.delete(
+        `http://localhost/admin/api/drivers.php?id=${id}`,
+      );
+
+      if (res.data.success) {
+        const refresh = await axios.get(
+          "http://localhost/admin/api/drivers.php",
+        );
+
+        setDrivers(refresh.data);
+
+        alert("Driver deleted successfully");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const toggleDriverStatus = async (driver) => {
     const action =
       driver.status?.toLowerCase() === "blocked" ? "unblock" : "block";
@@ -311,7 +336,7 @@ const Drivers = () => {
                           onClick={() => toggleDriverStatus(driver)}
                           className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
                             driver.status?.toLowerCase() === "blocked"
-                              ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200" 
+                              ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
                               : "bg-blue-100 text-blue-700 hover:bg-blue-200"
                           }`}
                         >
@@ -332,7 +357,10 @@ const Drivers = () => {
                           <Pencil className="w-4 h-4" />
                         </button>
 
-                        <button className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+                        <button
+                          onClick={() => handleDelete(driver.id)}
+                          className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
