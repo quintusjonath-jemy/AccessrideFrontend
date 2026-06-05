@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Driver Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-300 flex justify-center">
+
+<div class="w-[360px] bg-white min-h-screen shadow-lg">
+
+  <!-- HEADER -->
+  <div class="flex justify-between items-center px-4 py-2 border-b border-dashed">
+    <h1 class="text-[#00236F] font-bold text-lg">🚕 AccessRide</h1>
+    <img src="/src/Driverdashboard/drivering.webp" class="w-8 h-8 rounded-full">
+  </div>
+
+  <!-- GREETING -->
+  <div class="bg-gray-100 p-4">
+    <div class="flex justify-between">
+      <div>
+        <h2 class="text-[#00236F] font-bold">Good Morning, John</h2>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="bg-yellow-400 text-xs px-2 py-1 rounded">⭐ 4.8</span>
+          <span class="text-xs text-gray-600">1,240 Trips</span>
+        </div>
+      </div>
+
+      <div class="text-right">
+        <p class="text-xs text-gray-500">Today's Earnings</p>
+        <p class="text-green-600 font-bold text-lg">Rs. 142.50</p>
+        <p class="text-xs text-gray-500">9 Trips completed</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="bg-white p-3 m-3 rounded-xl shadow flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+      <p>Status: Online</p>
+    </div>
+
+    <div class="w-10 h-5 bg-green-500 rounded-full relative cursor-pointer">
+      <div class="w-4 h-4 bg-white rounded-full absolute right-1 top-0.5"></div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="h-60 bg-gray-300 relative">
+    <img src="/src/Driverdashboard/mapimg.jpg"
+         class="w-full h-full object-cover opacity-60">
+  </div>
+
+  <!-- REQUEST CARD -->
+  <div class="bg-white m-3 p-4 rounded-2xl shadow-lg -mt-16 relative">
+
+    <div class="flex justify-between mb-3">
+      <span class="bg-[#00236F] text-white text-xs px-3 py-1 rounded-full">
+        NEW REQUEST
+      </span>
+      <p class="font-bold text-[#00236F] text-lg">Rs. 672.00</p>
+    </div>
+
+    <!-- PICKUP -->
+    <div class="mb-2 text-sm">
+      <p class="text-gray-500">Pickup</p>
+      <p class="font-medium">Colombo Public Library</p>
+    </div>
+
+    <!-- DROPOFF -->
+    <div class="mb-3 text-sm">
+      <p class="text-gray-500">Dropoff</p>
+      <p class="font-medium">National Hospital, Colombo</p>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="flex justify-between text-xs text-gray-600 mb-4">
+      <p>📍 8.4 km</p>
+      <p>⏱ 14 mins</p>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="flex gap-3">
+      <button onclick="rejectRide()" 
+        class="flex-1 border border-red-500 text-red-500 py-2 rounded-lg">
+        REJECT
+      </button>
+
+      <button onclick="acceptRide()" 
+        class="flex-1 bg-green-500 text-white py-2 rounded-lg">
+        ACCEPT RIDE
+      </button>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="flex justify-around py-3 border-t bg-white">
+    <div class="text-yellow-500 text-center">
+      🏠
+      <p class="text-xs">Home</p>
+    </div>
+    <div class="text-gray-500 text-center">
+      🚗
+      <p class="text-xs">Trips</p>
+    </div>
+    <div class="text-gray-500 text-center">
+      💰
+      <p class="text-xs">Earnings</p>
+    </div>
+    <div class="text-gray-500 text-center">
+      👤
+      <p class="text-xs">Profile</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function acceptRide() {
+  alert("Ride Accepted");
+
+  // backend call (later)
+  fetch("http://localhost/AccessrideBackend/accept.php", {
+    method: "POST"
+  });
+}
+
+function rejectRide() {
+  alert("Ride Rejected");
+
+  fetch("http://localhost/AccessrideBackend/reject.php", {
+    method: "POST"
+  });
+}
+</script>
+
+</body>
+</html>
