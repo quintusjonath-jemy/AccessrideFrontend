@@ -4,8 +4,7 @@ import mapboxgl from "mapbox-gl";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
-mapboxgl.accessToken =
-  "";
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;;
 
 const LiveMap = ({ rides }) => {
   const mapContainer = useRef(null);
