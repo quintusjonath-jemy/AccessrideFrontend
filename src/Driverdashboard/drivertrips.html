@@ -106,7 +106,7 @@
       <div class="flex-1 bg-yellow-200 p-3 rounded-xl">
         <h4 class="font-semibold text-sm">Keep Vehicle Clean</h4>
         <p class="text-xs mt-1">Clean interiors improve ratings</p>
-        <button class="mt-2 bg-black text-white text-xs px-3 py-1 rounded">
+        <button type="button" class="mt-2 bg-black text-white text-xs px-3 py-1 rounded">
           Learn More
         </button>
       </div>
@@ -114,7 +114,7 @@
       <div class="flex-1 bg-red-200 p-3 rounded-xl">
         <h4 class="font-semibold text-sm">Greet Passengers</h4>
         <p class="text-xs mt-1">Polite behavior increases tips</p>
-        <button class="mt-2 bg-red-700 text-white text-xs px-3 py-1 rounded">
+        <button type="button" class="mt-2 bg-red-700 text-white text-xs px-3 py-1 rounded">
           View Tips
         </button>
       </div>
@@ -124,25 +124,37 @@
 
   <!-- BOTTOM NAV -->
   <div class="flex justify-around py-3 border-t mt-6 bg-white">
-    <div class="text-gray-500 text-center">
+    <button type="button" onclick="navigate('home')" class="text-gray-500 text-center hover:text-[#00236F]">
       🏠
       <p class="text-xs">Home</p>
-    </div>
-    <div class="text-yellow-500 text-center">
+    </button>
+    <button type="button" onclick="navigate('trips')" class="text-yellow-500 text-center">
       🚗
       <p class="text-xs">Trips</p>
-    </div>
-    <div class="text-gray-500 text-center">
+    </button>
+    <button type="button" onclick="navigate('earnings')" class="text-gray-500 text-center hover:text-[#00236F]">
       💰
       <p class="text-xs">Earnings</p>
-    </div>
-    <div class="text-gray-500 text-center">
+    </button>
+    <button type="button" onclick="navigate('profile')" class="text-gray-500 text-center hover:text-[#00236F]">
       👤
       <p class="text-xs">Profile</p>
-    </div>
+    </button>
   </div>
 
 </div>
+
+<script>
+function navigate(section) {
+  if (section === 'home') {
+    window.location.href = 'driverdashboard.html';
+  } else if (section === 'trips') {
+    window.location.href = 'drivertrips.html';
+  } else {
+    alert(`Navigating to ${section.charAt(0).toUpperCase() + section.slice(1)}`);
+  }
+}
+</script>
 
 </body>
 </html>
