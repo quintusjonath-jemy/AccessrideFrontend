@@ -38,12 +38,12 @@
   <!-- STATUS -->
   <div class="bg-white p-3 m-3 rounded-xl shadow flex justify-between items-center">
     <div class="flex items-center gap-2">
-      <span id="statusIndicator" class="w-3 h-3 bg-green-500 rounded-full"></span>
-      <p id="statusText">Status: Online</p>
+      <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+      <p>Status: Online</p>
     </div>
 
-    <div id="statusToggle" onclick="toggleStatus()" class="w-10 h-5 bg-green-500 rounded-full relative cursor-pointer transition-colors">
-      <div id="toggleSlider" class="w-4 h-4 bg-white rounded-full absolute right-1 top-0.5 transition-all"></div>
+    <div class="w-10 h-5 bg-green-500 rounded-full relative cursor-pointer">
+      <div class="w-4 h-4 bg-white rounded-full absolute right-1 top-0.5"></div>
     </div>
   </div>
 
@@ -119,34 +119,6 @@
 </div>
 
 <script>
-let isOnline = true;
-
-function toggleStatus() {
-  isOnline = !isOnline;
-  const statusToggle = document.getElementById('statusToggle');
-  const toggleSlider = document.getElementById('toggleSlider');
-  const statusIndicator = document.getElementById('statusIndicator');
-  const statusText = document.getElementById('statusText');
-
-  if (isOnline) {
-    statusToggle.classList.remove('bg-gray-400');
-    statusToggle.classList.add('bg-green-500');
-    toggleSlider.classList.remove('left-1');
-    toggleSlider.classList.add('right-1');
-    statusIndicator.classList.remove('bg-gray-500');
-    statusIndicator.classList.add('bg-green-500');
-    statusText.textContent = 'Status: Online';
-  } else {
-    statusToggle.classList.remove('bg-green-500');
-    statusToggle.classList.add('bg-gray-400');
-    toggleSlider.classList.remove('right-1');
-    toggleSlider.classList.add('left-1');
-    statusIndicator.classList.remove('bg-green-500');
-    statusIndicator.classList.add('bg-gray-500');
-    statusText.textContent = 'Status: Offline';
-  }
-}
-
 function acceptRide() {
   alert("Ride Accepted");
 
@@ -165,13 +137,8 @@ function rejectRide() {
 }
 
 function navigate(section) {
-  if (section === 'tips') {
-    window.location.href = 'drivertrips.html';
-  } else if (section === 'home') {
-    window.location.href = 'driverdashboard.html';
-  } else {
-    alert(`Navigating to ${section.charAt(0).toUpperCase() + section.slice(1)}`);
-  }
+  alert(`Navigating to ${section.charAt(0).toUpperCase() + section.slice(1)}`);
+  // Add route handling or page update logic here
 }
 // Load ride automatically
 window.onload = function() {
