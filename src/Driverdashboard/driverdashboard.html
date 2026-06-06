@@ -131,7 +131,7 @@ function acceptRide() {
 function rejectRide() {
   alert("Ride Rejected");
 
-  fetch("http://localhost/AccessrideBackend/reject.php", {
+  fetch("http://localhost/AccessrideBackend/Driverdashboard/reject.php", {
     method: "POST"
   });
 }
@@ -140,6 +140,19 @@ function navigate(section) {
   alert(`Navigating to ${section.charAt(0).toUpperCase() + section.slice(1)}`);
   // Add route handling or page update logic here
 }
+// Load ride automatically
+window.onload = function() {
+  fetch("http://localhost/AccessrideBackend/DriverdashboardgetRide.php")
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+
+      if(data.pickup){
+        document.querySelector("#pickup").innerText = data.pickup;
+        document.querySelector("#dropoff").innerText = data.dropoff;
+      }
+    });
+};
 </script>
 
 </body>
