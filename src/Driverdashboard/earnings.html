@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Earnings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-300 flex justify-center">
+
+<div class="w-[360px] bg-white min-h-screen shadow-lg">
+
+  <!-- HEADER -->
+  <div class="flex justify-between items-center px-4 py-2 border-b">
+    <h1 class="text-[#00236F] font-bold">🚕 AccessRide</h1>
+    <img src="" class="w-8 h-8 rounded-full">
+  </div>
+
+  <!-- GREETING -->
+  <div class="bg-gray-100 p-4">
+    <div class="flex justify-between">
+      <div>
+        <h2 class="text-[#00236F] font-bold">Hello, Driver</h2>
+        <p class="text-sm text-gray-600">Weekly earnings summary</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs text-gray-500">Status</p>
+        <p class="text-green-600 font-bold">Online</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EARNINGS CARD -->
+  <div class="bg-[#00236F] text-white p-5 rounded-2xl m-3 shadow-lg">
+    <p class="text-sm opacity-80">Active Period</p>
+    <h2 class="text-2xl font-semibold mb-3">Weekly Earnings</h2>
+
+    <div class="text-4xl font-bold mb-4">
+      Rs. 12,450.00
+    </div>
+
+    <div class="bg-blue-800 p-3 rounded-xl flex justify-between items-center">
+      <span>Payout scheduled: Mon</span>
+      <span class="text-xl">??</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="grid grid-cols-2 gap-3 px-3 mb-4">
+    <div class="bg-white p-4 rounded-2xl shadow">
+      <p class="text-gray-500 text-sm">Trips</p>
+      <h2 class="text-2xl font-bold">42</h2>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl shadow">
+      <p class="text-gray-500 text-sm">Online</p>
+      <h2 class="text-2xl font-bold">34h</h2>
+    </div>
+  </div>
+
+  <!-- BREAKDOWN -->
+  <div class="bg-white p-5 rounded-2xl shadow mx-3 mb-4">
+    <p class="font-semibold mb-3">Earnings Breakdown</p>
+    <div class="h-28 bg-gray-200 rounded-3xl flex items-center justify-center text-gray-500">
+      Chart preview here
+    </div>
+  </div>
+
+  <!-- RECENT TRANSACTIONS -->
+  <div class="bg-white p-5 rounded-3xl shadow mx-3 mb-4">
+    <div class="flex justify-between mb-4">
+      <h2 class="font-semibold">Recent Transactions</h2>
+      <button class="text-[#00236F] text-sm font-medium">View All</button>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-semibold">Today, 10:30 AM</p>
+          <p class="text-sm text-gray-500">Trip #AR-9402</p>
+        </div>
+        <p class="text-green-600 font-semibold">+ Rs. 640.00</p>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-semibold">Today, 08:15 AM</p>
+          <p class="text-sm text-gray-500">Trip #AR-9398</p>
+        </div>
+        <p class="text-green-600 font-semibold">+ Rs. 420.00</p>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="font-semibold">Yesterday, 11:45 PM</p>
+          <p class="text-sm text-gray-500">Trip #AR-9350</p>
+        </div>
+        <p class="text-green-600 font-semibold">+ Rs. 1,120.00</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP CARD -->
+  <div class="bg-white p-4 rounded-3xl shadow mx-3 mb-20">
+    <div class="flex justify-between items-center">
+      <span class="text-gray-600">Need help with earnings?</span>
+      <button class="bg-gray-100 px-4 py-2 rounded-2xl text-sm text-[#00236F] font-semibold">Get Support</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER NOTE removed -->
+
+<!-- BOTTOM NAV (sized to page width) -->
+<div class="w-[360px] mx-auto bg-white shadow p-3 flex justify-around fixed bottom-0 left-0 right-0">
+  <button onclick="goPage('home')" class="flex flex-col items-center text-[#00236F]">
+    <span class="text-xl">🏠</span>
+    <p class="text-xs">Home</p>
+  </button>
+  <button onclick="goPage('trips')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+    <span class="text-xl">🚗</span>
+    <p class="text-xs">Trips</p>
+  </button>
+  <button class="flex flex-col items-center text-yellow-500 font-bold">
+    <span class="text-xl">💰</span>
+    <p class="text-xs">Earnings</p>
+  </button>
+  <button onclick="goPage('profile')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+    <span class="text-xl">👤</span>
+    <p class="text-xs">Profile</p>
+  </button>
+</div>
+
+<script>
+function goPage(page) {
+  switch (page) {
+    case 'home':
+      window.location.href = '/src/Driverdashboard/driverdashboard.html';
+      break;
+    case 'trips':
+      window.location.href = '/src/Driverdashboard/drivertrips.html';
+      break;
+    case 'earnings':
+      window.location.href = '/src/Driverdashboard/earnings.html';
+      break;
+    case 'profile':
+      window.location.href = '/src/Driverdashboard/driverdashboard.html#profile';
+      break;
+    default:
+      console.warn('Unknown page:', page);
+  }
+}
+</script>
+
+</body>
+</html>
