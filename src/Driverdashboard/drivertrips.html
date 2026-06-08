@@ -13,7 +13,7 @@
   <!-- HEADER -->
   <div class="flex justify-between items-center px-4 py-2 border-b">
     <h1 class="text-[#00236F] font-bold">🚕 AccessRide</h1>
-    <img src="/src/Driverdashboard/drivering.webp" class="w-8 h-8 rounded-full">
+    <img src="" class="w-8 h-8 rounded-full">
   </div>
 
   <!-- SECTION TITLE -->
@@ -124,19 +124,19 @@
 
   <!-- BOTTOM NAV -->
   <div class="flex justify-around py-3 border-t mt-6 bg-white">
-    <button type="button" onclick="goPage('home')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+    <button type="button" onclick="navigate('home')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
       <span class="text-xl">🏠</span>
       <p class="text-xs">Home</p>
     </button>
-    <button type="button" onclick="goPage('trips')" class="flex flex-col items-center text-yellow-500">
+    <button type="button" onclick="navigate('trips')" class="flex flex-col items-center text-yellow-500">
       <span class="text-xl">🚗</span>
       <p class="text-xs">Trips</p>
     </button>
-    <button type="button" onclick="goPage('earnings')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+    <button type="button" onclick="navigate('earnings')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
       <span class="text-xl">💰</span>
       <p class="text-xs">Earnings</p>
     </button>
-    <button type="button" onclick="goPage('profile')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+    <button type="button" onclick="navigate('profile')" class="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
       <span class="text-xl">👤</span>
       <p class="text-xs">Profile</p>
     </button>
@@ -145,22 +145,11 @@
 </div>
 
 <script>
-function goPage(page) {
-  switch (page) {
-    case 'home':
-      window.location.href = '/src/Driverdashboard/driverdashboard.html';
-      break;
-    case 'trips':
-      window.location.href = '/src/Driverdashboard/drivertrips.html';
-      break;
-    case 'earnings':
-      window.location.href = '/src/Driverdashboard/earnings.html';
-      break;
-    case 'profile':
-      window.location.href = '/src/Driverdashboard/driverdashboard.html#profile';
-      break;
-    default:
-      console.warn('Unknown page:', page);
+function navigate(section) {
+  if (section === 'home') {
+    window.location.href = '/src/Driverdashboard/driverdashboard.html';
+  } else {
+    // Add route handling for other sections
   }
 }
 </script>
