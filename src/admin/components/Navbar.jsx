@@ -82,7 +82,7 @@ const Navbar = () => {
         />
       </div>
 
-      <div className="flex items-center gap-5">
+      <div ref={dropdownRef} className="flex items-center gap-5">
         {/* Clock */}
 
         <div className="hidden lg:block">
@@ -106,47 +106,78 @@ const Navbar = () => {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-3 w-[380px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden">
-              <div className="p-4 border-b bg-gray-50">
-                <h3 className="font-bold text-lg">Notifications</h3>
+            <div className="absolute right-0 mt-3 w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+              {/* Header */}
+              <div className="p-4 bg-gradient-to-r from-gray-50 to-white">
+                <h3 className="font-bold text-lg text-gray-800">
+                  Notifications
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  Latest system updates
+                </p>
               </div>
 
+              {/* Body */}
               <div className="max-h-96 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="p-5 text-gray-500 text-center">
-                    No notifications
+                  <p className="p-6 text-gray-500 text-center text-sm">
+                    No notifications yet
                   </p>
                 ) : (
                   notifications.map((item) => (
                     <div
                       key={item.id}
-                      className="p-4 border-b hover:bg-gray-50 transition"
+                      className="p-4 border-gray-100 hover:bg-gray-50 transition flex gap-3"
                     >
-                      <div className="flex justify-between mb-2">
-                        <div>
-                          {item.type === "SOS" ? (
-                            <AlertTriangle size={20} className="text-red-500" />
-                          ) : item.type === "Ride" ? (
-                            <Car size={20} className="text-blue-500" />
-                          ) : (
-                            <User size={20} className="text-yellow-500" />
-                          )}
-                        </div>
-
-                        <span className="text-xs text-gray-400">
-                          {item.created_at}
-                        </span>
+                      {/* Icon */}
+                      <div className="mt-0.5">
+                        {item.type === "SOS" ? (
+                          <AlertTriangle size={20} className="text-red-500" />
+                        ) : item.type === "Ride" ? (
+                          <Car size={20} className="text-blue-500" />
+                        ) : (
+                          <User size={20} className="text-yellow-500" />
+                        )}
                       </div>
 
-                      <p className="text-sm text-gray-600">{item.message}</p>
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-sm font-medium text-gray-800 leading-snug">
+                            {item.message}
+                          </p>
+
+                          <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                            {item.created_at}
+                          </span>
+                        </div>
+
+                        <div className="mt-1">
+                          <span
+                            className={`text-[11px] px-2 py-1 rounded-full font-medium ${
+                              item.type === "SOS"
+                                ? "bg-red-50 text-red-600"
+                                : item.type === "Ride"
+                                  ? "bg-blue-50 text-blue-600"
+                                  : "bg-yellow-50 text-yellow-600"
+                            }`}
+                          >
+                            {item.type}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="p-3 text-center border-t">
-                <Link to="/alerts" className="text-blue-600 font-medium">
-                  View All Alerts
+              {/* Footer */}
+              <div className="p-3 text-center bg-gray-50">
+                <Link
+                  to="/alerts"
+                  className="text-blue-600 font-semibold text-sm hover:text-blue-700 transition"
+                >
+                  View All Alerts →
                 </Link>
               </div>
             </div>
@@ -186,26 +217,52 @@ const Navbar = () => {
           </button>
 
           {openMenu && (
-            <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border overflow-hidden z-50">
+            <div className="absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+              {/* Profile */}
               <Link
                 to="/settings/profile"
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                onClick={() => setOpenMenu(false)}
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition"
               >
-                <UserCircle size={18} />
-                My Profile
+                <UserCircle size={18} className="text-gray-500" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">My Profile</span>
+                  <span className="text-xs text-gray-400">
+                    View account details
+                  </span>
+                </div>
               </Link>
 
+              {/* Settings */}
               <Link
                 to="/settings"
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                onClick={() => setOpenMenu(false)}
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition border-t border-gray-100"
               >
-                <Settings size={18} />
-                Settings
+                <Settings size={18} className="text-gray-500" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Settings</span>
+                  <span className="text-xs text-gray-400">
+                    System preferences
+                  </span>
+                </div>
               </Link>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50">
+              {/* Logout */}
+              <button
+                onClick={() => {
+                  setOpenMenu(false);
+                  // your logout logic here
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition border-t border-gray-100"
+              >
                 <LogOut size={18} />
-                Logout
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-medium">Logout</span>
+                  <span className="text-xs text-red-400">
+                    Sign out of your account
+                  </span>
+                </div>
               </button>
             </div>
           )}
