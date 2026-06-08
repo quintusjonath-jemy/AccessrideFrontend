@@ -152,21 +152,18 @@ const Users = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-8">
       {/* Header */}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="bg-white/80 backdrop-blur-md border border-gray-100 rounded-2xl p-6 shadow-sm flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-[#0B1929]">
-            Users Management
-          </h1>
-
+          <h1 className="text-3xl font-bold text-gray-800">Users Management</h1>
           <p className="text-gray-500 mt-1">Manage blind assistance users</p>
         </div>
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-xl font-semibold"
+          className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 px-5 py-2 rounded-xl font-semibold shadow-md hover:scale-105 transition"
         >
           <UserPlus className="w-4 h-4" />
           Add User
@@ -175,13 +172,13 @@ const Users = () => {
 
       {/* Search */}
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-5">
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
         <input
           type="text"
           placeholder="Search users..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-yellow-400"
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-yellow-400"
         />
       </div>
 
@@ -285,59 +282,82 @@ const Users = () => {
       {/* Add User Modal */}
 
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl w-[450px]">
-            <h2 className="text-xl font-bold mb-5">Add New User</h2>
-
-            <div className="space-y-4">
-              <input
-                placeholder="Name"
-                value={newUser.name}
-                onChange={(e) =>
-                  setNewUser({
-                    ...newUser,
-                    name: e.target.value,
-                  })
-                }
-                className="w-full border p-3 rounded-lg"
-              />
-
-              <input
-                placeholder="Email"
-                value={newUser.email}
-                onChange={(e) =>
-                  setNewUser({
-                    ...newUser,
-                    email: e.target.value,
-                  })
-                }
-                className="w-full border p-3 rounded-lg"
-              />
-
-              <input
-                placeholder="Location"
-                value={newUser.location}
-                onChange={(e) =>
-                  setNewUser({
-                    ...newUser,
-                    location: e.target.value,
-                  })
-                }
-                className="w-full border p-3 rounded-lg"
-              />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 p-6">
+            {/* Header */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Add New User</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Create a new user account in the system
+              </p>
             </div>
 
-            <div className="flex justify-end gap-3 mt-5">
+            {/* Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-gray-500">
+                  Full Name
+                </label>
+                <input
+                  placeholder="Enter full name"
+                  value={newUser.name}
+                  onChange={(e) =>
+                    setNewUser({
+                      ...newUser,
+                      name: e.target.value,
+                    })
+                  }
+                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500">
+                  Email Address
+                </label>
+                <input
+                  placeholder="Enter email address"
+                  value={newUser.email}
+                  onChange={(e) =>
+                    setNewUser({
+                      ...newUser,
+                      email: e.target.value,
+                    })
+                  }
+                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500">
+                  Location
+                </label>
+                <input
+                  placeholder="Enter location"
+                  value={newUser.location}
+                  onChange={(e) =>
+                    setNewUser({
+                      ...newUser,
+                      location: e.target.value,
+                    })
+                  }
+                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                />
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded-lg"
+                className="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium"
               >
                 Cancel
               </button>
 
               <button
                 onClick={addUser}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg"
+                className="px-5 py-2.5 rounded-xl bg-yellow-500 text-white hover:bg-yellow-600 shadow-md transition font-semibold"
               >
                 Add User
               </button>
@@ -349,18 +369,23 @@ const Users = () => {
       {/* Edit User Modal */}
 
       {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-          <div className="bg-white w-[500px] rounded-2xl p-6 shadow-xl">
-            <h2 className="text-xl font-bold mb-5">Edit User</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+            {/* HEADER */}
+            <div className="px-6 py-4 bg-gray-50">
+              <h2 className="text-xl font-bold text-gray-800">Edit User</h2>
+              <p className="text-sm text-gray-500">Update user information</p>
+            </div>
 
-            <div className="space-y-4">
+            {/* FORM */}
+            <div className="p-6 space-y-4">
               <input
                 type="text"
                 name="name"
                 value={selectedUser.name}
                 onChange={handleEditChange}
-                className="w-full border p-3 rounded-lg"
                 placeholder="Name"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               />
 
               <input
@@ -368,8 +393,8 @@ const Users = () => {
                 name="email"
                 value={selectedUser.email}
                 onChange={handleEditChange}
-                className="w-full border p-3 rounded-lg"
                 placeholder="Email"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               />
 
               <input
@@ -377,15 +402,15 @@ const Users = () => {
                 name="location"
                 value={selectedUser.location}
                 onChange={handleEditChange}
-                className="w-full border p-3 rounded-lg"
                 placeholder="Location"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               />
 
               <select
                 name="status"
                 value={selectedUser.status}
                 onChange={handleEditChange}
-                className="w-full border p-3 rounded-lg"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               >
                 <option value="active">Active</option>
                 <option value="emergency">Emergency</option>
@@ -393,17 +418,18 @@ const Users = () => {
               </select>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            {/* ACTIONS */}
+            <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded-lg"
+                className="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
               >
                 Cancel
               </button>
 
               <button
                 onClick={updateUser}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg"
+                className="px-5 py-2 rounded-xl bg-yellow-500 text-white font-semibold hover:bg-yellow-600 transition shadow-sm"
               >
                 Save Changes
               </button>
