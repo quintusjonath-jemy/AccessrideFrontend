@@ -1,8 +1,19 @@
-import { Bell, AlertTriangle, Car, User } from "lucide-react";
+import {
+  Bell,
+  AlertTriangle,
+  Car,
+  User,
+  Search,
+  ChevronDown,
+  Settings,
+  LogOut,
+  UserCircle,
+} from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import LiveClock from "./LiveClock";
+import { useCallback } from "react";
 
 const Navbar = () => {
   const [admin, setAdmin] = useState({});
@@ -19,17 +30,7 @@ const Navbar = () => {
       .catch((err) => console.log(err));
   }, []);
 
-  useEffect(() => {
-    fetchNotifications();
-
-    const interval = setInterval(() => {
-      fetchNotifications();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await axios.get("http://localhost/admin/api/alerts.php");
 
@@ -37,7 +38,15 @@ const Navbar = () => {
     } catch (err) {
       console.log(err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+
+    const interval = setInterval(fetchNotifications, 5000);
+
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   const dropdownRef = useRef(null);
 
@@ -57,79 +66,85 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="bg-white shadow-sm p-4 flex justify-between items-center">
-      <input
-        type="text"
-        placeholder="Search..."
-        className="bg-gray-100 px-4 py-2 rounded-lg outline-none w-80"
-      />
+    <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-40">
+      {/* Search */}
 
-      {/* NOTIFICATION */}
+      <div className="relative w-[420px]">
+        <Search
+          size={18}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+        />
+
+        <input
+          type="text"
+          placeholder="Search users, drivers, rides..."
+          className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-yellow-400 outline-none transition"
+        />
+      </div>
+
       <div className="flex items-center gap-5">
+        {/* Clock */}
+
+        <div className="hidden lg:block">
+          <LiveClock />
+        </div>
+
+        {/* Notifications */}
+
         <div ref={dropdownRef} className="relative">
-          {/* NOTIFICATION BELL */}
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-full hover:bg-gray-100"
+            className="relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition"
           >
-            <Bell size={22} className="text-black" />
+            <Bell size={20} />
 
             {notifications.filter((n) => n.is_read == 0).length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold min-w-[20px] h-5 px-1 rounded-full flex items-center justify-center">
                 {notifications.filter((n) => n.is_read == 0).length}
               </span>
             )}
           </button>
 
-          {/* NOTIFICATION DROPDOWN */}
           {showNotifications && (
-            <div className="absolute right-0 mt-3 w-96 bg-white rounded-2xl shadow-xl border z-50">
-              <div className="p-4 border-b">
+            <div className="absolute right-0 mt-3 w-[380px] bg-white rounded-2xl shadow-2xl border z-50 overflow-hidden">
+              <div className="p-4 border-b bg-gray-50">
                 <h3 className="font-bold text-lg">Notifications</h3>
               </div>
 
-              <div className="max-h-80 overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="p-4 text-gray-500">No notifications</p>
+                  <p className="p-5 text-gray-500 text-center">
+                    No notifications
+                  </p>
                 ) : (
                   notifications.map((item) => (
                     <div
                       key={item.id}
-                      className="p-4 border-b hover:bg-gray-50 cursor-pointer"
+                      className="p-4 border-b hover:bg-gray-50 transition"
                     >
-                      <div className="flex justify-between">
-                        <p
-                          className={`font-semibold ${
-                            item.type === "SOS"
-                              ? "text-red-600"
-                              : item.type === "Ride"
-                                ? "text-blue-600"
-                                : "text-yellow-600"
-                          }`}
-                        >
+                      <div className="flex justify-between mb-2">
+                        <div>
                           {item.type === "SOS" ? (
-                            <AlertTriangle className="text-red-500" />
+                            <AlertTriangle size={20} className="text-red-500" />
                           ) : item.type === "Ride" ? (
-                            <Car className="text-blue-500" />
+                            <Car size={20} className="text-blue-500" />
                           ) : (
-                            <User className="text-yellow-500" />
+                            <User size={20} className="text-yellow-500" />
                           )}
-                        </p>
+                        </div>
 
                         <span className="text-xs text-gray-400">
                           {item.created_at}
                         </span>
                       </div>
 
-                      <p className="text-sm text-gray-600 mt-1">
-                        {item.message}
-                      </p>
+                      <p className="text-sm text-gray-600">{item.message}</p>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="p-3 text-center">
+              <div className="p-3 text-center border-t">
                 <Link to="/alerts" className="text-blue-600 font-medium">
                   View All Alerts
                 </Link>
@@ -138,58 +153,62 @@ const Navbar = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* CLOCK */}
-          <LiveClock />
+        {/* Profile */}
 
-          {/* ADMIN PROFILE */}
-          <div className="flex items-center gap-3 hover:bg-gray-100 px-3 py-2 rounded-xl transition">
-            <img
-              src={
-                admin.profile_image
-                  ? `http://localhost/admin/uploads/${admin.profile_image}`
-                  : "https://via.placeholder.com/150"
-              }
-              alt="Admin"
-              className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
-            />
+        <div className="relative">
+          <button
+            onClick={() => setOpenMenu(!openMenu)}
+            className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2 transition"
+          >
+            <div className="relative">
+              <img
+                src={
+                  admin.profile_image
+                    ? `http://localhost/admin/uploads/${admin.profile_image}`
+                    : "https://via.placeholder.com/150"
+                }
+                alt="Admin"
+                className="w-11 h-11 rounded-full object-cover border-2 border-yellow-400"
+              />
 
-            <div>
-              <h4 className="font-semibold text-gray-800">{admin.name}</h4>
-
-              <p className="text-xs text-gray-500">Administrator</p>
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
             </div>
-            <div ref={dropdownRef} className="relative">
-              <button
-                onClick={() => setOpenMenu(!openMenu)}
-                className="flex items-center gap-3"
+
+            <div className="text-left hidden md:block">
+              <h4 className="font-semibold text-gray-800">
+                {admin.name || "Administrator"}
+              </h4>
+
+              <p className="text-xs text-gray-500">System Administrator</p>
+            </div>
+
+            <ChevronDown size={16} />
+          </button>
+
+          {openMenu && (
+            <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border overflow-hidden z-50">
+              <Link
+                to="/settings/profile"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
               >
-                ...
+                <UserCircle size={18} />
+                My Profile
+              </Link>
+
+              <Link
+                to="/settings"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+              >
+                <Settings size={18} />
+                Settings
+              </Link>
+
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50">
+                <LogOut size={18} />
+                Logout
               </button>
-
-              {openMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-50">
-                  <Link
-                    to="/settings/profile"
-                    className="block px-4 py-3 hover:bg-gray-50"
-                  >
-                    Profile
-                  </Link>
-
-                  <Link
-                    to="/settings"
-                    className="block px-4 py-3 hover:bg-gray-50"
-                  >
-                    Settings
-                  </Link>
-
-                  <button className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50">
-                    Logout
-                  </button>
-                </div>
-              )}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
