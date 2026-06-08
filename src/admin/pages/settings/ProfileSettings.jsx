@@ -67,70 +67,133 @@ const ProfileSettings = () => {
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex justify-center items-center h-[500px]">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Profile Settings</h1>
+    <div className="max-w-6xl mx-auto">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white mb-8 shadow-lg">
+        <h1 className="text-3xl font-bold">Admin Profile</h1>
+        <p className="text-blue-100 mt-2">
+          Manage your personal information and account settings
+        </p>
+      </div>
 
-      <img
-        src={
-          image
-            ? URL.createObjectURL(image)
-            : admin.profile_image
-              ? `http://localhost/admin/uploads/${admin.profile_image}`
-              : "https://via.placeholder.com/150"
-        }
-        alt="Profile"
-        className="w-24 h-24 rounded-full object-cover border"
-      />
-      <br />
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Profile Card */}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="name"
-          value={admin.name}
-          onChange={handleChange}
-          placeholder="Name"
-          className="w-full border p-3 rounded-lg"
-        />
+        <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="flex flex-col items-center">
+            <div className="relative">
+              <img
+                src={
+                  image
+                    ? URL.createObjectURL(image)
+                    : admin.profile_image
+                      ? `http://localhost/admin/uploads/${admin.profile_image}`
+                      : "https://via.placeholder.com/200"
+                }
+                alt="Profile"
+                className="w-40 h-40 rounded-full object-cover border-4 border-blue-100 shadow-lg"
+              />
 
-        <input
-          type="email"
-          name="email"
-          value={admin.email}
-          onChange={handleChange}
-          placeholder="Email"
-          className="w-full border p-3 rounded-lg"
-        />
+              <label className="absolute bottom-2 right-2 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-700">
+                ✎
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
 
-        <input
-          type="text"
-          name="phone"
-          value={admin.phone}
-          onChange={handleChange}
-          placeholder="Phone"
-          className="w-full border p-3 rounded-lg"
-        />
+            <h2 className="text-2xl font-bold mt-5 text-gray-800">
+              {admin.name}
+            </h2>
 
-        <input
-          className="border p-3"
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-        />
+            <p className="text-gray-500">System Administrator</p>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-5 py-3 rounded-lg"
-        >
-          Save Changes
-        </button>
-      </form>
+            <div className="w-full mt-6 space-y-4">
+              <div className="bg-gray-50 p-4 rounded-xl">
+                <p className="text-sm text-gray-500">Email</p>
+
+                <p className="font-medium text-gray-800">{admin.email}</p>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-xl">
+                <p className="text-sm text-gray-500">Phone</p>
+
+                <p className="font-medium text-gray-800">{admin.phone}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Edit Form */}
+
+        <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            Account Information
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-gray-600">
+                Full Name
+              </label>
+
+              <input
+                type="text"
+                name="name"
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-gray-600">
+                Email Address
+              </label>
+
+              <input
+                type="email"
+                name="email"
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2 text-sm font-semibold text-gray-600">
+                Phone Number
+              </label>
+
+              <input
+                type="text"
+                name="phone"
+                onChange={handleChange}
+                className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition-all"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default ProfileSettings;
