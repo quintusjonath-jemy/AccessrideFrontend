@@ -1,5 +1,14 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import {
+  Monitor,
+  Moon,
+  Sun,
+  RefreshCw,
+  Shield,
+  MapPinned,
+  Save,
+} from "lucide-react";
 
 function SystemSettings() {
   const [settings, setSettings] = useState({
@@ -9,6 +18,8 @@ function SystemSettings() {
     sos_enabled: 1,
     tracking_enabled: 1,
   });
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     axios
@@ -34,117 +45,182 @@ function SystemSettings() {
   };
 
   const handleSave = async () => {
-    const formData = new FormData();
+    setSaving(true);
 
-    formData.append("id", settings.id);
-    formData.append("theme", settings.theme);
-    formData.append("refresh_rate", settings.refresh_rate);
-    formData.append("sos_enabled", settings.sos_enabled);
-    formData.append("tracking_enabled", settings.tracking_enabled);
+    try {
+      const formData = new FormData();
 
-    await axios.post(
-      "http://localhost/admin/api/admin.php?action=system",
-      formData,
-    );
+      formData.append("id", settings.id);
+      formData.append("theme", settings.theme);
+      formData.append("refresh_rate", settings.refresh_rate);
+      formData.append("sos_enabled", settings.sos_enabled);
+      formData.append("tracking_enabled", settings.tracking_enabled);
 
-    alert("System settings updated");
+      await axios.post(
+        "http://localhost/admin/api/admin.php?action=system",
+        formData
+      );
+
+      alert("System settings updated successfully");
+    } catch (err) {
+      console.log(err);
+      alert("Failed to save settings");
+    }
+
+    setSaving(false);
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md">
-      <h1 className="text-2xl font-bold mb-6">System Settings</h1>
+    <div className="space-y-6">
+      {/* HEADER */}
 
-      <div className="space-y-6">
-        <div>
-          <label className="font-semibold block mb-3">Dashboard Theme</label>
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="bg-white/20 p-4 rounded-2xl">
+            <Monitor size={30} />
+          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div
+          <div>
+            <h1 className="text-3xl font-bold">System Settings</h1>
+
+            <p className="text-blue-100 mt-1">
+              Configure dashboard behavior and platform controls
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* THEME SETTINGS */}
+
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+        <h2 className="font-bold text-xl mb-5 flex items-center gap-2">
+          <Monitor size={20} />
+          Appearance
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          {/* LIGHT */}
+
+          <div
+            onClick={() =>
+              setSettings({
+                ...settings,
+                theme: "light",
+              })
+            }
+            className={`cursor-pointer rounded-2xl border-2 p-5 transition-all ${
+              settings.theme === "light"
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200"
+            }`}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <Sun className="text-yellow-500" />
+              {settings.theme === "light" && (
+                <span className="text-blue-600 font-medium">Selected</span>
+              )}
+            </div>
+
+            <div className="h-24 bg-white border rounded-xl mb-3"></div>
+
+            <h3 className="font-semibold">Light Theme</h3>
+
+            <p className="text-sm text-gray-500">
+              Clean and bright interface
+            </p>
+          </div>
+
+          {/* DARK */}
+
+          <div
+            onClick={() =>
+              setSettings({
+                ...settings,
+                theme: "dark",
+              })
+            }
+            className={`cursor-pointer rounded-2xl border-2 p-5 transition-all ${
+              settings.theme === "dark"
+                ? "border-indigo-500 bg-indigo-50"
+                : "border-gray-200"
+            }`}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <Moon className="text-indigo-600" />
+              {settings.theme === "dark" && (
+                <span className="text-indigo-600 font-medium">Selected</span>
+              )}
+            </div>
+
+            <div className="h-24 bg-gray-900 rounded-xl mb-3"></div>
+
+            <h3 className="font-semibold">Dark Theme</h3>
+
+            <p className="text-sm text-gray-500">
+              Comfortable for low-light usage
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* REFRESH RATE */}
+
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+        <h2 className="font-bold text-xl mb-5 flex items-center gap-2">
+          <RefreshCw size={20} />
+          Dashboard Refresh Rate
+        </h2>
+
+        <div className="grid grid-cols-3 gap-4">
+          {[5, 10, 30].map((rate) => (
+            <button
+              key={rate}
               onClick={() =>
                 setSettings({
                   ...settings,
-                  theme: "light",
+                  refresh_rate: rate,
                 })
               }
-              className={`cursor-pointer border-2 rounded-xl p-4 transition ${
-                settings.theme === "light"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200"
+              className={`p-5 rounded-2xl border-2 transition ${
+                settings.refresh_rate == rate
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <div className="w-full h-20 bg-white rounded-lg border mb-3"></div>
+              <h3 className="text-3xl font-bold">{rate}</h3>
 
-              <h3 className="font-semibold">Light Theme</h3>
-
-              <p className="text-sm text-gray-500">Bright dashboard layout</p>
-            </div>
-
-            <div
-              onClick={() =>
-                setSettings({
-                  ...settings,
-                  theme: "dark",
-                })
-              }
-              className={`cursor-pointer border-2 rounded-xl p-4 transition ${
-                settings.theme === "dark"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200"
-              }`}
-            >
-              <div className="w-full h-20 bg-gray-900 rounded-lg mb-3"></div>
-
-              <h3 className="font-semibold">Dark Theme</h3>
-
-              <p className="text-sm text-gray-500">Comfortable night mode</p>
-            </div>
-          </div>
+              <p className="text-sm">Seconds</p>
+            </button>
+          ))}
         </div>
 
-        <div>
-          <label className="font-semibold block mb-3">Live Refresh Rate</label>
-
-          <div className="grid grid-cols-3 gap-3">
-            {[5, 10, 30].map((rate) => (
-              <button
-                key={rate}
-                type="button"
-                onClick={() =>
-                  setSettings({
-                    ...settings,
-                    refresh_rate: rate,
-                  })
-                }
-                className={`p-4 rounded-xl border-2 transition ${
-                  settings.refresh_rate == rate
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <p className="text-2xl font-bold">{rate}</p>
-
-                <p className="text-sm">Seconds</p>
-              </button>
-            ))}
-          </div>
-
-          <p className="mt-3 text-sm text-gray-500">
-            Dashboard data updates every {settings.refresh_rate} seconds.
-          </p>
+        <div className="mt-4 bg-green-50 p-4 rounded-xl text-green-700">
+          Dashboard updates automatically every{" "}
+          <strong>{settings.refresh_rate}</strong> seconds.
         </div>
+      </div>
 
-        <div className="space-y-5">
-          <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+      {/* SECURITY SETTINGS */}
+
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+        <h2 className="font-bold text-xl mb-5 flex items-center gap-2">
+          <Shield size={20} />
+          Safety & Tracking
+        </h2>
+
+        <div className="space-y-4">
+          {/* SOS */}
+
+          <div className="flex justify-between items-center p-5 bg-gray-50 rounded-2xl">
             <div>
-              <h3 className="font-semibold">Enable SOS System</h3>
+              <h3 className="font-semibold">Emergency SOS System</h3>
+
               <p className="text-sm text-gray-500">
-                Receive emergency alerts from users
+                Allow blind users to trigger emergency alerts.
               </p>
             </div>
 
-            {/* Toggle */}
-
-            <label className="relative inline-flex items-center cursor-pointer">
+            <label className="relative inline-flex cursor-pointer">
               <input
                 type="checkbox"
                 name="sos_enabled"
@@ -153,21 +229,25 @@ function SystemSettings() {
                 className="sr-only peer"
               />
 
-              <div className="w-11 h-6 bg-gray-300 rounded-full peer  peer-checked:bg-green-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-all peer-checked:after:translate-x-5"></div>
+              <div className="w-14 h-7 bg-gray-300 rounded-full peer peer-checked:bg-red-500 after:absolute after:top-1 after:left-1 after:w-5 after:h-5 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-7"></div>
             </label>
           </div>
 
-          <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+          {/* TRACKING */}
+
+          <div className="flex justify-between items-center p-5 bg-gray-50 rounded-2xl">
             <div>
-              <h3 className="font-semibold">Enable Driver Tracking</h3>
+              <h3 className="font-semibold flex items-center gap-2">
+                <MapPinned size={18} />
+                Driver Tracking
+              </h3>
+
               <p className="text-sm text-gray-500">
-                Track driver locations in real time
+                Enable real-time driver monitoring.
               </p>
             </div>
 
-            {/* Toggle */}
-
-            <label className="relative inline-flex items-center cursor-pointer">
+            <label className="relative inline-flex cursor-pointer">
               <input
                 type="checkbox"
                 name="tracking_enabled"
@@ -176,16 +256,23 @@ function SystemSettings() {
                 className="sr-only peer"
               />
 
-              <div className="w-11 h-6 bg-gray-300 rounded-full peer  peer-checked:bg-blue-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-all peer-checked:after:translate-x-5"></div>
+              <div className="w-14 h-7 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 after:absolute after:top-1 after:left-1 after:w-5 after:h-5 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-7"></div>
             </label>
           </div>
         </div>
+      </div>
 
+      {/* SAVE */}
+
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
         <button
           onClick={handleSave}
-          className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:scale-[1.02] transition"
+          disabled={saving}
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-semibold flex justify-center items-center gap-3 hover:shadow-lg transition"
         >
-          Save System Settings
+          <Save size={20} />
+
+          {saving ? "Saving..." : "Save System Settings"}
         </button>
       </div>
     </div>
