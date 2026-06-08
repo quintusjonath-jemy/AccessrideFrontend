@@ -6,142 +6,126 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-200 flex justify-center items-center min-h-screen">
 
-<!-- Header -->
-<div class="bg-white shadow p-4 flex justify-between items-center">
-  <h1 class="text-xl font-bold text-blue-900">AccessRide</h1>
-  <div class="text-xl">☰</div>
-</div>
+  <!-- iPhone Container -->
+  <div class="w-full max-w-[390px] h-[844px] bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col">
 
-<!-- 🔊 Voice Instruction (for blind users) -->
-<div class="bg-yellow-100 text-yellow-800 p-3 text-center text-sm">
-  Voice Instruction: New ride request received. Pickup at Central Library. Drop at Central Hospital. Swipe or press Accept Ride to begin.
-</div>
-
-<!-- Driver Info -->
-<div class="bg-white m-4 p-4 rounded-xl shadow flex justify-between items-center">
-  <div class="flex items-center gap-3">
-    <div class="bg-gray-200 p-3 rounded-full">👤</div>
-    <div>
-      <h2 class="font-bold text-lg">John Doe</h2>
-      <p class="text-sm text-gray-500">Vehicle: TX-9842</p>
-    </div>
-  </div>
-
-  <div class="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm">
-    ONLINE
-  </div>
-</div>
-
-<!-- Ride Request Card -->
-<div class="bg-blue-900 text-white m-4 rounded-xl shadow overflow-hidden">
-
-  <!-- Header -->
-  <div class="flex justify-between items-center p-4">
-    <span class="font-semibold">New Ride Request</span>
-    <span class="bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold">
-      URGENT
-    </span>
-  </div>
-
-  <!-- Content -->
-  <div class="bg-white text-black p-4 space-y-4">
-
-    <!-- Pickup -->
-    <div>
-      <p class="text-gray-500 text-xs">PICKUP LOCATION</p>
-      <p class="font-semibold">123 Central Library</p>
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 border-b">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">☰</span>
+        <h1 class="font-bold text-lg text-blue-900">AccessRide</h1>
+      </div>
+      <div class="text-xl">👤</div>
     </div>
 
-    <!-- Drop -->
-    <div>
-      <p class="text-gray-500 text-xs">DROP LOCATION</p>
-      <p class="font-semibold">Central Hospital</p>
+    <!-- Voice Instruction (Accessibility) -->
+    <div class="bg-yellow-100 text-yellow-800 text-sm p-3 text-center font-medium">
+      Voice Guide: New ride request received. Swipe down or tap Accept Ride to start.
     </div>
 
-    <!-- Info -->
-    <div class="grid grid-cols-2 gap-3 mt-4">
-      <div class="bg-gray-100 p-3 rounded text-center">
-        <p class="text-xs text-gray-500">Distance</p>
-        <p class="font-bold">5.2 miles</p>
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+      <!-- Driver Info -->
+      <div class="bg-gray-100 rounded-xl p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
+            👤
+          </div>
+          <div>
+            <h2 class="font-semibold">John Doe</h2>
+            <p class="text-sm text-gray-500">Vehicle: TX-9842</p>
+          </div>
+        </div>
+        <div class="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm">
+          ONLINE
+        </div>
       </div>
 
-      <div class="bg-gray-100 p-3 rounded text-center">
-        <p class="text-xs text-gray-500">Est. Fare</p>
-        <p class="font-bold text-green-600">LKR 288.50</p>
+      <!-- Ride Request Card -->
+      <div class="bg-blue-900 text-white rounded-2xl p-4 space-y-4">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold">New Ride Request</h3>
+          <span class="bg-yellow-500 text-black text-xs px-3 py-1 rounded-full">
+            URGENT
+          </span>
+        </div>
+
+        <!-- Locations -->
+        <div class="bg-white text-black rounded-xl p-4 space-y-3">
+
+          <div>
+            <p class="text-gray-500 text-xs">PICKUP LOCATION</p>
+            <p class="font-medium">123 Central Library</p>
+          </div>
+
+          <div>
+            <p class="text-gray-500 text-xs">DROP LOCATION</p>
+            <p class="font-medium">Central Hospital</p>
+          </div>
+
+          <!-- Info -->
+          <div class="flex justify-between mt-3">
+            <div class="bg-gray-100 p-3 rounded-lg text-center w-[48%]">
+              <p class="text-xs text-gray-500">Distance</p>
+              <p class="font-semibold">5.2 miles</p>
+            </div>
+
+            <div class="bg-gray-100 p-3 rounded-lg text-center w-[48%]">
+              <p class="text-xs text-gray-500">Est. Fare</p>
+              <p class="font-semibold text-yellow-600">LKR 288.50</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-2">
+          <button class="w-1/2 bg-yellow-700 py-3 rounded-xl">
+            Reject Ride
+          </button>
+          <button class="w-1/2 bg-blue-600 py-3 rounded-xl">
+            Accept Ride
+          </button>
+        </div>
+
+        <!-- Start Ride -->
+        <button class="w-full bg-yellow-500 text-black font-semibold py-3 rounded-xl">
+          ▶ START RIDE
+        </button>
+
+      </div>
+
+      <!-- Map Section -->
+      <div class="bg-gray-300 h-40 rounded-xl flex items-center justify-center relative">
+        <span class="bg-blue-900 text-white px-4 py-2 rounded-full absolute">
+          View Route Detail
+        </span>
+        <p class="text-gray-500">Map Preview</p>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="flex justify-around items-center p-3 border-t bg-white">
+      <div class="text-yellow-500 text-center">
+        🏠<p class="text-xs">Home</p>
+      </div>
+      <div class="text-center">
+        🎤<p class="text-xs">Book</p>
+      </div>
+      <div class="text-center">
+        ⏱️<p class="text-xs">Activity</p>
+      </div>
+      <div class="text-center">
+        ⚙️<p class="text-xs">Settings</p>
       </div>
     </div>
 
-    <!-- Buttons -->
-    <div class="flex gap-3 mt-4">
-      <button onclick="rejectRide()" 
-        class="flex-1 bg-yellow-600 text-white py-2 rounded-lg">
-        ✖ Reject Ride
-      </button>
-
-      <button onclick="acceptRide()" 
-        class="flex-1 bg-blue-900 text-white py-2 rounded-lg">
-        ✔ Accept Ride
-      </button>
-    </div>
-
-    <!-- Start Ride -->
-    <button onclick="startRide()" 
-      class="w-full mt-3 bg-yellow-500 text-black py-3 rounded-lg font-bold">
-      ▶ START RIDE
-    </button>
-
   </div>
-</div>
-
-<!-- Map Section -->
-<div class="bg-white m-4 rounded-xl shadow overflow-hidden">
-  <div class="h-40 bg-gray-300 flex items-center justify-center">
-    Map Preview
-  </div>
-
-  <div class="text-center p-3">
-    <button class="bg-blue-900 text-white px-4 py-2 rounded-full">
-      View Route Detail
-    </button>
-  </div>
-</div>
-
-<!-- Bottom Navigation -->
-<div class="fixed bottom-0 left-0 right-0 bg-white shadow flex justify-around py-2">
-  <button class="text-yellow-500 font-bold">🏠 Home</button>
-  <button>🎤 Book</button>
-  <button>🕒 Activity</button>
-  <button>⚙ Settings</button>
-</div>
-
-<!-- JS -->
-<script>
-function acceptRide() {
-  alert("Ride Accepted");
-
-  fetch("http://localhost/AccessrideBackend/ride/accept.php", {
-    method: "POST"
-  });
-}
-
-function rejectRide() {
-  alert("Ride Rejected");
-
-  fetch("http://localhost/AccessrideBackend/ride/reject.php", {
-    method: "POST"
-  });
-}
-
-function startRide() {
-  alert("Ride Started");
-
-  fetch("http://localhost/AccessrideBackend/ride/start.php", {
-    method: "POST"
-  });
-}
-</script>
 
 </body>
 </html>
