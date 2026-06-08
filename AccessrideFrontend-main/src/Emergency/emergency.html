@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Emergency Help</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+
+<div class="w-[350px] bg-white rounded-xl shadow-lg p-4">
+
+ 
+  <div class="flex justify-between items-center mb-4">
+    <span class="text-xl">⬅</span>
+    <h2 class="font-bold text-lg">Emergency Help</h2>
+    <span>👤</span>
+  </div>
+
+  
+  <div class="text-center mt-6">
+    <button onclick="startListening()" class="bg-blue-900 text-white p-5 rounded-full text-xl">
+      🎤
+    </button>
+    <p class="mt-3">Say "Help" to activate emergency</p>
+    <p id="status" class="text-sm text-gray-500 mt-1">Listening...</p>
+  </div>
+
+  <!-- SOS Button -->
+  <div class="flex justify-center mt-6">
+    <button onclick="sendSOS()" 
+      class="w-52 h-52 bg-red-600 text-white text-4xl rounded-full border-8 border-yellow-400 shadow-xl">
+      SOS
+      <p class="text-sm">PRESS TO ACTIVATE</p>
+    </button>
+  </div>
+
+  <!-- Status Box -->
+  <div id="messageBox" class="mt-6 bg-gray-100 p-3 rounded-lg text-center hidden">
+    <p class="font-semibold">📍 Contacting help...</p>
+    <p class="text-sm text-gray-600">Location shared successfully</p>
+  </div>
+
+  <!-- Buttons -->
+  <div class="mt-6 space-y-3">
+    <button class="w-full bg-blue-900 text-white p-3 rounded-lg">📞 Call Driver</button>
+    <button class="w-full bg-blue-900 text-white p-3 rounded-lg">👥 Call Emergency Contact</button>
+    <button class="w-full bg-blue-900 text-white p-3 rounded-lg">📍 Share Live Location</button>
+  </div>
+
+  <!-- Cancel -->
+  <button onclick="cancelSOS()" class="mt-6 w-full border-2 border-red-500 text-red-500 p-3 rounded-lg">
+    ❌ Cancel SOS
+  </button>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
