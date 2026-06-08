@@ -1,0 +1,4 @@
+body { font-family: 'Inter', sans-serif; }
+/* Hide scrollbar for clean look */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
