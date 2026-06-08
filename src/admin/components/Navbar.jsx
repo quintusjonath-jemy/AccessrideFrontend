@@ -82,7 +82,7 @@ const Navbar = () => {
         />
       </div>
 
-      <div className="flex items-center gap-5">
+      <div ref={dropdownRef} className="flex items-center gap-5">
         {/* Clock */}
 
         <div className="hidden lg:block">
@@ -217,26 +217,52 @@ const Navbar = () => {
           </button>
 
           {openMenu && (
-            <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border overflow-hidden z-50">
+            <div className="absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+              {/* Profile */}
               <Link
                 to="/settings/profile"
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                onClick={() => setOpenMenu(false)}
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition"
               >
-                <UserCircle size={18} />
-                My Profile
+                <UserCircle size={18} className="text-gray-500" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">My Profile</span>
+                  <span className="text-xs text-gray-400">
+                    View account details
+                  </span>
+                </div>
               </Link>
 
+              {/* Settings */}
               <Link
                 to="/settings"
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                onClick={() => setOpenMenu(false)}
+                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition border-t border-gray-100"
               >
-                <Settings size={18} />
-                Settings
+                <Settings size={18} className="text-gray-500" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Settings</span>
+                  <span className="text-xs text-gray-400">
+                    System preferences
+                  </span>
+                </div>
               </Link>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50">
+              {/* Logout */}
+              <button
+                onClick={() => {
+                  setOpenMenu(false);
+                  // your logout logic here
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition border-t border-gray-100"
+              >
                 <LogOut size={18} />
-                Logout
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-medium">Logout</span>
+                  <span className="text-xs text-red-400">
+                    Sign out of your account
+                  </span>
+                </div>
               </button>
             </div>
           )}
