@@ -116,13 +116,12 @@ const Rides = () => {
   });
 
   return (
-    <div>
-      {/* HEADER */}
+    <div className="space-y-8">
+      {/* Header */}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="bg-white/80 backdrop-blur-md border border-gray-100 rounded-2xl p-6 shadow-sm flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-[#0B1929]">Ride Management</h1>
-
+          <h1 className="text-3xl font-bold text-gray-800">Rides Management</h1>
           <p className="text-gray-500 mt-1">
             Manage active and completed rides
           </p>
@@ -130,7 +129,7 @@ const Rides = () => {
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-xl font-semibold transition"
+          className="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 px-5 py-2 rounded-xl font-semibold shadow-md hover:scale-105 transition"
         >
           <Plus className="w-4 h-4" />
           Add Ride
@@ -139,25 +138,57 @@ const Rides = () => {
 
       {/* Search */}
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-5">
-        <div className="flex gap-3">
-          <select
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
-            className="border rounded-lg px-4 py-2"
-          >
-            <option value="pickup">Location Wise</option>
+      <div className="bg-white/90 backdrop-blur-md p-5 rounded-2xl shadow-md border border-gray-100 mb-6">
+        {/* HEADER */}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-700">
+            Search & Filter Rides
+          </h3>
+          <span className="text-xs text-gray-400">
+            Filter by pickup or destination
+          </span>
+        </div>
 
-            <option value="destination">Destination Wise</option>
-          </select>
+        {/* CONTROLS */}
+        <div className="flex flex-col md:flex-row gap-3">
+          {/* SELECT */}
+          <div className="relative w-full md:w-56">
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+              className="w-full appearance-none px-4 py-3 pr-10 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 shadow-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
+            >
+              <option value="pickup" className="text-gray-700 bg-white">
+                📍 Pickup Location
+              </option>
 
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search rides..."
-            className="flex-1 border border-gray-200 rounded-lg px-4 py-2"
-          />
+              <option value="destination" className="text-gray-700 bg-white">
+                🏁 Destination Location
+              </option>
+            </select>
+
+            {/* CUSTOM ARROW */}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              ▼
+            </div>
+          </div>
+
+          {/* INPUT */}
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search rides..."
+              className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 shadow-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
+            />
+
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              🔍
+            </span>
+          </div>
         </div>
       </div>
 
@@ -311,7 +342,7 @@ const Rides = () => {
 
                             setShowEditModal(true);
                           }}
-                          className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100"
+                          className="p-2 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
@@ -332,15 +363,22 @@ const Rides = () => {
         </table>
       </div>
 
-       {/* Add rides */}
+      {/* Add rides */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl w-[500px]">
-            <h2 className="text-xl font-bold mb-5">Add Ride</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+            {/* HEADER */}
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h2 className="text-xl font-bold text-gray-800">Add Ride</h2>
+              <p className="text-sm text-gray-500">Create a new ride booking</p>
+            </div>
 
-            <div className="space-y-3">
+            {/* FORM */}
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              {/* USER */}
               <select
-                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition"
                 value={rideForm.user_id}
                 onChange={(e) =>
                   setRideForm({
@@ -349,17 +387,18 @@ const Rides = () => {
                   })
                 }
               >
-                <option value="">Select User</option>
-
+                <option value="">👤 Select User</option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.name}
+                    👤 {user.name}
                   </option>
                 ))}
               </select>
 
+              {/* DRIVER */}
               <select
-                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition"
                 value={rideForm.driver_id}
                 onChange={(e) =>
                   setRideForm({
@@ -368,18 +407,19 @@ const Rides = () => {
                   })
                 }
               >
-                <option value="">Select Driver</option>
-
+                <option value="">🚗 Select Driver</option>
                 {drivers.map((driver) => (
                   <option key={driver.id} value={driver.id}>
-                    {driver.name}
+                    🚗 {driver.name}
                   </option>
                 ))}
               </select>
 
+              {/* PICKUP */}
               <input
-                placeholder="Pickup Location"
-                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                placeholder="📍 Pickup Location"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition"
                 onChange={(e) =>
                   setRideForm({
                     ...rideForm,
@@ -388,9 +428,11 @@ const Rides = () => {
                 }
               />
 
+              {/* DROPOFF */}
               <input
-                placeholder="Destination"
-                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                placeholder="🏁 Destination"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition"
                 onChange={(e) =>
                   setRideForm({
                     ...rideForm,
@@ -399,11 +441,13 @@ const Rides = () => {
                 }
               />
 
+              {/* DISTANCE */}
               <input
                 type="number"
-                placeholder="Distance KM"
+                placeholder="📏 Distance (KM)"
                 value={rideForm.distance_km}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition"
                 onChange={(e) => {
                   const distance = e.target.value;
 
@@ -417,25 +461,15 @@ const Rides = () => {
                 }}
               />
 
-              <input
-                type="text"
-                value={`Rs. ${rideForm.fare || 0}`}
-                className=" w-full border p-3 rounded-lg bg-gray-100 text-gray-700 font-semibold"
-                onChange={(e) => {
-                  const distance = e.target.value;
+              {/* FARE */}
+              <div className="w-full px-4 py-3 rounded-xl bg-yellow-50 border border-yellow-100 text-yellow-700 font-semibold text-sm">
+                💰 Fare: Rs. {rideForm.fare || 0}
+              </div>
 
-                  setRideForm({
-                    ...rideForm,
-                    distance_km: distance,
-                    fare: distance
-                      ? (parseFloat(distance) * 80).toFixed(2)
-                      : "",
-                  });
-                }}
-              />
-
+              {/* STATUS */}
               <select
-                className=" w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition"
                 onChange={(e) =>
                   setRideForm({
                     ...rideForm,
@@ -443,29 +477,26 @@ const Rides = () => {
                   })
                 }
               >
-                <option value="pending">Pending</option>
-
-                <option value="accepted">Accepted</option>
-
-                <option value="active">Active</option>
-
-                <option value="completed">Completed</option>
-
-                <option value="cancelled">Cancelled</option>
+                <option value="pending">⏳ Pending</option>
+                <option value="accepted">✅ Accepted</option>
+                <option value="active">🚖 Active</option>
+                <option value="completed">🏁 Completed</option>
+                <option value="cancelled">❌ Cancelled</option>
               </select>
             </div>
 
-            <div className="flex justify-end gap-3 mt-5">
+            {/* ACTIONS */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 border rounded-lg"
+                className="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
               >
                 Cancel
               </button>
 
               <button
                 onClick={addRide}
-                className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
+                className="px-5 py-2 rounded-xl bg-yellow-500 text-white font-semibold hover:bg-yellow-600 transition shadow-sm"
               >
                 Save Ride
               </button>
@@ -477,13 +508,17 @@ const Rides = () => {
       {/* Edit rides */}
 
       {showEditModal && selectedRide && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl w-[550px]">
-            <h2 className="text-xl font-bold mb-5">Edit Ride</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+            {/* HEADER */}
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h2 className="text-xl font-bold text-gray-800">Edit Ride</h2>
+              <p className="text-sm text-gray-500">Update ride details</p>
+            </div>
 
-            <div className="space-y-3">
-              {/* User */}
-
+            {/* FORM */}
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              {/* USER */}
               <select
                 value={selectedRide.user_id}
                 onChange={(e) =>
@@ -492,17 +527,17 @@ const Rides = () => {
                     user_id: e.target.value,
                   })
                 }
-                className="w-full border p-3 rounded-lg"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
               >
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.name}
+                    👤 {user.name}
                   </option>
                 ))}
               </select>
 
-              {/* Driver */}
-
+              {/* DRIVER */}
               <select
                 value={selectedRide.driver_id}
                 onChange={(e) =>
@@ -511,17 +546,17 @@ const Rides = () => {
                     driver_id: e.target.value,
                   })
                 }
-                className="w-full border p-3 rounded-lg"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
               >
                 {drivers.map((driver) => (
                   <option key={driver.id} value={driver.id}>
-                    {driver.name}
+                    🚗 {driver.name}
                   </option>
                 ))}
               </select>
 
-              {/* Pickup */}
-
+              {/* PICKUP */}
               <input
                 value={selectedRide.pickup_location}
                 onChange={(e) =>
@@ -530,11 +565,12 @@ const Rides = () => {
                     pickup_location: e.target.value,
                   })
                 }
-                className="w-full border p-3 rounded-lg"
+                placeholder="📍 Pickup Location"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
               />
 
-              {/* Destination */}
-
+              {/* DROPOFF */}
               <input
                 value={selectedRide.dropoff_location}
                 onChange={(e) =>
@@ -543,11 +579,12 @@ const Rides = () => {
                     dropoff_location: e.target.value,
                   })
                 }
-                className="w-full border p-3 rounded-lg"
+                placeholder="🏁 Destination"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
               />
 
-              {/* Distance */}
-
+              {/* DISTANCE */}
               <input
                 type="number"
                 value={selectedRide.distance_km}
@@ -560,19 +597,17 @@ const Rides = () => {
                     fare: (parseFloat(distance || 0) * 80).toFixed(2),
                   });
                 }}
-                className="w-full border p-3 rounded-lg"
+                placeholder="📏 Distance (KM)"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
               />
 
-              {/* Fare */}
+              {/* FARE */}
+              <div className="w-full px-4 py-3 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-semibold text-sm">
+                💰 Fare: Rs. {selectedRide.fare || 0}
+              </div>
 
-              <input
-                value={`Rs. ${selectedRide.fare}`}
-                readOnly
-                className="w-full border p-3 rounded-lg bg-gray-100"
-              />
-
-              {/* Status */}
-
+              {/* STATUS */}
               <select
                 value={selectedRide.status}
                 onChange={(e) =>
@@ -581,27 +616,29 @@ const Rides = () => {
                     status: e.target.value,
                   })
                 }
-                className="w-full border p-3 rounded-lg"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
               >
-                <option value="pending">Pending</option>
-                <option value="accepted">Accepted</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="pending">⏳ Pending</option>
+                <option value="accepted">✅ Accepted</option>
+                <option value="active">🚖 Active</option>
+                <option value="completed">🏁 Completed</option>
+                <option value="cancelled">❌ Cancelled</option>
               </select>
             </div>
 
-            <div className="flex justify-end gap-3 mt-5">
+            {/* ACTIONS */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 border rounded-lg"
+                className="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
               >
                 Cancel
               </button>
 
               <button
                 onClick={updateRide}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className="px-5 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-sm"
               >
                 Update Ride
               </button>
