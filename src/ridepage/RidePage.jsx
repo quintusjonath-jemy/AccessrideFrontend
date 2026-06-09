@@ -1,8 +1,28 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiMapPin, FiClock, FiCheckCircle, FiXCircle, FiPlay, FiHome, FiSettings, FiTrendingUp } from "react-icons/fi";
 
 const RidePage = () => {
   const [status, setStatus] = useState("new");
+  const [driverOnline, setDriverOnline] = useState(() => {
+    const stored = localStorage.getItem("driverOnlineStatus");
+    return stored ? JSON.parse(stored) : false;
+  });
+
+  useEffect(() => {
+    const stored = localStorage.getItem("driverOnlineStatus");
+    if (stored !== null) {
+      setDriverOnline(JSON.parse(stored));
+    }
+
+    const handleStorage = (event) => {
+      if (event.key === "driverOnlineStatus") {
+        setDriverOnline(event.newValue ? JSON.parse(event.newValue) : false);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   const ride = {
     pickup: "123 Central Library",
@@ -46,14 +66,17 @@ const RidePage = () => {
         </header>
 
         <section className="mt-5 rounded-3xl bg-slate-950/95 p-4 text-white shadow-[0_10px_30px_rgba(15,23,42,0.2)]">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Status</p>
               <p className="mt-1 text-base font-medium">{statusLabel}</p>
             </div>
-            <span className="inline-flex items-center rounded-full bg-amber-300/20 px-3 py-1 text-sm font-semibold text-amber-700 ring-1 ring-amber-300/40">
-              {status === "new" ? "Pending" : status === "accepted" ? "Accepted" : status === "started" ? "On the way" : "Completed"}
-            </span>
+            <div className="text-right">
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ring-1 ${driverOnline ? "bg-emerald-500/15 text-emerald-200 ring-emerald-300/40" : "bg-rose-500/15 text-rose-200 ring-rose-300/40"}`}>
+                {driverOnline ? "Driver is Online" : "Driver is Offline"}
+              </span>
+              <p className="mt-1 text-xs text-slate-400">Vehicle availability for passengers</p>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">

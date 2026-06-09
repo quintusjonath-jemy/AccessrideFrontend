@@ -39,7 +39,7 @@
             <p class="text-sm text-gray-500">Vehicle: TX-9842</p>
           </div>
         </div>
-        <div class="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm">
+        <div id="driverStatusBadge" class="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm">
           ONLINE
         </div>
       </div>
@@ -127,5 +127,20 @@
 
   </div>
 
+  <script>
+    function updateDriverStatusBadge() {
+      const driverStatusBadge = document.getElementById('driverStatusBadge');
+      if (!driverStatusBadge) return;
+
+      const isOnline = JSON.parse(localStorage.getItem('driverOnlineStatus') || 'false');
+      driverStatusBadge.textContent = isOnline ? 'ONLINE' : 'OFFLINE';
+      driverStatusBadge.className = isOnline
+        ? 'bg-green-500 text-white px-4 py-1 rounded-full text-sm'
+        : 'bg-red-500 text-white px-4 py-1 rounded-full text-sm';
+    }
+
+    window.addEventListener('storage', updateDriverStatusBadge);
+    window.addEventListener('DOMContentLoaded', updateDriverStatusBadge);
+  </script>
 </body>
 </html>

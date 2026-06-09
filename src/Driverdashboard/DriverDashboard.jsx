@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { FiHome, FiMapPin, FiClock, FiDollarSign, FiUser, FiToggleLeft, FiTruck } from "react-icons/fi";
+import { FiHome, FiMapPin, FiClock, FiDollarSign, FiUser, FiTruck } from "react-icons/fi";
 
 const DriverDashboard = () => {
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(() => {
+    const stored = localStorage.getItem("driverOnlineStatus");
+    return stored ? JSON.parse(stored) : true;
+  });
   const [rideRequest, setRideRequest] = useState({
     pickup: "Colombo Public Library",
     dropoff: "National Hospital, Colombo",
@@ -27,6 +30,10 @@ const DriverDashboard = () => {
         // ignore fetch errors for now
       });
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("driverOnlineStatus", JSON.stringify(isOnline));
+  }, [isOnline]);
 
   const toggleStatus = () => setIsOnline((value) => !value);
 

@@ -121,12 +121,13 @@
 <script>
 let isOnline = true;
 
-function toggleStatus() {
-  isOnline = !isOnline;
+function applyStatusUI() {
   const statusToggle = document.getElementById('statusToggle');
   const statusSlider = document.getElementById('statusSlider');
   const statusDot = document.getElementById('statusDot');
   const statusText = document.getElementById('statusText');
+
+  if (!statusToggle || !statusSlider || !statusDot || !statusText) return;
 
   if (isOnline) {
     statusToggle.classList.remove('bg-red-500');
@@ -146,6 +147,21 @@ function toggleStatus() {
     statusText.textContent = 'Status: Offline';
   }
 }
+
+function toggleStatus() {
+  isOnline = !isOnline;
+  localStorage.setItem('driverOnlineStatus', JSON.stringify(isOnline));
+  applyStatusUI();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const stored = localStorage.getItem('driverOnlineStatus');
+  if (stored !== null) {
+    isOnline = JSON.parse(stored);
+  }
+  localStorage.setItem('driverOnlineStatus', JSON.stringify(isOnline));
+  applyStatusUI();
+});
 
 function acceptRide() {
   alert("Ride Accepted");
