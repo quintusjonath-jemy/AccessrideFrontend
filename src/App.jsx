@@ -6,6 +6,7 @@ import Dashboard from "./admin/pages/Dashboard";
 import Drivers from "./admin/pages/Drivers";
 import Navigation from "./admin/pages/Navigation";
 import Rides from "./admin/pages/Rides";
+import RidePage from "./ridepage/RidePage";
 import Settings from "./admin/pages/Settings";
 import NotificationSettings from "./admin/pages/settings/NotificationSettings";
 import ProfileSettings from "./admin/pages/settings/ProfileSettings";
@@ -31,6 +32,7 @@ const App = () => {
           <Route path="/drivers" element={<Drivers />} />
 
           <Route path="/rides" element={<Rides />} />
+          <Route path="/ride" element={<RidePage />} />
 
           <Route path="/my-rides" element={<MyRides />} />
 
