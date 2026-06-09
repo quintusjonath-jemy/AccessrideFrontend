@@ -30,7 +30,7 @@ const RidePage = () => {
     driver: "John Doe",
     vehicle: "TX-9842",
     distance: "5.2 miles",
-    fare: "LKR 288.50",
+    fare: "Rs. 288.50",
     eta: "12 min",
     passengers: 2,
   };
