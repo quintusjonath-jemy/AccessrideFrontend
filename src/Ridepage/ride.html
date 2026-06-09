@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ride Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-200 flex justify-center items-center min-h-screen">
+
+  <!-- iPhone Container -->
+  <div class="w-[390px] h-[844px] bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 border-b">
+      <span class="text-xl">←</span>
+      <h1 class="font-bold text-lg text-blue-900">Ride in Progress</h1>
+      <button class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">
+        SOS
+      </button>
+    </div>
+
+    <!-- Scroll Area -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+      <!-- Map Section -->
+      <div class="relative bg-gray-300 rounded-2xl h-52 flex items-center justify-center">
+        <span class="text-gray-500">Map Preview</span>
+
+        <button class="absolute top-3 right-3 bg-white p-2 rounded-full shadow">
+          📍
+        </button>
+
+        <div class="absolute bottom-3 bg-blue-900 text-white px-4 py-1 rounded-full text-sm">
+          2.4 km to Drop-off
+        </div>
+      </div>
+
+      <!-- Voice Guide (TEXT ONLY) -->
+      <div class="bg-yellow-400 rounded-2xl p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-yellow-600 text-white p-3 rounded-full">
+            🔊
+          </div>
+          <p class="text-sm font-medium">
+            You have started the ride. Drive safely to the destination.
+          </p>
+        </div>
+
+        <button class="text-lg">▶</button>
+      </div>
+
+      <!-- Passenger Card -->
+      <div class="bg-gray-50 rounded-2xl p-4 shadow-sm space-y-3">
+
+        <!-- Top -->
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gray-300 rounded-full"></div>
+            <div>
+              <h2 class="font-semibold">John Doe</h2>
+              <p class="text-sm text-gray-500">⭐ 4.8</p>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button class="bg-gray-200 p-2 rounded-full">💬</button>
+            <button class="bg-blue-900 text-white p-2 rounded-full">📞</button>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- Locations -->
+        <div class="space-y-2">
+          <div>
+            <p class="text-xs text-gray-500">Pickup</p>
+            <p class="font-medium">123 Central Library</p>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-xs text-gray-500">Drop-off</p>
+              <p class="font-medium">Central Hospital</p>
+            </div>
+
+            <button class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm">
+              Navigate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-4 gap-2 text-center">
+        <div class="bg-gray-100 p-3 rounded-xl">
+          <p class="text-xs text-gray-500">Dist.</p>
+          <p class="font-bold">5.2</p>
+          <p class="text-xs text-gray-400">km</p>
+        </div>
+
+        <div class="bg-gray-100 p-3 rounded-xl">
+          <p class="text-xs text-gray-500">Time</p>
+          <p class="font-bold">18</p>
+          <p class="text-xs text-gray-400">min</p>
+        </div>
+
+        <div class="bg-gray-100 p-3 rounded-xl">
+          <p class="text-xs text-gray-500">Fare</p>
+          <p class="font-bold">288</p>
+          <p class="text-xs text-gray-400">LKR</p>
+        </div>
+
+        <div class="bg-gray-100 p-3 rounded-xl">
+          <p class="text-xs text-gray-500">Pass.</p>
+          <p class="font-bold">1</p>
+          <p class="text-xs text-gray-400">user</p>
+        </div>
+      </div>
+
+      <!-- Status Tracker -->
+      <div class="bg-gray-50 rounded-2xl p-4 text-center">
+        
+        <div class="flex justify-between text-xs mb-2">
+          <span>Accepted</span>
+          <span>Arrived</span>
+          <span class="text-yellow-600 font-bold">Started</span>
+          <span>Completed</span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="w-6 h-6 bg-blue-900 rounded-full"></div>
+          <div class="flex-1 h-1 bg-blue-900"></div>
+          <div class="w-6 h-6 bg-blue-900 rounded-full"></div>
+          <div class="flex-1 h-1 bg-gray-300"></div>
+          <div class="w-6 h-6 bg-yellow-400 rounded-full border-4 border-white"></div>
+          <div class="flex-1 h-1 bg-gray-300"></div>
+          <div class="w-6 h-6 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <p class="text-sm mt-3 text-gray-600">
+          Ride started at 10:15 AM
+        </p>
+      </div>
+
+      <!-- Buttons -->
+      <button class="w-full bg-blue-900 text-white py-3 rounded-xl font-semibold">
+        COMPLETE RIDE
+      </button>
+
+      <button class="w-full bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold">
+        CANCEL RIDE
+      </button>
+
+    </div>
+  </div>
+
+</body>
+</html>
