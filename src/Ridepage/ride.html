@@ -17,12 +17,9 @@
   <div class="w-[390px] h-[844px] bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col">
 
     <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b">
+      <div class="flex items-center justify-between p-4 border-b">
       <span class="text-xl">←</span>
       <h1 class="font-bold text-lg text-blue-900">Ride in Progress</h1>
-      <button class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">
-        SOS
-      </button>
     </div>
 
     <!-- Scroll Area -->
@@ -49,8 +46,8 @@
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 bg-gray-300 rounded-full"></div>
             <div>
-              <h2 class="font-semibold">John Doe</h2>
-              <p class="text-sm text-gray-500">⭐ 4.8</p>
+              <h2 id="passengerName" class="font-semibold">Loading...</h2>
+              <p id="passengerRating" class="text-sm text-gray-500">⭐ 4.8</p>
             </div>
           </div>
 
@@ -220,6 +217,33 @@
         body: JSON.stringify({ action: "call_passenger" })
       }).catch(() => console.log("Call initiated"));
     }
+
+    // Load passenger (blind user) name for driver view
+    (function loadPassengerName(){
+      fetch("http://localhost/AccessrideBackend/Driverdashboard/getride.php")
+        .then(res => res.json())
+        .then(data => {
+          const nameEl = document.getElementById('passengerName');
+          const ratingEl = document.getElementById('passengerRating');
+          if (!data) return;
+          if (data.message) {
+            if (nameEl) nameEl.textContent = 'Passenger';
+            return;
+          }
+
+          const name = data.name || data.passenger_name || data.user_name || data.fullname || (data.first_name && data.last_name ? data.first_name + ' ' + data.last_name : null) || 'Passenger';
+          if (nameEl) nameEl.textContent = name;
+
+          if (ratingEl) {
+            const rating = data.rating || data.ratings || data.stars || null;
+            if (rating) ratingEl.textContent = '⭐ ' + rating;
+          }
+        })
+        .catch(() => {
+          const nameEl = document.getElementById('passengerName');
+          if (nameEl) nameEl.textContent = 'Passenger';
+        });
+    })();
   </script>
 </body>
 </html>
