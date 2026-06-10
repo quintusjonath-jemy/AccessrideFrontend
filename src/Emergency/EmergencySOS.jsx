@@ -6,15 +6,82 @@ const EmergencySOS = () => {
   const [sosActivated, setSOSActivated] = useState(false);
   const [showLiveMap, setShowLiveMap] = useState(false);
   const [userLocation, setUserLocation] = useState([79.8612, 6.9271]);
+  const [driverInfo, setDriverInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
+  // Get user ID from localStorage or session
+  const getUserId = () => {
+    return localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || 1;
+  };
 
   const activateSOS = () => {
-    setSOSActivated(true);
-    fetch("http://localhost/AccessrideBackend/Emergency/sos.php", { method: "POST" });
-    alert("SOS activated! Help is on the way.");
+    setLoading(true);
+    
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.");
+      setLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation([longitude, latitude]);
+
+        // Send SOS alert to backend
+        fetch("http://localhost/AccessrideBackend/Emergency/sos.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: getUserId(),
+            latitude: latitude,
+            longitude: longitude,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            setLoading(false);
+            if (data.status === "success") {
+              setSOSActivated(true);
+              if (data.driver_info) {
+                setDriverInfo(data.driver_info);
+                setAlertMessage(`📞 Driver ${data.driver_info.name} is being contacted. Help is on the way!`);
+              } else {
+                setAlertMessage("🚨 SOS Alert sent. Emergency services notified!");
+              }
+            } else {
+              alert("Failed to send SOS: " + data.message);
+            }
+          })
+          .catch((error) => {
+            setLoading(false);
+            console.error("Error sending SOS:", error);
+            alert("Error sending SOS alert");
+          });
+      },
+      () => {
+        setLoading(false);
+        alert("Unable to retrieve your location. Showing default map center.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
+
+  const callDriver = () => {
+    if (driverInfo && driverInfo.phone) {
+      window.location.href = `tel:${driverInfo.phone}`;
+    } else {
+      alert("Driver information not available");
+    }
   };
 
   const cancelSOS = () => {
     setSOSActivated(false);
+    setDriverInfo(null);
+    setAlertMessage("");
     alert("SOS cancelled");
   };
 
@@ -52,14 +119,14 @@ const EmergencySOS = () => {
         <div className="text-center mt-8">
           <button
             onClick={activateSOS}
-            disabled={sosActivated}
+            disabled={sosActivated || loading}
             className={`w-40 h-40 rounded-full flex items-center justify-center text-5xl font-bold border-8 shadow-2xl transition transform hover:scale-105 active:scale-95 ${
               sosActivated
                 ? "bg-red-700 text-white border-yellow-400 cursor-not-allowed"
                 : "bg-red-600 text-white border-yellow-400 hover:bg-red-700"
             }`}
           >
-            SOS
+            {loading ? "..." : "SOS"}
             <div className="absolute text-xs font-semibold mt-14">PRESS</div>
           </button>
           <p className="mt-6 text-sm text-slate-600 font-medium">Press the SOS button to activate emergency</p>
@@ -67,13 +134,26 @@ const EmergencySOS = () => {
 
         {sosActivated && (
           <div className="mt-6 bg-red-50 p-4 rounded-3xl border-2 border-red-300 text-center ring-1 ring-red-200">
-            <p className="font-semibold text-red-900">🚨 Contacting help...</p>
+            <p className="font-semibold text-red-900">🚨 {alertMessage || "Contacting help..."}</p>
             <p className="text-sm text-red-700 mt-1">Location shared successfully</p>
+            {driverInfo && (
+              <p className="text-sm text-red-700 mt-2 font-medium">
+                Driver: {driverInfo.name}
+              </p>
+            )}
           </div>
         )}
 
         <div className="mt-8 space-y-3">
-          <button className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2">
+          <button
+            onClick={callDriver}
+            disabled={!sosActivated || !driverInfo}
+            className={`w-full text-white py-3 rounded-3xl font-medium transition inline-flex items-center justify-center gap-2 ${
+              sosActivated && driverInfo
+                ? "bg-slate-900 hover:bg-slate-800"
+                : "bg-slate-400 cursor-not-allowed"
+            }`}
+          >
             <FiPhoneCall className="h-5 w-5" /> Call Driver
           </button>
           <button className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2">
