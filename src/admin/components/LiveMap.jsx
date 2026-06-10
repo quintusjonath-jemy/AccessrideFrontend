@@ -6,12 +6,11 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;;
 
-const LiveMap = ({ rides }) => {
+const LiveMap = ({ rides = [], center = [79.8612, 6.9271] }) => {
   const mapContainer = useRef(null);
-
   const map = useRef(null);
-
   const markersRef = useRef([]);
+  const userMarkerRef = useRef(null);
 
   // CREATE MAP
   useEffect(() => {
@@ -19,14 +18,25 @@ const LiveMap = ({ rides }) => {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-
       style: "mapbox://styles/mapbox/streets-v12",
-
-      center: [79.8612, 6.9271],
-
+      center,
       zoom: 11,
     });
-  }, []);
+  }, [center]);
+
+  useEffect(() => {
+    if (!map.current || !center || center.length !== 2) return;
+
+    map.current.setCenter(center);
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+    }
+
+    userMarkerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
+      .setLngLat(center)
+      .addTo(map.current);
+  }, [center]);
 
   // LIVE MARKERS
   useEffect(() => {

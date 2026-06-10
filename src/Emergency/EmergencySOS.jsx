@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { FiPhoneCall, FiMapPin, FiUsers, FiX, FiArrowLeft, FiUser } from "react-icons/fi";
+import LiveMap from "../admin/components/LiveMap";
 
 const EmergencySOS = () => {
   const [sosActivated, setSOSActivated] = useState(false);
+  const [showLiveMap, setShowLiveMap] = useState(false);
+  const [userLocation, setUserLocation] = useState([79.8612, 6.9271]);
 
   const activateSOS = () => {
     setSOSActivated(true);
@@ -13,6 +16,26 @@ const EmergencySOS = () => {
   const cancelSOS = () => {
     setSOSActivated(false);
     alert("SOS cancelled");
+  };
+
+  const handleShareLiveLocation = () => {
+    setShowLiveMap(true);
+
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation([longitude, latitude]);
+      },
+      () => {
+        alert("Unable to retrieve your location. Showing default map center.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
   };
 
   return (
@@ -56,10 +79,20 @@ const EmergencySOS = () => {
           <button className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2">
             <FiUsers className="h-5 w-5" /> Call Emergency Contact
           </button>
-          <button className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2">
+          <button
+            onClick={handleShareLiveLocation}
+            className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2"
+          >
             <FiMapPin className="h-5 w-5" /> Share Live Location
           </button>
         </div>
+
+        {showLiveMap && (
+          <div className="mt-6">
+            <h3 className="mb-3 text-sm font-semibold text-slate-700">Live Location Map</h3>
+            <LiveMap rides={[]} center={userLocation} />
+          </div>
+        )}
 
         <button
           onClick={cancelSOS}
