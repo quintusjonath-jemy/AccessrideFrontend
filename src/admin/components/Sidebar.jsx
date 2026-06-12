@@ -8,21 +8,10 @@ import {
   FaCar,
   FaRoad,
 } from "react-icons/fa";
-import axios from "axios";
-import { useState, useEffect } from "react";
+
 import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
-  const [admin, setAdmin] = useState({});
-
-  useEffect(() => {
-    axios
-      .get("http://localhost/admin/api/admin.php")
-      .then((res) => {
-        setAdmin(res.data);
-      })
-      .catch((err) => console.log(err));
-  }, []);
   const menuClass = ({ isActive }) =>
     `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group
     ${
@@ -122,11 +111,7 @@ const Sidebar = () => {
 
         <div className="flex items-center gap-3 bg-slate-800 p-3 rounded-xl mb-4">
           <img
-            src={
-              admin.profile_image
-                ? `http://localhost/admin/uploads/${admin.profile_image}`
-                : "https://via.placeholder.com/150"
-            }
+            src="https://ui-avatars.com/api/?name=Admin"
             alt="Admin"
             className="w-12 h-12 rounded-full"
           />
@@ -134,7 +119,9 @@ const Sidebar = () => {
           <div>
             <h4 className="font-semibold">Administrator</h4>
 
-            <p className="text-xs text-gray-400">System Manager</p>
+            <p className="text-xs text-gray-400">
+              System Manager
+            </p>
           </div>
         </div>
 
