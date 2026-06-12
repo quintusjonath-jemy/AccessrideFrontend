@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import BottomNavigation from "../components/user/BottomNavigation";
+import BottomNavigation from "../components/BottomNavigation";
 
 const UserLayout = () => {
   return (
