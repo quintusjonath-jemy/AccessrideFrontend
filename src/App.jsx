@@ -17,8 +17,8 @@ import ProfileSettings from "./admin/pages/settings/ProfileSettings";
 import SecuritySettings from "./admin/pages/settings/SecuritySettings";
 import SystemSettings from "./admin/pages/settings/SystemSettings";
 import Users from "./admin/pages/Users";
-import MyRides from "./history-page/Index";
-import CustomerProfile from "./history-page/Profile";
+// import MyRides from "./history-page/Index";
+// import CustomerProfile from "./history-page/Profile";
 
 const App = () => {
   return (
@@ -42,9 +42,9 @@ const App = () => {
           <Route path="/driver-earnings" element={<Earnings />} />
           <Route path="/emergency" element={<EmergencySOS />} />
 
-          <Route path="/my-rides" element={<MyRides />} />
+          {/* <Route path="/my-rides" element={<MyRides />} /> */}
 
-          <Route path="/profile" element={<CustomerProfile />} />
+          {/* <Route path="/profile" element={<CustomerProfile />} /> */}
 
           <Route path="/settings" element={<Settings />} />
 
