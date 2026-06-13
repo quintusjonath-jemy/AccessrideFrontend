@@ -1,49 +1,38 @@
-const UpcomingRideCard = () => {
+const UpcomingRideCard = ({ ride }) => {
+  if (!ride) {
+    return (
+      <div className="mx-5 mt-5 bg-white rounded-2xl p-5 shadow">
+        No upcoming rides
+      </div>
+    );
+  }
+
   return (
     <div className="mx-5 mt-5 bg-white rounded-2xl p-5 shadow">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold text-lg">
-          Your Next Ride
-        </h3>
+      <div className="flex justify-between">
+        <h3 className="font-bold text-lg">Upcoming Ride</h3>
 
-        <button className="text-[#0B2F89] text-sm">
-          View All
-        </button>
+        <span className="text-xs bg-yellow-100 px-2 py-1 rounded-full">
+          {ride.status}
+        </span>
       </div>
 
       <div className="mt-4">
-        <p className="font-semibold">
-          Today at 4:30 PM
-        </p>
+        <p className="text-sm text-gray-500">Pickup</p>
 
-        <div className="mt-3">
-          <p className="text-gray-500 text-sm">
-            Pickup
-          </p>
+        <p className="font-medium">{ride.pickup_location}</p>
+      </div>
 
-          <p>Colombo Fort</p>
-        </div>
+      <div className="mt-3">
+        <p className="text-sm text-gray-500">Destination</p>
 
-        <div className="mt-3">
-          <p className="text-gray-500 text-sm">
-            Destination
-          </p>
+        <p className="font-medium">{ride.dropoff_location}</p>
+      </div>
 
-          <p>National Hospital</p>
-        </div>
+      <div className="mt-3">
+        <p className="text-sm text-gray-500">Fare</p>
 
-        <button
-          className="
-          mt-4
-          bg-yellow-400
-          px-4
-          py-2
-          rounded-lg
-          font-medium
-        "
-        >
-          Details
-        </button>
+        <p className="font-medium">Rs. {ride.fare}</p>
       </div>
     </div>
   );

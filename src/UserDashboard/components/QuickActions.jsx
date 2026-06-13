@@ -1,55 +1,31 @@
-import { Car, ClipboardList, ShieldAlert } from "lucide-react";
+import { Car, Clock, CheckCircle } from "lucide-react";
 
-const QuickActions = () => {
+const QuickActions = ({ statistics }) => {
   return (
-    <div className="mx-5 mt-5 space-y-4">
-      <button
-        className="
-        w-full
-        bg-[#0B2F89]
-        text-white
-        rounded-2xl
-        p-5
-        flex
-        items-center
-        gap-4
-      "
-      >
-        <Car size={28} />
-        <span className="font-semibold">Book a Ride</span>
-      </button>
+    <div className="mx-5 mt-5 grid grid-cols-3 gap-3">
+      <div className="bg-white rounded-2xl p-4 shadow">
+        <Car className="text-[#0B2F89]" />
 
-      <button
-        className="
-        w-full
-        bg-white
-        rounded-2xl
-        p-5
-        flex
-        items-center
-        gap-4
-        shadow
-      "
-      >
-        <ClipboardList size={28} />
-        <span className="font-semibold">My Rides</span>
-      </button>
+        <p className="text-sm text-gray-500 mt-2">Total</p>
 
-      <button
-        className="
-        w-full
-        bg-red-600
-        text-white
-        rounded-2xl
-        p-5
-        flex
-        items-center
-        gap-4
-      "
-      >
-        <ShieldAlert size={28} />
-        <span className="font-semibold">Emergency SOS</span>
-      </button>
+        <h3 className="font-bold text-xl">{statistics.total_rides}</h3>
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 shadow">
+        <Clock className="text-orange-500" />
+
+        <p className="text-sm text-gray-500 mt-2">Pending</p>
+
+        <h3 className="font-bold text-xl">{statistics.pending_rides}</h3>
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 shadow">
+        <CheckCircle className="text-green-500" />
+
+        <p className="text-sm text-gray-500 mt-2">Completed</p>
+
+        <h3 className="font-bold text-xl">{statistics.completed_rides}</h3>
+      </div>
     </div>
   );
 }

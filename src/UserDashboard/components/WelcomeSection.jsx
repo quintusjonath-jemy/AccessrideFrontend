@@ -1,13 +1,11 @@
-const WelcomeSection = () => {
+const WelcomeSection = ({ user }) => {
   return (
     <div className="px-5 mt-5">
       <h2 className="text-2xl font-bold text-slate-800">
-        Welcome Back 👋
+        Welcome Back, {user.name}
       </h2>
 
-      <p className="text-gray-500 mt-1">
-        How can we help you today?
-      </p>
+      <p className="text-gray-500 mt-1">How can we help you today?</p>
     </div>
   );
 }
