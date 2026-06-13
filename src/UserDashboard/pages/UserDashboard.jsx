@@ -1,24 +1,59 @@
-import DashboardHeader from "../components/DashboardHeader";
-import QuickActions from "../components/QuickActions";
-import UpcomingRideCard from "../components/UpcomingRideCard";
-import VoiceBookingCard from "../components/VoiceBookingCard";
-import WelcomeSection from "../components/WelcomeSection";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+import DashboardHeader from "../../components/user/DashboardHeader";
+import WelcomeSection from "../../components/user/WelcomeSection";
+import VoiceBookingCard from "../../components/user/VoiceBookingCard";
+import QuickActions from "../../components/user/QuickActions";
+import UpcomingRideCard from "../../components/user/UpcomingRideCard";
+import RecentRides from "../../components/user/RecentRides";
 
 const UserDashboard = () => {
-  return (
-    <>
-      <DashboardHeader />
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-      <WelcomeSection />
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost/UserDashboard/api/dashboard.php?user_id=1",
+      );
+
+      if (response.data.success) {
+        setDashboard(response.data.data);
+      }
+    } catch (error) {
+      console.error("Dashboard Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading Dashboard...
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-slate-100 min-h-screen pb-24">
+      <DashboardHeader user={dashboard.user} />
+
+      <WelcomeSection user={dashboard.user} />
 
       <VoiceBookingCard />
 
-      <QuickActions />
+      <QuickActions statistics={dashboard.statistics} />
 
-      <UpcomingRideCard />
+      <UpcomingRideCard ride={dashboard.upcoming_ride} />
 
-      <div className="h-24"></div>
-    </>
+      <RecentRides rides={dashboard.recent_rides} />
+    </div>
   );
 }
 
