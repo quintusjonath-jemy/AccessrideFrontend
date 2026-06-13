@@ -24,6 +24,10 @@ import Alerts from "./admin/pages/Alerts";
 import Dashboard from "./admin/pages/Dashboard";
 import Drivers from "./admin/pages/Drivers";
 import Navigation from "./admin/pages/Navigation";
+import LoginPage from "./login/Login";
+import RegisterPage from "./login/Register";
+import AdminLogin from "./login/AdminLogin";
+import DriverLogin from "./login/DriverLogin";
 import Rides from "./admin/pages/Rides";
 import RidePage from "./Ridepage/RidePage";
 import DriverDashboard from "./Driverdashboard/DriverDashboard";
@@ -49,6 +53,11 @@ const App = () => {
           <Route path="/navigation" element={<Navigation />} />
 
           <Route path="/users" element={<Users />} />
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/driver-login" element={<DriverLogin />} />
 
           <Route path="/alerts" element={<Alerts />} />
 
