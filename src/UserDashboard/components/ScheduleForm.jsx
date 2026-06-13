@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Clock, AlertCircle } from "lucide-react";
+import axios from "axios";
 import LocationInputs from "./LocationInputs";
 import VehicleSelection from "./VehicleSelection";
 
-const ScheduleForm = ({ onScheduleAdded }) => {
+const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCancelEdit }) => {
   const [step, setStep] = useState(1); // Step 1: Vehicle selection, Step 2: Date, Time & Route
   const [vehicleType, setVehicleType] = useState("");
   const [pickup, setPickup] = useState("My Current Location (Central Library)");
@@ -11,6 +12,27 @@ const ScheduleForm = ({ onScheduleAdded }) => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [isScheduling, setIsScheduling] = useState(false);
+
+  useEffect(() => {
+    if (editingRide) {
+      setVehicleType(editingRide.vehicle_type || editingRide.wheelchair_type || "car");
+      setPickup(editingRide.pickup_location || "");
+      setDropoff(editingRide.dropoff_location || "");
+      if (editingRide.ride_date) {
+        const parts = editingRide.ride_date.split(" ");
+        setDate(parts[0] || "");
+        setTime(parts[1]?.substring(0, 5) || "");
+      }
+      setStep(2); // Go straight to step 2 since we already have fields pre-loaded
+    } else {
+      setStep(1);
+      setVehicleType("");
+      setPickup("My Current Location (Central Library)");
+      setDropoff("");
+      setDate("");
+      setTime("");
+    }
+  }, [editingRide]);
 
   const handleSwapLocations = () => {
     const temp = pickup;
@@ -24,29 +46,66 @@ const ScheduleForm = ({ onScheduleAdded }) => {
 
     setIsScheduling(true);
 
-    // Simulate API call to schedule ride
-    setTimeout(() => {
-      setIsScheduling(false);
-      
-      const newRide = {
-        id: Date.now(),
-        ride_date: `${date} ${time}`,
-        pickup_location: pickup,
-        dropoff_location: dropoff,
-        status: "scheduled",
-        vehicle_type: vehicleType,
-        fare: 250, // Mock fare
-      };
+    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
-      onScheduleAdded(newRide);
-      
-      // Reset form
-      setStep(1);
-      setVehicleType("");
-      setDropoff("");
-      setDate("");
-      setTime("");
-    }, 1500);
+    const payload = {
+      user_id: userId,
+      pickup_location: pickup,
+      dropoff_location: dropoff,
+      ride_date: `${date} ${time}`,
+      vehicle_type: vehicleType,
+      fare: editingRide ? parseFloat(editingRide.fare) : 250.0
+    };
+
+    if (editingRide) {
+      payload.ride_id = editingRide.id;
+    }
+
+    const apiRequest = editingRide
+      ? axios.put(`http://localhost/UserDashboard/api/schedule.php?user_id=${userId}`, payload)
+      : axios.post(`http://localhost/UserDashboard/api/schedule.php?user_id=${userId}`, payload);
+
+    apiRequest
+      .then(res => {
+        setIsScheduling(false);
+        if (res.data.success) {
+          if (editingRide) {
+            onScheduleUpdated({
+              id: editingRide.id,
+              ride_date: `${date} ${time}`,
+              pickup_location: pickup,
+              dropoff_location: dropoff,
+              vehicle_type: vehicleType,
+              fare: editingRide.fare || 250.0,
+              status: "scheduled"
+            });
+          } else {
+            onScheduleAdded({
+              id: res.data.ride_id || Date.now(),
+              ride_date: `${date} ${time}`,
+              pickup_location: pickup,
+              dropoff_location: dropoff,
+              vehicle_type: vehicleType,
+              fare: 250.0,
+              status: "scheduled"
+            });
+          }
+
+          // Reset form
+          setStep(1);
+          setVehicleType("");
+          setDropoff("");
+          setDate("");
+          setTime("");
+        } else {
+          alert(res.data.message || "Failed to schedule ride");
+        }
+      })
+      .catch(err => {
+        setIsScheduling(false);
+        console.error("Scheduling error:", err);
+        alert("An error occurred. Please check database connectivity and try again.");
+      });
   };
 
   return (
@@ -61,13 +120,24 @@ const ScheduleForm = ({ onScheduleAdded }) => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="flex justify-between items-center mb-1">
             <h3 className="font-extrabold text-[#0B2F89] text-base">Route & Time</h3>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="text-xs font-semibold text-slate-500 hover:text-[#0B2F89] underline cursor-pointer"
-            >
-              Back to Vehicle
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="text-xs font-semibold text-slate-500 hover:text-[#0B2F89] underline cursor-pointer"
+              >
+                Back to Vehicle
+              </button>
+              {editingRide && (
+                <button
+                  type="button"
+                  onClick={onCancelEdit}
+                  className="text-xs font-semibold text-red-500 hover:text-red-700 underline cursor-pointer"
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Location Inputs */}
@@ -124,19 +194,18 @@ const ScheduleForm = ({ onScheduleAdded }) => {
           <button
             type="submit"
             disabled={isScheduling || !pickup || !dropoff || !date || !time}
-            className={`w-full py-4 rounded-2xl font-bold text-base shadow transition cursor-pointer text-center flex items-center justify-center gap-2 ${
-              isScheduling || !pickup || !dropoff || !date || !time
+            className={`w-full py-4 rounded-2xl font-bold text-base shadow transition cursor-pointer text-center flex items-center justify-center gap-2 ${isScheduling || !pickup || !dropoff || !date || !time
                 ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
                 : "bg-[#FEC329] text-slate-900 hover:bg-yellow-500"
-            }`}
+              }`}
           >
             {isScheduling ? (
               <>
                 <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
-                <span>Scheduling Ride...</span>
+                <span>{editingRide ? "Updating Ride..." : "Scheduling Ride..."}</span>
               </>
             ) : (
-              <span>Schedule Ride</span>
+              <span>{editingRide ? "Update Ride" : "Schedule Ride"}</span>
             )}
           </button>
         </form>
