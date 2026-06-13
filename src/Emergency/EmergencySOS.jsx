@@ -120,7 +120,7 @@ const EmergencySOS = () => {
           <button
             onClick={activateSOS}
             disabled={sosActivated || loading}
-            className={`w-40 h-40 rounded-full flex items-center justify-center text-5xl font-bold border-8 shadow-2xl transition transform hover:scale-105 active:scale-95 ${
+            className={`w-40 h-40 mx-auto relative rounded-full flex items-center justify-center text-5xl font-bold border-8 shadow-2xl transition transform hover:scale-105 active:scale-95 ${
               sosActivated
                 ? "bg-red-700 text-white border-yellow-400 cursor-not-allowed"
                 : "bg-red-600 text-white border-yellow-400 hover:bg-red-700"
