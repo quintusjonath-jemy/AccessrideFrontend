@@ -147,12 +147,7 @@ const EmergencySOS = () => {
         <div className="mt-8 space-y-3">
           <button
             onClick={callDriver}
-            disabled={!sosActivated || !driverInfo}
-            className={`w-full text-white py-3 rounded-3xl font-medium transition inline-flex items-center justify-center gap-2 ${
-              sosActivated && driverInfo
-                ? "bg-slate-900 hover:bg-slate-800"
-                : "bg-slate-400 cursor-not-allowed"
-            }`}
+            className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2"
           >
             <FiPhoneCall className="h-5 w-5" /> Call Driver
           </button>
