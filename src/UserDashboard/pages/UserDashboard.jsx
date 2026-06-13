@@ -22,15 +22,11 @@ const UserDashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
-    console.log("USER ID:", userId);
-
     const fetchDashboard = async () => {
       try {
         const res = await axios.get(
           `http://localhost/UserDashboard/api/dashboard.php?user_id=${userId}`,
         );
-
-        console.log("API RESPONSE:", res.data);
 
         if (res.data?.success && res.data?.data) {
           setDashboard(res.data.data);
@@ -38,7 +34,6 @@ const UserDashboard = () => {
           setError(res.data?.message || "Invalid dashboard data");
         }
       } catch (err) {
-        console.error("API ERROR:", err);
         setError("Failed to load dashboard");
       } finally {
         setLoading(false);
@@ -47,10 +42,6 @@ const UserDashboard = () => {
 
     fetchDashboard();
   }, []);
-
-  useEffect(() => {
-    console.log("DASHBOARD STATE:", dashboard);
-  }, [dashboard]);
 
   // LOADING FIRST
   if (loading) {
