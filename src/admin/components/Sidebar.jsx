@@ -5,53 +5,148 @@ import {
   FaMapMarkerAlt,
   FaCog,
   FaSignOutAlt,
+  FaCar,
+  FaRoad,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 
-function Sidebar() {
+const Sidebar = () => {
+  const [admin, setAdmin] = useState({});
+
+  useEffect(() => {
+    axios
+      .get("http://localhost/admin/api/admin.php")
+      .then((res) => {
+        setAdmin(res.data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+  const menuClass = ({ isActive }) =>
+    `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group
+    ${
+      isActive
+        ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg font-semibold"
+        : "text-gray-300 hover:bg-gray-800 hover:text-white"
+    }`;
+
   return (
-    <div className="w-64 bg-[#111827] text-white min-h-screen p-5">
-      <h1 className="text-2xl font-bold text-yellow-400 mb-10">AccessRide</h1>
+    <aside className="w-72 bg-[#0F172A] text-white min-h-screen flex flex-col justify-between shadow-2xl">
+      {/* Logo Section */}
 
-      <ul className="space-y-4">
-        <Link to="/">
-          <li className="flex items-center gap-3 bg-yellow-400 text-black p-3 rounded-lg cursor-pointer">
-            <FaHome />
-            Dashboard
-          </li>
-        </Link>
+      <div>
+        <div className="p-6 border-b border-slate-700">
+          <h1 className="text-3xl font-extrabold">
+            <span className="text-yellow-400">Access</span>
+            <span className="text-white">Ride</span>
+          </h1>
 
-        <Link to="/users">
-          <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-            <FaUsers />
-            Users
-          </li>
-        </Link>
+          <p className="text-sm text-gray-400 mt-1">
+            Blind Assistance Dashboard
+          </p>
+        </div>
 
-        <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-          <FaMapMarkerAlt />
-          Navigation
-        </li>
+        {/* Navigation */}
 
-        <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-          <FaBell />
-          Alerts
-        </li>
+        <nav className="p-4">
+          <p className="text-xs uppercase text-gray-500 mb-3 px-3 tracking-wider">
+            Main Menu
+          </p>
 
-        <li className="flex items-center gap-3 hover:bg-gray-800 p-3 rounded-lg cursor-pointer">
-          <FaCog />
-          Settings
-        </li>
-      </ul>
+          <ul className="space-y-2">
+            <li>
+              <NavLink to="/" className={menuClass}>
+                <FaHome size={18} />
+                Dashboard
+              </NavLink>
+            </li>
 
-      <div className="absolute bottom-5">
-        <button className="flex items-center gap-3 text-red-500">
+            <li>
+              <NavLink to="/users" className={menuClass}>
+                <FaUsers size={18} />
+                Users
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/drivers" className={menuClass}>
+                <FaCar size={18} />
+                Drivers
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/rides" className={menuClass}>
+                <FaRoad size={18} />
+                Rides
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/navigation" className={menuClass}>
+                <FaMapMarkerAlt size={18} />
+                Navigation
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/alerts" className={menuClass}>
+                <FaBell size={18} />
+                Alerts
+              </NavLink>
+            </li>
+          </ul>
+
+          {/* Settings Group */}
+
+          <p className="text-xs uppercase text-gray-500 mt-8 mb-3 px-3 tracking-wider">
+            System
+          </p>
+
+          <ul>
+            <li>
+              <NavLink to="/settings" className={menuClass}>
+                <FaCog size={18} />
+                Settings
+              </NavLink>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      {/* Footer */}
+
+      <div className="p-4 border-t border-slate-700">
+        {/* Admin Profile */}
+
+        <div className="flex items-center gap-3 bg-slate-800 p-3 rounded-xl mb-4">
+          <img
+            src={
+              admin.profile_image
+                ? `http://localhost/admin/uploads/${admin.profile_image}`
+                : "https://via.placeholder.com/150"
+            }
+            alt="Admin"
+            className="w-12 h-12 rounded-full"
+          />
+
+          <div>
+            <h4 className="font-semibold">Administrator</h4>
+
+            <p className="text-xs text-gray-400">System Manager</p>
+          </div>
+        </div>
+
+        {/* Logout */}
+
+        <button className="w-full flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg">
           <FaSignOutAlt />
           Logout
         </button>
       </div>
-    </div>
+    </aside>
   );
-}
+};
 
 export default Sidebar;

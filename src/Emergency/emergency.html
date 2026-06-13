@@ -10,14 +10,14 @@
 
 <div class="w-[350px] bg-white rounded-xl shadow-lg p-4">
 
-  <!-- Header -->
+ 
   <div class="flex justify-between items-center mb-4">
     <span class="text-xl">⬅</span>
     <h2 class="font-bold text-lg">Emergency Help</h2>
     <span>👤</span>
   </div>
 
-  <!-- Mic -->
+  
   <div class="text-center mt-6">
     <button onclick="startListening()" class="bg-blue-900 text-white p-5 rounded-full text-xl">
       🎤
@@ -45,7 +45,15 @@
   <div class="mt-6 space-y-3">
     <button class="w-full bg-blue-900 text-white p-3 rounded-lg">📞 Call Driver</button>
     <button class="w-full bg-blue-900 text-white p-3 rounded-lg">👥 Call Emergency Contact</button>
-    <button class="w-full bg-blue-900 text-white p-3 rounded-lg">📍 Share Live Location</button>
+    <button id="liveLocationButton" onclick="showLiveLocationMap()" class="w-full bg-blue-900 text-white p-3 rounded-lg">📍 Share Live Location</button>
+  </div>
+
+  <!-- Live Location Map -->
+  <div id="liveLocationSection" class="mt-6 bg-gray-100 p-3 rounded-lg hidden">
+    <p id="coords" class="text-sm text-gray-700 mb-2"></p>
+    <div class="w-full h-64 overflow-hidden rounded-lg border border-gray-300">
+      <iframe id="locationMap" class="w-full h-full" src="" frameborder="0" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+    </div>
   </div>
 
   <!-- Cancel -->
