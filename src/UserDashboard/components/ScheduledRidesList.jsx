@@ -1,6 +1,6 @@
-import { Calendar, MapPin, XCircle, Car } from "lucide-react";
+import { Calendar, MapPin, XCircle, Car, Edit3 } from "lucide-react";
 
-const ScheduledRidesList = ({ rides = [], onCancel }) => {
+const ScheduledRidesList = ({ rides = [], onCancel, onEdit }) => {
   const formatDateTime = (dateStr) => {
     if (!dateStr) return "";
     try {
@@ -59,13 +59,24 @@ const ScheduledRidesList = ({ rides = [], onCancel }) => {
               </div>
             </div>
             
-            <button
-              onClick={() => onCancel(ride.id)}
-              className="text-gray-400 hover:text-red-500 transition cursor-pointer"
-              title="Cancel schedule"
-            >
-              <XCircle size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(ride)}
+                  className="text-gray-400 hover:text-blue-500 transition cursor-pointer p-1 rounded-lg hover:bg-blue-50"
+                  title="Edit schedule"
+                >
+                  <Edit3 size={18} />
+                </button>
+              )}
+              <button
+                onClick={() => onCancel(ride.id)}
+                className="text-gray-400 hover:text-red-500 transition cursor-pointer p-1 rounded-lg hover:bg-red-50"
+                title="Cancel schedule"
+              >
+                <XCircle size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-2 text-xs border-t border-slate-50 pt-3">

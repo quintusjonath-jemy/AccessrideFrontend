@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, UserCircle, CalendarRange, Clock } from "lucide-react";
+import axios from "axios";
 
 import ScheduleForm from "../components/ScheduleForm";
 import ScheduledRidesList from "../components/ScheduledRidesList";
@@ -8,29 +9,61 @@ import ScheduledRidesList from "../components/ScheduledRidesList";
 const SchedulePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("form"); // "form" or "list"
+  const [scheduledRides, setScheduledRides] = useState([]);
+  const [editingRide, setEditingRide] = useState(null);
 
-  // Pre-load with one mock scheduled ride for demo purposes
-  const [scheduledRides, setScheduledRides] = useState([
-    {
-      id: 1,
-      ride_date: "2026-06-15 09:00:00",
-      pickup_location: "My Current Location (Central Library)",
-      dropoff_location: "Central Hospital",
-      status: "scheduled",
-      wheelchair_type: "manual",
-      fare: 240,
-    },
-  ]);
+  useEffect(() => {
+    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    axios.get(`http://localhost/UserDashboard/api/schedule.php?user_id=${userId}`)
+      .then(res => {
+        if (res.data.success && res.data.data !== null) {
+          setScheduledRides(res.data.data || []);
+        }
+      })
+      .catch(err => {
+        console.error("Error loading schedules:", err);
+      });
+  }, []);
 
   const handleAddSchedule = (newRide) => {
     setScheduledRides((prev) => [newRide, ...prev]);
     setActiveTab("list"); // Switch to list tab to see the newly scheduled ride!
   };
 
+  const handleUpdateSchedule = (updatedRide) => {
+    setScheduledRides((prev) =>
+      prev.map((ride) => (ride.id === updatedRide.id ? updatedRide : ride))
+    );
+    setEditingRide(null);
+    setActiveTab("list");
+  };
+
   const handleCancelSchedule = (rideId) => {
     if (window.confirm("Are you sure you want to cancel this scheduled ride?")) {
-      setScheduledRides((prev) => prev.filter((r) => r.id !== rideId));
+      const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+      axios.delete(`http://localhost/UserDashboard/api/schedule.php?ride_id=${rideId}&user_id=${userId}`)
+      .then(res => {
+        if (res.data.success) {
+          setScheduledRides((prev) => prev.filter((r) => r.id !== rideId));
+        } else {
+          alert(res.data.message || "Failed to cancel ride");
+        }
+      })
+      .catch(err => {
+        console.error("Error cancelling ride:", err);
+        alert("An error occurred. Please try again.");
+      });
     }
+  };
+
+  const handleEditSchedule = (ride) => {
+    setEditingRide(ride);
+    setActiveTab("form");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRide(null);
+    setActiveTab("list");
   };
 
   return (
@@ -84,11 +117,17 @@ const SchedulePage = () => {
         {/* Tab Contents */}
         <div className="px-5">
           {activeTab === "form" ? (
-            <ScheduleForm onScheduleAdded={handleAddSchedule} />
+            <ScheduleForm
+              onScheduleAdded={handleAddSchedule}
+              onScheduleUpdated={handleUpdateSchedule}
+              editingRide={editingRide}
+              onCancelEdit={handleCancelEdit}
+            />
           ) : (
             <ScheduledRidesList
               rides={scheduledRides}
               onCancel={handleCancelSchedule}
+              onEdit={handleEditSchedule}
             />
           )}
         </div>
