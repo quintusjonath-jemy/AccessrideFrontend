@@ -1,16 +1,22 @@
 import React, { useState } from "react";
 import { UserPlus, Mic } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 function Register() {
-  const [isDriver, setIsDriver] = useState(false);
+  const [searchParams] = useSearchParams();
+  const defaultDriver = searchParams.get("driver") === "true";
+  const [isDriver, setIsDriver] = useState(defaultDriver);
+  const backendBase = import.meta.env.VITE_BACKEND_BASE || "http://localhost:8000";
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
+    guardianName: "",
+    guardianNumber: "",
     vehicleType: "Sedan",
     plateNumber: "",
     licenseNumber: "",
@@ -27,18 +33,26 @@ function Register() {
     }));
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     const {
-      fullName,
+      firstName,
+      lastName,
       email,
       phone,
       password,
       confirmPassword,
+      guardianName,
+      guardianNumber,
       agree,
     } = formData;
 
-    if (!fullName || !email || !phone || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
       alert("Please fill all required fields");
+      return;
+    }
+
+    if (!isDriver && (!guardianName || !guardianNumber)) {
+      alert("Please fill all required fields including guardian details");
       return;
     }
 
@@ -52,24 +66,25 @@ function Register() {
       return;
     }
 
-    alert(
-      `Registration successful for ${fullName}. Please verify your email/phone.`
-    );
+    try {
+      const response = await fetch(`${backendBase}/logi/api/register.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...formData, isDriver }),
+      });
 
-    setFormData({
-      fullName: "",
-      email: "",
-      phone: "",
-      password: "",
-      confirmPassword: "",
-      vehicleType: "Sedan",
-      plateNumber: "",
-      licenseNumber: "",
-      insurance: "",
-      agree: false,
-    });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Registration failed");
+      }
 
-    setIsDriver(false);
+      alert(result.message || `Registration successful for ${firstName} ${lastName}.`);
+      window.location.reload();
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   const voiceReadForm = () => {
@@ -79,9 +94,12 @@ function Register() {
     }
 
     const fields = [
-      `Name: ${formData.fullName || "empty"}`,
+      `First Name: ${formData.firstName || "empty"}`,
+      `Last Name: ${formData.lastName || "empty"}`,
       `Email: ${formData.email || "empty"}`,
       `Phone: ${formData.phone || "empty"}`,
+      `Guardian Name: ${formData.guardianName || "empty"}`,
+      `Guardian Number: ${formData.guardianNumber || "empty"}`,
       `Password: ${formData.password ? "set" : "not set"}`,
     ];
 
@@ -160,18 +178,32 @@ function Register() {
           </div>
 
           {/* Form */}
-          <form className="space-y-4">
-            <div>
-              <label className="block text-blue-900 font-semibold mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
-              />
+          <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-blue-900 font-semibold mb-1">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+                />
+              </div>
+              <div>
+                <label className="block text-blue-900 font-semibold mb-1">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+                />
+              </div>
             </div>
 
             <div>
@@ -196,10 +228,40 @@ function Register() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="e.g. +94 77 123 4567"
+                placeholder="e.g. +1 555 555 5555"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
               />
             </div>
+
+            {!isDriver && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-blue-900 font-semibold mb-1">
+                    Guardian Name
+                  </label>
+                  <input
+                    type="text"
+                    name="guardianName"
+                    value={formData.guardianName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-blue-900 font-semibold mb-1">
+                    Guardian Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="guardianNumber"
+                    value={formData.guardianNumber}
+                    onChange={handleChange}
+                    placeholder="e.g. +1 555 555 5555"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-blue-900 font-semibold mb-1">
@@ -308,8 +370,7 @@ function Register() {
             </div>
 
             <button
-              type="button"
-              onClick={handleRegister}
+              type="submit"
               className="w-full bg-blue-900 text-white py-3 rounded-lg font-semibold hover:bg-blue-800"
             >
               Create Account
