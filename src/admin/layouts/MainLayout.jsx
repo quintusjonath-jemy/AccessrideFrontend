@@ -6,10 +6,11 @@ const MainLayout = ({ children }) => {
   const location = useLocation();
 
   const isNavigationPage = location.pathname === "/navigation";
+  const isEmergencyPage = location.pathname === "/emergency";
   const isMobilePage = location.pathname === "/my-rides" || location.pathname === "/profile";
 
-  if (isMobilePage) {
-    return <div className="w-screen h-screen overflow-hidden">{children}</div>;
+  if (isEmergencyPage || isMobilePage) {
+    return <div className="w-screen min-h-screen overflow-auto">{children}</div>;
   }
 
   return (
