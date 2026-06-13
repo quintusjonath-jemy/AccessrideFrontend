@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   UserCircle,
+  MapPinned,
 } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -20,6 +21,13 @@ const Navbar = () => {
   const [openMenu, setOpenMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState({
+    users: [],
+    drivers: [],
+    rides: [],
+  });
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     axios
@@ -29,6 +37,28 @@ const Navbar = () => {
       })
       .catch((err) => console.log(err));
   }, []);
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setResults({ users: [], drivers: [], rides: [] });
+      return;
+    }
+
+    const delay = setTimeout(async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost/admin/api/search.php?q=${search}`,
+        );
+
+        setResults(res.data);
+        setShowSearch(true);
+      } catch (err) {
+        console.log(err);
+      }
+    }, 300);
+
+    return () => clearTimeout(delay);
+  }, [search]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -77,9 +107,72 @@ const Navbar = () => {
 
         <input
           type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onFocus={() => setShowSearch(true)}
           placeholder="Search users, drivers, rides..."
           className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-yellow-400 outline-none transition"
         />
+
+        {showSearch && search && (
+          <div className="absolute top-14 left-0 w-full bg-white border rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
+            {/* USERS */}
+            <div className="p-3 border-b">
+              <p className="text-xs text-gray-400 mb-2">Users</p>
+              {results.users?.length > 0 ? (
+                results.users.map((u) => (
+                  <div
+                    key={u.id}
+                    className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg"
+                  >
+                    <User size={16} />
+                    <span className="text-sm">{u.name}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-gray-400">No users found</p>
+              )}
+            </div>
+
+            {/* DRIVERS */}
+            <div className="p-3 border-b">
+              <p className="text-xs text-gray-400 mb-2">Drivers</p>
+              {results.drivers?.length > 0 ? (
+                results.drivers.map((d) => (
+                  <div
+                    key={d.id}
+                    className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg"
+                  >
+                    <Car size={16} />
+                    <span className="text-sm">{d.name}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-gray-400">No drivers found</p>
+              )}
+            </div>
+
+            {/* RIDES */}
+            <div className="p-3">
+              <p className="text-xs text-gray-400 mb-2">Rides</p>
+              {results.rides?.length > 0 ? (
+                results.rides.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg"
+                  >
+                    <MapPinned size={16} />
+                    <span className="text-sm">
+                      {r.pickup_location} → {r.dropoff_location}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-gray-400">No rides found</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div ref={dropdownRef} className="flex items-center gap-5">
