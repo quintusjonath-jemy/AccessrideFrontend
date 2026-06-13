@@ -8,7 +8,7 @@ const QuickActions = () => {
     <div className="mx-5 mt-5 flex flex-col gap-4">
       {/* Book a Ride */}
       <button
-        onClick={() => navigate("/user/ride")}
+        onClick={() => navigate("/user/booking")}
         className="w-full bg-[#0B2F89] hover:bg-[#082366] text-white rounded-2xl p-5 shadow-sm transition flex items-center gap-4 text-left cursor-pointer"
       >
         <div className="p-2.5 bg-white/10 rounded-xl">

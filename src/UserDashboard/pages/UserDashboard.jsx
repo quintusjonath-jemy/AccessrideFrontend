@@ -8,7 +8,7 @@ import QuickActions from "../components/QuickActions";
 import UpcomingRideCard from "../components/UpcomingRideCard";
 import RecentRides from "../components/RecentRides";
 
-function UserDashboard() {
+const UserDashboard = () => {
   const [dashboard, setDashboard] = useState({
     user: {},
     statistics: {},
