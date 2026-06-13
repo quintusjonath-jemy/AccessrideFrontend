@@ -4,18 +4,7 @@ const VoiceBookingCard = () => {
   return (
     <div className="mx-5 mt-5 bg-white rounded-3xl p-8 shadow">
       <div className="flex justify-center">
-        <button
-          className="
-          h-24
-          w-24
-          rounded-full
-          bg-yellow-400
-          flex
-          items-center
-          justify-center
-          shadow-lg
-        "
-        >
+        <button className=" h-24 w-24 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg">
           <Mic size={42} />
         </button>
       </div>
@@ -29,6 +18,6 @@ const VoiceBookingCard = () => {
       </p>
     </div>
   );
-}
+};
 
 export default VoiceBookingCard;

@@ -8,7 +8,7 @@ const QuickActions = ({ statistics }) => {
 
         <p className="text-sm text-gray-500 mt-2">Total</p>
 
-        <h3 className="font-bold text-xl">{statistics.total_rides}</h3>
+        <h3 className="font-bold text-xl">{statistics?.total_rides}</h3>
       </div>
 
       <div className="bg-white rounded-2xl p-4 shadow">
@@ -16,7 +16,7 @@ const QuickActions = ({ statistics }) => {
 
         <p className="text-sm text-gray-500 mt-2">Pending</p>
 
-        <h3 className="font-bold text-xl">{statistics.pending_rides}</h3>
+        <h3 className="font-bold text-xl">{statistics?.pending_rides}</h3>
       </div>
 
       <div className="bg-white rounded-2xl p-4 shadow">
@@ -24,7 +24,7 @@ const QuickActions = ({ statistics }) => {
 
         <p className="text-sm text-gray-500 mt-2">Completed</p>
 
-        <h3 className="font-bold text-xl">{statistics.completed_rides}</h3>
+        <h3 className="font-bold text-xl">{statistics?.completed_rides}</h3>
       </div>
     </div>
   );

@@ -1,59 +1,87 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import DashboardHeader from "../../components/user/DashboardHeader";
-import WelcomeSection from "../../components/user/WelcomeSection";
-import VoiceBookingCard from "../../components/user/VoiceBookingCard";
-import QuickActions from "../../components/user/QuickActions";
-import UpcomingRideCard from "../../components/user/UpcomingRideCard";
-import RecentRides from "../../components/user/RecentRides";
+import DashboardHeader from "../components/DashboardHeader";
+import WelcomeSection from "../components/WelcomeSection";
+import VoiceBookingCard from "../components/VoiceBookingCard";
+import QuickActions from "../components/QuickActions";
+import UpcomingRideCard from "../components/UpcomingRideCard";
 
-const UserDashboard = () => {
+function UserDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const userId = localStorage.getItem("user_id");
+
+    console.log("USER ID:", userId);
+
+    if (!userId) {
+      setLoading(false);
+      setError("User not logged in");
+      return;
+    }
+
+    const fetchDashboard = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost/UserDashboard/api/dashboard.php?user_id=${userId}`,
+        );
+
+        console.log("API RESPONSE:", res.data);
+
+        if (res.data?.success && res.data?.data) {
+          console.log("SETTING DASHBOARD:", res.data.data);
+          setDashboard(res.data.data);
+        } else {
+          console.log("INVALID RESPONSE");
+          setDashboard(null);
+        }
+      } catch (err) {
+        console.error("API ERROR:", err);
+        setDashboard(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboard();
   }, []);
 
-  const fetchDashboard = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost/UserDashboard/api/dashboard.php?user_id=1",
-      );
+  useEffect(() => {
+    console.log("DASHBOARD STATE:", dashboard);
+  }, [dashboard]);
 
-      if (response.data.success) {
-        setDashboard(response.data.data);
-      }
-    } catch (error) {
-      console.error("Dashboard Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // LOADING STATE
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading Dashboard...
-      </div>
-    );
+    return <div className="p-5">Loading Dashboard...</div>;
+  }
+
+  // ERROR STATE
+  if (error) {
+    return <div className="p-5 text-red-500">{error}</div>;
+  }
+
+  // EMPTY STATE
+  if (!dashboard) {
+    return <div className="p-5 text-gray-500">No dashboard data found</div>;
   }
 
   return (
-    <div className="bg-slate-100 min-h-screen pb-24">
-      <DashboardHeader user={dashboard.user} />
+    <>
+      <DashboardHeader />
 
-      <WelcomeSection user={dashboard.user} />
+      <WelcomeSection name={dashboard?.user?.name || "User"} />
 
       <VoiceBookingCard />
 
-      <QuickActions statistics={dashboard.statistics} />
+      <QuickActions />
 
-      <UpcomingRideCard ride={dashboard.upcoming_ride} />
+      {dashboard && <UpcomingRideCard ride={dashboard.upcoming_ride} />}
 
-      <RecentRides rides={dashboard.recent_rides} />
-    </div>
+      <div className="h-24"></div>
+    </>
   );
 }
 
