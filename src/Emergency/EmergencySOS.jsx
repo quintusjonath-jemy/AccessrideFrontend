@@ -171,8 +171,7 @@ const EmergencySOS = () => {
 
         <button
           onClick={cancelSOS}
-          disabled={!sosActivated}
-          className="mt-6 w-full border-2 border-red-500 text-red-600 py-3 rounded-3xl font-medium transition enabled:hover:bg-red-50 disabled:border-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+          className="mt-6 w-full border-2 border-red-500 text-red-600 py-3 rounded-3xl font-medium transition hover:bg-red-50 inline-flex items-center justify-center gap-2"
         >
           <FiX className="h-5 w-5" /> Cancel SOS
         </button>
