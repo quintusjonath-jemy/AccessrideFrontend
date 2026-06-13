@@ -6,22 +6,23 @@ import WelcomeSection from "../components/WelcomeSection";
 import VoiceBookingCard from "../components/VoiceBookingCard";
 import QuickActions from "../components/QuickActions";
 import UpcomingRideCard from "../components/UpcomingRideCard";
+import RecentRides from "../components/RecentRides";
 
 function UserDashboard() {
-  const [dashboard, setDashboard] = useState(null);
+  const [dashboard, setDashboard] = useState({
+    user: {},
+    statistics: {},
+    upcoming_ride: null,
+    recent_rides: [],
+  });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id");
+    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
     console.log("USER ID:", userId);
-
-    if (!userId) {
-      setLoading(false);
-      setError("User not logged in");
-      return;
-    }
 
     const fetchDashboard = async () => {
       try {
@@ -32,15 +33,13 @@ function UserDashboard() {
         console.log("API RESPONSE:", res.data);
 
         if (res.data?.success && res.data?.data) {
-          console.log("SETTING DASHBOARD:", res.data.data);
           setDashboard(res.data.data);
         } else {
-          console.log("INVALID RESPONSE");
-          setDashboard(null);
+          setError(res.data?.message || "Invalid dashboard data");
         }
       } catch (err) {
         console.error("API ERROR:", err);
-        setDashboard(null);
+        setError("Failed to load dashboard");
       } finally {
         setLoading(false);
       }
@@ -53,32 +52,36 @@ function UserDashboard() {
     console.log("DASHBOARD STATE:", dashboard);
   }, [dashboard]);
 
-  // LOADING STATE
+  // LOADING FIRST
   if (loading) {
     return <div className="p-5">Loading Dashboard...</div>;
   }
 
-  // ERROR STATE
+  // ERROR SECOND
   if (error) {
     return <div className="p-5 text-red-500">{error}</div>;
-  }
-
-  // EMPTY STATE
-  if (!dashboard) {
-    return <div className="p-5 text-gray-500">No dashboard data found</div>;
   }
 
   return (
     <>
       <DashboardHeader />
 
-      <WelcomeSection name={dashboard?.user?.name || "User"} />
+      {/* 3. Pass user object instead of name */}
+      <WelcomeSection user={dashboard?.user} />
 
       <VoiceBookingCard />
 
-      <QuickActions />
+      {/* 4. Pass statistics to QuickActions */}
+      <QuickActions statistics={dashboard?.statistics} />
 
-      {dashboard && <UpcomingRideCard ride={dashboard.upcoming_ride} />}
+      {dashboard?.upcoming_ride && (
+        <UpcomingRideCard ride={dashboard.upcoming_ride} />
+      )}
+
+      {/* 5. Render RecentRides list */}
+      {dashboard?.recent_rides && dashboard.recent_rides.length > 0 && (
+        <RecentRides rides={dashboard.recent_rides} />
+      )}
 
       <div className="h-24"></div>
     </>
