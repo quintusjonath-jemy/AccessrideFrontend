@@ -1,14 +1,16 @@
 import { Car, Truck, Zap, Bike, Sparkles } from "lucide-react";
 
-const RideOptionsList = ({ selectedClass, onSelectClass, vehicleType }) => {
+const RideOptionsList = ({ selectedClass, onSelectClass, vehicleType, distance }) => {
   const getOptionsForVehicle = () => {
+    const dist = distance || 5.0; // Fallback to 5km if not ready
+    
     switch (vehicleType) {
       case "van":
         return [
           {
             id: "assist",
             title: "AccessRide Van / WAV",
-            price: "Rs. 240",
+            price: "Rs. " + (dist * 100).toFixed(2),
             eta: "8 mins away",
             desc: "Spacious van with ramp/lift and assist certified driver.",
             icon: Truck,
@@ -19,7 +21,7 @@ const RideOptionsList = ({ selectedClass, onSelectClass, vehicleType }) => {
           {
             id: "auto",
             title: "AccessRide Auto",
-            price: "Rs. 120",
+            price: "Rs. " + (dist * 60).toFixed(2),
             eta: "6 mins away",
             desc: "Open-air auto-rickshaw. Ideal for short quick trips.",
             icon: Zap,
@@ -30,7 +32,7 @@ const RideOptionsList = ({ selectedClass, onSelectClass, vehicleType }) => {
           {
             id: "moto",
             title: "AccessRide Moto",
-            price: "Rs. 80",
+            price: "Rs. " + (dist * 40).toFixed(2),
             eta: "3 mins away",
             desc: "Fast single-passenger motorcycle ride.",
             icon: Bike,
@@ -42,7 +44,7 @@ const RideOptionsList = ({ selectedClass, onSelectClass, vehicleType }) => {
           {
             id: "eco",
             title: "AccessRide Eco",
-            price: "Rs. 180",
+            price: "Rs. " + (dist * 80).toFixed(2),
             eta: "5 mins away",
             desc: "Standard sedan for comfortable everyday trips.",
             icon: Car,

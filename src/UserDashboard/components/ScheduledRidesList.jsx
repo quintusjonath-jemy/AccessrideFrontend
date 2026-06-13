@@ -95,6 +95,28 @@ const ScheduledRidesList = ({ rides = [], onCancel, onEdit }) => {
               </p>
             </div>
           </div>
+
+          {/* Details Row (Distance, Fare & Payment) */}
+          <div className="flex justify-between items-center text-[10px] bg-slate-50 rounded-2xl p-3 border border-slate-100/50 text-slate-500">
+            {ride.distance_km && (
+              <div>
+                <span className="font-bold text-gray-400 uppercase mr-1">Dist:</span>
+                <span className="font-extrabold text-slate-800">{parseFloat(ride.distance_km).toFixed(1)} km</span>
+              </div>
+            )}
+            {ride.fare && (
+              <div>
+                <span className="font-bold text-gray-400 uppercase mr-1">Fare:</span>
+                <span className="font-extrabold text-slate-800">Rs. {parseFloat(ride.fare).toFixed(2)}</span>
+              </div>
+            )}
+            {ride.payment_method && (
+              <div>
+                <span className="font-bold text-gray-400 uppercase mr-1">Pay:</span>
+                <span className="font-black text-[#0B2F89] capitalize">{ride.payment_method}</span>
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>
