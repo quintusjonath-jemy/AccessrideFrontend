@@ -1,8 +1,8 @@
-import DashboardHeader from "../../components/DashboardHeader";
-import QuickActions from "../../components/QuickActions";
-import UpcomingRideCard from "../../components/UpcomingRideCard";
-import VoiceBookingCard from "../../components/VoiceBookingCard";
-import WelcomeSection from "../../components/WelcomeSection";
+import DashboardHeader from "../components/DashboardHeader";
+import QuickActions from "../components/QuickActions";
+import UpcomingRideCard from "../components/UpcomingRideCard";
+import VoiceBookingCard from "../components/VoiceBookingCard";
+import WelcomeSection from "../components/WelcomeSection";
 
 const UserDashboard = () => {
   return (
