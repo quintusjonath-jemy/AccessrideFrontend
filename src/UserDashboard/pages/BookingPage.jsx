@@ -29,7 +29,7 @@ const geocodeLocation = async (query) => {
   }
 
   try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
     const res = await axios.get(url);
     if (res.data?.features && res.data.features.length > 0) {
       return res.data.features[0].center; // [lng, lat]
@@ -93,11 +93,12 @@ const BookingPage = () => {
   const [distance, setDistance] = useState(5.0); // Default 5 km
   const [isBookingInProgress, setIsBookingInProgress] = useState(false);
 
-  // Mapbox Refs
+  // Mapbox Refs & State
   const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
+  const [map, setMap] = useState(null);
   const pickupMarkerRef = useRef(null);
   const dropoffMarkerRef = useRef(null);
+  const mapInitRef = useRef(false);
 
   // Coordinates and Route State
   const [pickupCoords, setPickupCoords] = useState(null);
@@ -160,19 +161,24 @@ const BookingPage = () => {
 
   // Initialize Map
   useEffect(() => {
-    if (step !== 2 || !mapContainerRef.current || mapRef.current) return;
+    if (step !== 2 || !mapContainerRef.current || mapInitRef.current) return;
 
-    mapRef.current = new mapboxgl.Map({
+    mapInitRef.current = true;
+
+    const mapInstance = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
       center: [79.8612, 6.9271], // Default center
       zoom: 12,
     });
 
+    setMap(mapInstance);
+
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
+      if (mapInstance) {
+        mapInstance.remove();
+        setMap(null);
+        mapInitRef.current = false;
         pickupMarkerRef.current = null;
         dropoffMarkerRef.current = null;
       }
@@ -181,7 +187,6 @@ const BookingPage = () => {
 
   // Update Map Markers and Route Layer
   useEffect(() => {
-    const map = mapRef.current;
     if (!map) return;
 
     const updateMapElements = () => {
@@ -249,7 +254,7 @@ const BookingPage = () => {
     } else {
       map.once("load", updateMapElements);
     }
-  }, [pickupCoords, dropoffCoords, routeGeoJSON]);
+  }, [map, pickupCoords, dropoffCoords, routeGeoJSON]);
 
   const handleSelectVehicle = (type) => {
     setVehicleType(type);

@@ -22,7 +22,7 @@ const geocodeLocation = async (query) => {
   }
 
   try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
     const res = await axios.get(url);
     if (res.data?.features && res.data.features.length > 0) {
       return res.data.features[0].center; // [lng, lat]
@@ -263,11 +263,29 @@ const RideTrackingPage = () => {
           .addTo(map);
       }
 
-      // Add Driver Marker (Pulsing blue element)
+      // Add Driver Marker (Pulsing blue element matching vehicle type)
       if (driverCoords) {
         const el = document.createElement("div");
         el.className = "w-10 h-10 bg-[#0B2F89] rounded-full border-4 border-white shadow-xl flex items-center justify-center text-white text-base animate-pulse cursor-pointer";
-        el.innerHTML = "🚗";
+        
+        const getVehicleEmoji = (pickupLocation, driverType, vehicleType) => {
+          let type = null;
+          if (pickupLocation) {
+            const match = pickupLocation.match(/\(Vehicle:\s*([^\)]+)\)/i);
+            if (match) {
+              type = match[1].trim().toLowerCase();
+            }
+          }
+          if (!type) {
+            type = (driverType || vehicleType || "car").toLowerCase().trim();
+          }
+          if (type.includes("bike") || type.includes("motorcycle")) return "🏍️";
+          if (type.includes("van") || type.includes("suv")) return "🚐";
+          if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) return "🛺";
+          return "🚗";
+        };
+        
+        el.innerHTML = getVehicleEmoji(ride?.pickup_location, ride?.driver_vehicle_type, ride?.vehicle_type);
 
         const popupText = (ride?.status === "pending" || ride?.status === "accepted") && displayDistance !== null
           ? `Your Driver (${displayDistance.toFixed(1)} km away)`
@@ -456,7 +474,15 @@ const RideTrackingPage = () => {
           {ride.driver_vehicle_number && (
             <div className="flex items-center justify-between p-3.5 bg-blue-50/50 border border-blue-100/30 rounded-2xl text-xs">
               <div className="flex items-center gap-2 text-slate-700 font-semibold capitalize">
-                <Car size={16} className="text-[#0B2F89]" />
+                <span className="text-base">
+                  {(() => {
+                    const type = (ride.driver_vehicle_type || "car").toLowerCase();
+                    if (type.includes("bike") || type.includes("motorcycle")) return "🏍️";
+                    if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) return "🛺";
+                    if (type.includes("van") || type.includes("suv")) return "🚐";
+                    return "🚗";
+                  })()}
+                </span>
                 <span>{ride.driver_vehicle_type || "Standard Vehicle"}</span>
               </div>
               <span className="px-3 py-1 bg-white border border-blue-100 rounded-lg text-slate-800 font-black shadow-sm tracking-wide uppercase">
@@ -468,7 +494,28 @@ const RideTrackingPage = () => {
           {/* Trip Details (From / To) */}
           <div className="space-y-2 text-xs border-t border-slate-50 pt-4">
             <div className="flex justify-between items-center text-gray-400">
-              <span>Pickup: <strong className="text-slate-700 font-bold ml-1">{ride.pickup_location}</strong></span>
+              <span className="flex items-center gap-1.5 flex-wrap">
+                Pickup: 
+                <strong className="text-slate-700 font-bold ml-1">
+                  {ride.pickup_location ? ride.pickup_location.replace(/\s*\(Vehicle:\s*[^\)]+\)/i, "") : ""}
+                </strong>
+                {(() => {
+                  const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
+                  if (match) {
+                    const type = match[1].trim().toLowerCase();
+                    let emoji = "🚗";
+                    if (type.includes("bike") || type.includes("motorcycle")) emoji = "🏍️";
+                    else if (type.includes("van") || type.includes("suv")) emoji = "🚐";
+                    else if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) emoji = "🛺";
+                    return (
+                      <span className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold gap-1 border border-blue-100">
+                        {emoji} {match[1]}
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
+              </span>
             </div>
             <div className="flex justify-between items-center text-gray-400">
               <span>Drop-off: <strong className="text-slate-800 font-black ml-1">{ride.dropoff_location}</strong></span>
