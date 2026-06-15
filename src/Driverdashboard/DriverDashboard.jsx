@@ -58,7 +58,7 @@ const DriverDashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 py-6 flex justify-center px-3 sm:px-6">
-      <div className="mx-auto w-full max-w-[430px] min-h-[932px] flex flex-col overflow-hidden rounded-[2rem] bg-white shadow-[0_25px_80px_rgba(15,23,42,0.12)]">
+      <div className="mx-auto w-full max-w-[360px] min-h-[932px] flex flex-col overflow-hidden rounded-[2rem] bg-white shadow-[0_25px_80px_rgba(15,23,42,0.12)]">
         <div className="border-b border-slate-200 px-5 py-4">
           <div className="flex items-center justify-between">
             <div>

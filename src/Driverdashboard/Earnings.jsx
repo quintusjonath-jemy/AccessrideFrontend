@@ -1,8 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Earnings = () => {
   const navigate = useNavigate();
+
+  const [isOnline] = useState(() => {
+    const stored = localStorage.getItem("driverOnlineStatus");
+    return stored ? JSON.parse(stored) : true;
+  });
 
   const transactions = useMemo(
     () => [
@@ -29,7 +34,9 @@ const Earnings = () => {
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500">Status</p>
-              <p className="text-green-600 font-bold">Online</p>
+              <p className={`font-bold ${isOnline ? "text-emerald-600" : "text-rose-500"}`}>
+                {isOnline ? "Online" : "Offline"}
+              </p>
             </div>
           </div>
         </div>
