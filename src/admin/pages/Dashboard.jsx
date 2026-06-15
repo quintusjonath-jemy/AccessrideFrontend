@@ -119,8 +119,11 @@ const Dashboard = () => {
                   </tr>
                 ) : (
                   Array.isArray(rides) &&
-                  rides.slice(0, 5).map((ride) => {
-                    const rideStatus = (ride.status || "").toLowerCase().trim();
+                  [...rides]
+                    .sort((a, b) => Number(b.id) - Number(a.id))
+                    .slice(0, 7)
+                    .map((ride) => {
+                      const rideStatus = (ride.status || "").toLowerCase().trim();
 
                     const statusStyles = {
                       active: "bg-green-100 text-green-700",

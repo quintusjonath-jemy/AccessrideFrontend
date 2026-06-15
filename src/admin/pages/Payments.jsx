@@ -28,6 +28,12 @@ const Payments = () => {
   const [search, setSearch] = useState("");
   const [filterMethod, setFilterMethod] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterUser, setFilterUser] = useState("all");
+  const [filterDriver, setFilterDriver] = useState("all");
+
+  // Extract unique users and drivers from payments for filter options
+  const uniqueUsers = Array.from(new Set(payments.map(p => p.user_name).filter(Boolean))).sort();
+  const uniqueDrivers = Array.from(new Set(payments.map(p => p.driver_name).filter(Boolean))).sort();
   
   // Details Modal
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -78,8 +84,16 @@ const Payments = () => {
     const matchesStatus = 
       filterStatus === "all" || 
       p.status.toLowerCase() === filterStatus.toLowerCase();
+
+    const matchesUser = 
+      filterUser === "all" || 
+      p.user_name === filterUser;
+
+    const matchesDriver = 
+      filterDriver === "all" || 
+      p.driver_name === filterDriver;
       
-    return matchesSearch && matchesMethod && matchesStatus;
+    return matchesSearch && matchesMethod && matchesStatus && matchesUser && matchesDriver;
   });
 
   // Update payment status
@@ -233,6 +247,30 @@ const Payments = () => {
               <SlidersHorizontal size={14} className="text-slate-400" />
               <span className="text-xs text-slate-500 font-semibold">Filters:</span>
             </div>
+
+            {/* User Filter */}
+            <select
+              value={filterUser}
+              onChange={(e) => setFilterUser(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+            >
+              <option value="all">All Users</option>
+              {uniqueUsers.map((user) => (
+                <option key={user} value={user}>{user}</option>
+              ))}
+            </select>
+
+            {/* Driver Filter */}
+            <select
+              value={filterDriver}
+              onChange={(e) => setFilterDriver(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+            >
+              <option value="all">All Drivers</option>
+              {uniqueDrivers.map((driver) => (
+                <option key={driver} value={driver}>{driver}</option>
+              ))}
+            </select>
             
             {/* Method Filter */}
             <select

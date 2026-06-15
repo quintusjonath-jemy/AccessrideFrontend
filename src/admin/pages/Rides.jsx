@@ -16,6 +16,7 @@ const Rides = () => {
   const [drivers, setDrivers] = useState([]);
 
   const [searchType, setSearchType] = useState("pickup");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -106,13 +107,34 @@ const Rides = () => {
   };
 
   const filteredRides = rides.filter((ride) => {
+    const matchesStatus =
+      filterStatus === "all" ||
+      ride.status?.toLowerCase() === filterStatus.toLowerCase();
+
+    if (!matchesStatus) return false;
     if (!search) return true;
+    const searchLower = search.toLowerCase();
 
     if (searchType === "pickup") {
-      return ride.pickup_location?.toLowerCase().includes(search.toLowerCase());
+      return ride.pickup_location?.toLowerCase().includes(searchLower);
+    }
+    if (searchType === "destination") {
+      return ride.dropoff_location?.toLowerCase().includes(searchLower);
+    }
+    if (searchType === "user") {
+      return ride.user_name?.toLowerCase().includes(searchLower);
+    }
+    if (searchType === "driver") {
+      return ride.driver_name?.toLowerCase().includes(searchLower);
+    }
+    if (searchType === "id") {
+      return String(ride.id).includes(searchLower);
+    }
+    if (searchType === "status") {
+      return ride.status?.toLowerCase().includes(searchLower);
     }
 
-    return ride.dropoff_location?.toLowerCase().includes(search.toLowerCase());
+    return true;
   });
 
   return (
@@ -165,6 +187,56 @@ const Rides = () => {
 
               <option value="destination" className="text-gray-700 bg-white">
                 🏁 Destination Location
+              </option>
+
+              <option value="user" className="text-gray-700 bg-white">
+                👤 Customer Name
+              </option>
+
+              <option value="driver" className="text-gray-700 bg-white">
+                🚗 Driver Name
+              </option>
+
+              <option value="id" className="text-gray-700 bg-white">
+                🔢 Ride ID
+              </option>
+
+              <option value="status" className="text-gray-700 bg-white">
+                ⚙️ Status
+              </option>
+            </select>
+
+            {/* CUSTOM ARROW */}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              ▼
+            </div>
+          </div>
+
+          {/* STATUS FILTER */}
+          <div className="relative w-full md:w-48">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full appearance-none px-4 py-3 pr-10 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 shadow-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition cursor-pointer"
+            >
+              <option value="all" className="text-gray-700 bg-white">
+                ⚙️ All Statuses
+              </option>
+              <option value="pending" className="text-gray-700 bg-white">
+                ⏳ Pending
+              </option>
+              <option value="accepted" className="text-gray-700 bg-white">
+                ✅ Accepted
+              </option>
+              <option value="active" className="text-gray-700 bg-white">
+                🚖 Active
+              </option>
+              <option value="completed" className="text-gray-700 bg-white">
+                🏁 Completed
+              </option>
+              <option value="cancelled" className="text-gray-700 bg-white">
+                ❌ Cancelled
               </option>
             </select>
 
