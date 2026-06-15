@@ -1,10 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Bell, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const activeAlerts = alerts.filter(
     (alert) => alert.status !== "resolved"
@@ -200,15 +202,31 @@ const Alerts = () => {
 
                       {/* ACTION */}
                       <td className="px-6 py-4 text-right">
-                        {alert.status !== "resolved" && (
-                          <button
-                            onClick={() => resolveAlert(alert.id)}
-                            className="inline-flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-600 px-3 py-2 rounded-lg text-sm font-medium transition"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Resolve
-                          </button>
-                        )}
+                        <div className="flex justify-end gap-2">
+                          {alert.driver_id && (
+                            <button
+                              onClick={() =>
+                                navigate("/navigation", {
+                                  state: {
+                                    driverId: alert.driver_id,
+                                  },
+                                })
+                              }
+                              className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-lg text-xs font-semibold transition animate-pulse"
+                            >
+                              Track
+                            </button>
+                          )}
+                          {alert.status !== "resolved" && (
+                            <button
+                              onClick={() => resolveAlert(alert.id)}
+                              className="inline-flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-600 px-3 py-2 rounded-lg text-xs font-semibold transition"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              Resolve
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                     </tr>
