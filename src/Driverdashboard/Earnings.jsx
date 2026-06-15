@@ -88,7 +88,7 @@ const Earnings = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-t px-3 py-3">
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-10px_30px_rgba(15,23,42,0.08)] px-3 py-3">
           <div className="flex justify-around">
             <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-[#00236F]">
               <span className="text-xl">🏠</span>
