@@ -187,6 +187,11 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }
         }
 
         if (driversOnly) {
+          const dStatus = (ride.driver_status || "").toLowerCase().replace(/[\r\n]/g, "").trim();
+          if (dStatus === "offline" || dStatus === "blocked") {
+            return;
+          }
+
           if (driverCoords && (status === "emergency" || status === "accepted" || status === "active")) {
             if (status === "emergency") {
               const dEl = document.createElement("div");
@@ -440,33 +445,6 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }
                 <div style="padding:5px; font-family:sans-serif; font-size:11px;">
                   <strong>Destination (Ride #${ride.id})</strong>
                   <p style="margin:2px 0; color:#4b5563;">🏁 To: ${ride.dropoff_location}</p>
-                </div>
-              `))
-              .addTo(map.current);
-            markersRef.current.push(dMarker);
-          }
-
-          // Live Driver marker overlay
-          if (driverCoords) {
-            const el = document.createElement("div");
-            el.className = "w-8 h-8 bg-blue-600 rounded-full border-2 border-white shadow-xl flex items-center justify-center text-white text-base animate-pulse cursor-pointer";
-            
-            const getEmoji = (vType) => {
-              const t = (vType || "car").toLowerCase();
-              if (t.includes("bike") || t.includes("motorcycle")) return "🏍️";
-              if (t.includes("van") || t.includes("suv")) return "🚐";
-              if (t.includes("three") || t.includes("rickshaw") || t.includes("auto") || t.includes("tuk")) return "🛺";
-              return "🚗";
-            };
-            el.innerHTML = getEmoji(ride.vehicle_type);
-
-            const dMarker = new mapboxgl.Marker(el)
-              .setLngLat(driverCoords)
-              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
-                <div style="padding:5px; font-family:sans-serif; font-size:12px; min-width: 155px;">
-                  <strong style="color:#2563eb; font-size:13px;">🚗 Live Vehicle Position</strong>
-                  <p style="margin:4px 0 2px 0;">👤 User: <strong>${ride.user_name || "Unknown"}</strong></p>
-                  <p style="margin:2px 0;">🚗 Driver: <strong>${ride.driver_name || "Unknown"}</strong></p>
                 </div>
               `))
               .addTo(map.current);
