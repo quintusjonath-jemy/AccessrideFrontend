@@ -7,6 +7,7 @@ import {
   FaSignOutAlt,
   FaCar,
   FaRoad,
+  FaCreditCard,
 } from "react-icons/fa";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -56,7 +57,7 @@ const Sidebar = () => {
 
           <ul className="space-y-2">
             <li>
-              <NavLink to="/" className={menuClass}>
+              <NavLink to="/" className={menuClass} end>
                 <FaHome size={18} />
                 Dashboard
               </NavLink>
@@ -80,6 +81,13 @@ const Sidebar = () => {
               <NavLink to="/rides" className={menuClass}>
                 <FaRoad size={18} />
                 Rides
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/payments" className={menuClass}>
+                <FaCreditCard size={18} />
+                Payments
               </NavLink>
             </li>
 
