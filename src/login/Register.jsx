@@ -6,7 +6,7 @@ function Register() {
   const [searchParams] = useSearchParams();
   const defaultDriver = searchParams.get("driver") === "true";
   const [isDriver, setIsDriver] = useState(defaultDriver);
-  const backendBase = import.meta.env.VITE_BACKEND_BASE || "http://localhost:8000";
+  const backendBase = import.meta.env.VITE_BACKEND_BASE || "http://localhost";
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -143,7 +143,7 @@ function Register() {
             </div>
 
             <Link
-              to="/"
+              to="/login"
               className="text-blue-900 font-medium hover:underline"
             >
               Back to Sign In
@@ -228,7 +228,7 @@ function Register() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="e.g. +1 555 555 5555"
+                placeholder="e.g. +94 123456789"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
               />
             </div>
@@ -256,7 +256,7 @@ function Register() {
                     name="guardianNumber"
                     value={formData.guardianNumber}
                     onChange={handleChange}
-                    placeholder="e.g. +1 555 555 5555"
+                    placeholder="e.g. +94 123456789"
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
                   />
                 </div>
@@ -303,8 +303,8 @@ function Register() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300"
                   >
-                    <option>Sedan</option>
-                    <option>SUV</option>
+                    <option>Auto</option>
+                    <option>Taxi</option>
                     <option>Wheelchair Accessible</option>
                     <option>Van</option>
                   </select>

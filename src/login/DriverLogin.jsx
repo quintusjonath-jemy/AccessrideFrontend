@@ -66,7 +66,7 @@ const DriverLogin = () => {
 
                 <input
                   type="tel"
-                  placeholder="e.g. +1 555 555 5555"
+                  placeholder="e.g. +94 123456789"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full ml-3 outline-none text-gray-700"
