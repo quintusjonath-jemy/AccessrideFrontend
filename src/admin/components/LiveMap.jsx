@@ -31,7 +31,7 @@ const geocodeLocation = async (query) => {
   return null;
 };
 
-const LiveMap = ({ rides = [], center = [79.8612, 6.9271] }) => {
+const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersRef = useRef([]);
@@ -60,10 +60,12 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271] }) => {
       userMarkerRef.current.remove();
     }
 
-    userMarkerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
-      .setLngLat(center)
-      .addTo(map.current);
-  }, [center]);
+    if (!driversOnly) {
+      userMarkerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
+        .setLngLat(center)
+        .addTo(map.current);
+    }
+  }, [center, driversOnly]);
 
   // Resolve geocoding and direction geometries per ride status dynamically
   useEffect(() => {
@@ -80,14 +82,19 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271] }) => {
         const status = ride.status?.toLowerCase().trim();
         const driverLng = parseFloat(ride.longitude);
         const driverLat = parseFloat(ride.latitude);
-        const driverCoords = driverLng && driverLat ? [driverLng, driverLat] : null;
+        let driverCoords = driverLng && driverLat ? [driverLng, driverLat] : null;
 
-        const cacheKey = `${ride.id}-${driverLng}-${driverLat}-${status}`;
+        const cacheKey = `${ride.id}-${driverLng}-${driverLat}-${ride.driver_current_location || ""}-${status}`;
 
         if (!newRoutesData[cacheKey]) {
           const pickup = await geocodeLocation(ride.pickup_location);
           const dropoff = await geocodeLocation(ride.dropoff_location);
           
+          // Fallback geocoding for driver current location if database coordinates are null
+          if (!driverCoords && ride.driver_current_location) {
+            driverCoords = await geocodeLocation(ride.driver_current_location);
+          }
+
           let start = null;
           let end = null;
 
@@ -115,7 +122,7 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271] }) => {
             }
           }
 
-          newRoutesData[cacheKey] = { pickup, dropoff, geometry };
+          newRoutesData[cacheKey] = { pickup, dropoff, geometry, resolvedDriverCoords: driverCoords };
           
           // Clear older cache keys for the same ride
           Object.keys(newRoutesData).forEach((k) => {
@@ -170,10 +177,70 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271] }) => {
 
         const driverLng = parseFloat(ride.longitude);
         const driverLat = parseFloat(ride.latitude);
-        const driverCoords = driverLng && driverLat ? [driverLng, driverLat] : null;
+        let driverCoords = driverLng && driverLat ? [driverLng, driverLat] : null;
 
-        const cacheKey = `${ride.id}-${driverLng}-${driverLat}-${status}`;
+        const cacheKey = `${ride.id}-${driverLng}-${driverLat}-${ride.driver_current_location || ""}-${status}`;
         const rData = routesData[cacheKey];
+
+        if (!driverCoords && rData && rData.resolvedDriverCoords) {
+          driverCoords = rData.resolvedDriverCoords;
+        }
+
+        if (driversOnly) {
+          if (driverCoords && (status === "emergency" || status === "accepted" || status === "active")) {
+            if (status === "emergency") {
+              const dEl = document.createElement("div");
+              dEl.className = "w-9 h-9 bg-red-700 rounded-full border-4 border-red-200 shadow-2xl flex items-center justify-center text-white text-base animate-pulse cursor-pointer";
+              dEl.innerHTML = "🚨";
+
+              const dMarker = new mapboxgl.Marker(dEl)
+                .setLngLat(driverCoords)
+                .setPopup(new mapboxgl.Popup({ offset: 20 }).setHTML(`
+                  <div style="padding:5px; font-family:sans-serif; font-size:12px; min-width: 150px;">
+                    <strong style="color:#dc2626;">🚨 Emergency Driver</strong>
+                    <p style="margin:4px 0 2px 0;">🚗 Driver: ${ride.driver_name || "Unknown"}</p>
+                    <p style="margin:2px 0; font-size:11px; color:#4b5563;">🚨 Action required immediately</p>
+                  </div>
+                `))
+                .addTo(map.current);
+              markersRef.current.push(dMarker);
+            } else if (status === "accepted") {
+              const dEl = document.createElement("div");
+              dEl.className = "w-7 h-7 bg-indigo-600 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white text-xs cursor-pointer";
+              dEl.innerHTML = "🚗";
+
+              const dMarker = new mapboxgl.Marker(dEl)
+                .setLngLat(driverCoords)
+                .addTo(map.current);
+              markersRef.current.push(dMarker);
+            } else if (status === "active") {
+              const el = document.createElement("div");
+              el.className = "w-8 h-8 bg-blue-600 rounded-full border-2 border-white shadow-xl flex items-center justify-center text-white text-base animate-pulse cursor-pointer";
+              
+              const getEmoji = (vType) => {
+                const t = (vType || "car").toLowerCase();
+                if (t.includes("bike") || t.includes("motorcycle")) return "🏍️";
+                if (t.includes("van") || t.includes("suv")) return "🚐";
+                if (t.includes("three") || t.includes("rickshaw") || t.includes("auto") || t.includes("tuk")) return "🛺";
+                return "🚗";
+              };
+              el.innerHTML = getEmoji(ride.vehicle_type);
+
+              const dMarker = new mapboxgl.Marker(el)
+                .setLngLat(driverCoords)
+                .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                  <div style="padding:5px; font-family:sans-serif; font-size:12px; min-width: 155px;">
+                    <strong style="color:#2563eb; font-size:13px;">🚗 Live Vehicle Position</strong>
+                    <p style="margin:4px 0 2px 0;">👤 User: <strong>${ride.user_name || "Unknown"}</strong></p>
+                    <p style="margin:2px 0;">🚗 Driver: <strong>${ride.driver_name || "Unknown"}</strong></p>
+                  </div>
+                `))
+                .addTo(map.current);
+              markersRef.current.push(dMarker);
+            }
+          }
+          return;
+        }
 
         // 1. PENDING: Show user location with yellow location symbol
         if (status === "pending") {
@@ -460,7 +527,7 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271] }) => {
         });
       }
     };
-  }, [rides, routesData]);
+  }, [rides, routesData, driversOnly]);
 
   return (
     <div

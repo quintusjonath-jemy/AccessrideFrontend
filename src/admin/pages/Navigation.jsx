@@ -11,6 +11,7 @@ const NavigationPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [mapCenter, setMapCenter] = useState([79.8612, 6.9271]);
   const [isPanelExpanded, setIsPanelExpanded] = useState(true);
+  const [showDriversOnly, setShowDriversOnly] = useState(false);
 
   const location = useLocation();
   const trackedRide = location.state?.rideId;
@@ -100,9 +101,12 @@ const NavigationPage = () => {
           </div>
 
           {/* BUTTON */}
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md transition">
+          <button
+            onClick={() => setShowDriversOnly(!showDriversOnly)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md transition"
+          >
             <Navigation className="w-4 h-4" />
-            Live Navigation
+            {showDriversOnly ? "Live Navigation" : "Drivers Location"}
           </button>
 
         </div>
@@ -112,7 +116,7 @@ const NavigationPage = () => {
       <div className="relative h-[85vh] rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
 
         {/* MAP */}
-        <LiveMap rides={filteredRides} center={mapCenter} />
+        <LiveMap rides={filteredRides} center={mapCenter} driversOnly={showDriversOnly} />
 
         {/* LEFT FLOAT PANEL */}
         {isPanelExpanded ? (
