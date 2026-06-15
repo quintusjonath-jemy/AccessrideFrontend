@@ -9,6 +9,9 @@ const Users = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterLocation, setFilterLocation] = useState("all");
+
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -24,11 +27,25 @@ const Users = () => {
     location: "",
   });
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase()),
-  );
+  const uniqueLocations = Array.from(new Set(users.map(u => u.location).filter(Boolean))).sort();
+
+  const filteredUsers = users.filter((user) => {
+    const searchLower = search.toLowerCase();
+    const matchesSearch =
+      (user.name || "").toLowerCase().includes(searchLower) ||
+      (user.email || "").toLowerCase().includes(searchLower) ||
+      (user.location || "").toLowerCase().includes(searchLower);
+
+    const matchesStatus =
+      filterStatus === "all" ||
+      user.status?.toLowerCase() === filterStatus.toLowerCase();
+
+    const matchesLocation =
+      filterLocation === "all" ||
+      user.location === filterLocation;
+
+    return matchesSearch && matchesStatus && matchesLocation;
+  });
 
   // Fetch users from backend
   useEffect(() => {
@@ -170,16 +187,39 @@ const Users = () => {
         </button>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search by name, email, or location..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+          />
+        </div>
+        <div className="flex gap-3">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="blocked">Blocked</option>
+          </select>
 
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-        <input
-          type="text"
-          placeholder="Search users..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-yellow-400"
-        />
+          <select
+            value={filterLocation}
+            onChange={(e) => setFilterLocation(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer max-w-[200px]"
+          >
+            <option value="all">All Locations</option>
+            {uniqueLocations.map((loc) => (
+              <option key={loc} value={loc}>{loc}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Users Table */}

@@ -62,13 +62,30 @@ const Drivers = () => {
     blocked: "bg-red-100 text-red-700",
   };
 
-  const filteredDrivers = drivers.filter(
-    (driver) =>
-      driver.name?.toLowerCase().includes(search.toLowerCase()) ||
-      driver.email?.toLowerCase().includes(search.toLowerCase()) ||
-      driver.vehicle_number?.toLowerCase().includes(search.toLowerCase()) ||
-      driver.phone?.includes(search),
-  );
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterVehicle, setFilterVehicle] = useState("all");
+
+  const uniqueVehicles = Array.from(new Set(drivers.map(d => d.vehicle_type).filter(Boolean))).sort();
+
+  const filteredDrivers = drivers.filter((driver) => {
+    const searchLower = search.toLowerCase();
+    const matchesSearch =
+      driver.name?.toLowerCase().includes(searchLower) ||
+      driver.email?.toLowerCase().includes(searchLower) ||
+      driver.vehicle_number?.toLowerCase().includes(searchLower) ||
+      driver.phone?.includes(search) ||
+      driver.vehicle_type?.toLowerCase().includes(searchLower);
+
+    const matchesStatus =
+      filterStatus === "all" ||
+      driver.status?.toLowerCase() === filterStatus.toLowerCase();
+
+    const matchesVehicle =
+      filterVehicle === "all" ||
+      driver.vehicle_type?.toLowerCase() === filterVehicle.toLowerCase();
+
+    return matchesSearch && matchesStatus && matchesVehicle;
+  });
 
   const handleAddChange = (e) => {
     setNewDriver({
@@ -208,16 +225,41 @@ const Drivers = () => {
         </button>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search by name, email, phone, or vehicle number..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+          />
+        </div>
+        <div className="flex gap-3">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+          >
+            <option value="all">All Statuses</option>
+            <option value="online">Online</option>
+            <option value="busy">Busy</option>
+            <option value="offline">Offline</option>
+            <option value="blocked">Blocked</option>
+          </select>
 
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-        <input
-          type="text"
-          placeholder="Search drivers..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-yellow-400"
-        />
+          <select
+            value={filterVehicle}
+            onChange={(e) => setFilterVehicle(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer max-w-[200px] capitalize"
+          >
+            <option value="all">All Vehicles</option>
+            {uniqueVehicles.map((v) => (
+              <option key={v} value={v}>{v}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* DRIVER TABLE */}
