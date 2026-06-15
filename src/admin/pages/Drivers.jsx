@@ -1,18 +1,12 @@
 import axios from "axios";
-
 import { useEffect, useState } from "react";
-
-import { Car, Eye, Trash2, UserPlus, Pencil, EyeClosed } from "lucide-react";
+import { Car, Eye, Trash2, UserPlus, Pencil, EyeClosed, ShieldCheck, ShieldAlert, CreditCard } from "lucide-react";
 
 const Drivers = () => {
   const [drivers, setDrivers] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [search, setSearch] = useState("");
-
   const [showEditModal, setShowEditModal] = useState(false);
-
   const [showAddModal, setShowAddModal] = useState(false);
 
   const [newDriver, setNewDriver] = useState({
@@ -23,6 +17,10 @@ const Drivers = () => {
     vehicle_type: "",
     status: "offline",
     current_location: "",
+    subscription_status: "none",
+    subscription_expires_at: "",
+    last_payment_date: "",
+    subscription_amount: 29.99,
   });
 
   const [selectedDriver, setSelectedDriver] = useState({
@@ -34,6 +32,10 @@ const Drivers = () => {
     vehicle_type: "",
     status: "",
     current_location: "",
+    subscription_status: "none",
+    subscription_expires_at: "",
+    last_payment_date: "",
+    subscription_amount: 29.99,
   });
 
   // FETCH DRIVERS
@@ -118,6 +120,10 @@ const Drivers = () => {
           vehicle_type: "",
           status: "offline",
           current_location: "",
+          subscription_status: "none",
+          subscription_expires_at: "",
+          last_payment_date: "",
+          subscription_amount: 29.99,
         });
 
         alert("Driver added successfully");
@@ -285,6 +291,10 @@ const Drivers = () => {
               </th>
 
               <th className="text-left px-6 py-4 text-sm text-gray-500">
+                Subscription
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm text-gray-500">
                 Location
               </th>
 
@@ -364,8 +374,33 @@ const Drivers = () => {
                       </span>
                     </td>
 
-                    {/* LOCATION */}
+                    {/* SUBSCRIPTION */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-0.5">
+                        {driver.subscription_status === "active" ? (
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full w-fit">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            Active
+                          </span>
+                        ) : driver.subscription_status === "expired" ? (
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-red-700 bg-red-50 px-2.5 py-1 rounded-full w-fit">
+                            <ShieldAlert className="w-3.5 h-3.5 animate-pulse" />
+                            Expired
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full w-fit border border-gray-100">
+                            No Membership
+                          </span>
+                        )}
+                        {driver.subscription_expires_at && driver.subscription_status !== "none" && (
+                          <span className="text-[11px] text-gray-400 font-medium pl-1">
+                            {driver.subscription_status === "active" ? "Renews" : "Expired"}: {driver.subscription_expires_at}
+                          </span>
+                        )}
+                      </div>
+                    </td>
 
+                    {/* LOCATION */}
                     <td className="px-6 py-4 text-gray-500">
                       📍 {driver.current_location || "Unknown"}
                     </td>
@@ -531,6 +566,73 @@ const Drivers = () => {
                   <option value="offline">Offline</option>
                 </select>
               </div>
+
+              {/* SUBSCRIPTION SETTINGS */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-4 mt-2">
+                <div className="md:col-span-2">
+                  <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-yellow-500" />
+                    Membership & Subscription
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Manage the driver's monthly membership payment configuration</p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Subscription Status
+                  </label>
+                  <select
+                    name="subscription_status"
+                    value={newDriver.subscription_status}
+                    onChange={handleAddChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  >
+                    <option value="none">No Membership</option>
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Monthly Payment Amount ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="subscription_amount"
+                    value={newDriver.subscription_amount}
+                    onChange={handleAddChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    name="subscription_expires_at"
+                    value={newDriver.subscription_expires_at}
+                    onChange={handleAddChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Last Payment Date
+                  </label>
+                  <input
+                    type="date"
+                    name="last_payment_date"
+                    value={newDriver.last_payment_date}
+                    onChange={handleAddChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Buttons */}
@@ -667,6 +769,73 @@ const Drivers = () => {
                   <option value="offline">Offline</option>
                   <option value="blocked">Blocked</option>
                 </select>
+              </div>
+
+              {/* SUBSCRIPTION SETTINGS */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-4 mt-2">
+                <div className="md:col-span-2">
+                  <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-yellow-500" />
+                    Membership & Subscription
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Manage the driver's monthly membership payment configuration</p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Subscription Status
+                  </label>
+                  <select
+                    name="subscription_status"
+                    value={selectedDriver.subscription_status || "none"}
+                    onChange={handleEditChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  >
+                    <option value="none">No Membership</option>
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Monthly Payment Amount ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="subscription_amount"
+                    value={selectedDriver.subscription_amount || 0.00}
+                    onChange={handleEditChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    name="subscription_expires_at"
+                    value={selectedDriver.subscription_expires_at || ""}
+                    onChange={handleEditChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500">
+                    Last Payment Date
+                  </label>
+                  <input
+                    type="date"
+                    name="last_payment_date"
+                    value={selectedDriver.last_payment_date || ""}
+                    onChange={handleEditChange}
+                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  />
+                </div>
               </div>
             </div>
 

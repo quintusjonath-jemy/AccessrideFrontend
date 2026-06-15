@@ -9,6 +9,9 @@ import {
   LogOut,
   UserCircle,
   MapPinned,
+  Check,
+  Trash2,
+  UserCheck,
 } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -62,13 +65,59 @@ const Navbar = () => {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost/admin/api/alerts.php");
-
-      setNotifications(Array.isArray(res.data) ? res.data.slice(0, 5) : []);
+      const res = await axios.get("http://localhost/admin/api/notifications.php");
+      setNotifications(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.log(err);
     }
   }, []);
+
+  const markAsRead = async (id) => {
+    try {
+      await axios.put(`http://localhost/admin/api/notifications.php?id=${id}`);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: "1" } : n))
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await axios.put("http://localhost/admin/api/notifications.php?read_all=1");
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: "1" })));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const deleteNotification = async (id) => {
+    try {
+      await axios.delete(`http://localhost/admin/api/notifications.php?id=${id}`);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const formatRelativeTime = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr.replace(/-/g, "/"));
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHrs = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHrs / 24);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHrs < 24) return `${diffHrs}h ago`;
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
 
   useEffect(() => {
     fetchNotifications();
@@ -180,9 +229,7 @@ const Navbar = () => {
 
         <div className="hidden lg:block">
           <LiveClock />
-        </div>
-
-        {/* Notifications */}
+        </div>        {/* Notifications */}
 
         <div ref={dropdownRef} className="relative">
           <button
@@ -199,76 +246,132 @@ const Navbar = () => {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-3 w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+            <div className="absolute right-0 mt-3 w-[400px] bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
               {/* Header */}
-              <div className="p-4 bg-gradient-to-r from-gray-50 to-white">
-                <h3 className="font-bold text-lg text-gray-800">
-                  Notifications
-                </h3>
-                <p className="text-xs text-gray-400 mt-1">
-                  Latest system updates
-                </p>
+              <div className="p-4 bg-gradient-to-r from-gray-50 to-white flex justify-between items-center border-b border-gray-100">
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">
+                    Notifications
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Latest system updates
+                  </p>
+                </div>
+                {notifications.filter((n) => n.is_read == 0).length > 0 && (
+                  <button
+                    onClick={markAllAsRead}
+                    className="text-xs text-yellow-600 hover:text-yellow-700 font-semibold transition bg-yellow-50 hover:bg-yellow-100 px-3 py-1.5 rounded-lg"
+                  >
+                    Mark all as read
+                  </button>
+                )}
               </div>
 
               {/* Body */}
-              <div className="max-h-96 overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
                 {notifications.length === 0 ? (
                   <p className="p-6 text-gray-500 text-center text-sm">
                     No notifications yet
                   </p>
                 ) : (
-                  notifications.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-4 border-gray-100 hover:bg-gray-50 transition flex gap-3"
-                    >
-                      {/* Icon */}
-                      <div className="mt-0.5">
-                        {item.type === "SOS" ? (
-                          <AlertTriangle size={20} className="text-red-500" />
-                        ) : item.type === "Ride" ? (
-                          <Car size={20} className="text-blue-500" />
-                        ) : (
-                          <User size={20} className="text-yellow-500" />
-                        )}
-                      </div>
+                  notifications.map((item) => {
+                    const isUnread = item.is_read == 0;
+                    return (
+                      <div
+                        key={item.id}
+                        className={`p-4 transition flex gap-3 relative group ${
+                          isUnread ? "bg-yellow-50/20 hover:bg-yellow-50/40" : "hover:bg-gray-50"
+                        }`}
+                      >
+                        {/* Icon */}
+                        <div className="mt-0.5">
+                          {item.type === "SOS" ? (
+                            <div className="p-2 bg-red-50 rounded-xl">
+                              <AlertTriangle size={18} className="text-red-500 animate-pulse" />
+                            </div>
+                          ) : item.type === "Alert" ? (
+                            <div className="p-2 bg-orange-50 rounded-xl">
+                              <AlertTriangle size={18} className="text-orange-500" />
+                            </div>
+                          ) : item.type === "Ride" ? (
+                            <div className="p-2 bg-blue-50 rounded-xl">
+                              <Car size={18} className="text-blue-500" />
+                            </div>
+                          ) : item.type === "Driver" ? (
+                            <div className="p-2 bg-purple-50 rounded-xl">
+                              <UserCheck size={18} className="text-purple-500" />
+                            </div>
+                          ) : (
+                            <div className="p-2 bg-green-50 rounded-xl">
+                              <User size={18} className="text-green-500" />
+                            </div>
+                          )}
+                        </div>
 
-                      {/* Content */}
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start gap-2">
+                        {/* Content */}
+                        <div className="flex-1 pr-16">
                           <p className="text-sm font-medium text-gray-800 leading-snug">
                             {item.message}
                           </p>
 
-                          <span className="text-[11px] text-gray-400 whitespace-nowrap">
-                            {item.created_at}
-                          </span>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                                item.type === "SOS"
+                                  ? "bg-red-50 text-red-600"
+                                  : item.type === "Alert"
+                                    ? "bg-orange-50 text-orange-600"
+                                    : item.type === "Ride"
+                                      ? "bg-blue-50 text-blue-600"
+                                      : item.type === "Driver"
+                                        ? "bg-purple-50 text-purple-600"
+                                        : "bg-green-50 text-green-600"
+                              }`}
+                            >
+                              {item.type}
+                            </span>
+                            <span className="text-[11px] text-gray-400">
+                              {formatRelativeTime(item.created_at)}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="mt-1">
-                          <span
-                            className={`text-[11px] px-2 py-1 rounded-full font-medium ${
-                              item.type === "SOS"
-                                ? "bg-red-50 text-red-600"
-                                : item.type === "Ride"
-                                  ? "bg-blue-50 text-blue-600"
-                                  : "bg-yellow-50 text-yellow-600"
-                            }`}
+                        {/* Actions overlay */}
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition duration-150">
+                          {isUnread && (
+                            <button
+                              onClick={() => markAsRead(item.id)}
+                              title="Mark as read"
+                              className="p-1.5 bg-white border border-gray-150 rounded-lg hover:bg-gray-50 text-gray-500 hover:text-green-600 shadow-sm transition"
+                            >
+                              <Check size={14} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteNotification(item.id)}
+                            title="Delete"
+                            className="p-1.5 bg-white border border-gray-150 rounded-lg hover:bg-gray-50 text-gray-500 hover:text-red-500 shadow-sm transition"
                           >
-                            {item.type}
-                          </span>
+                            <Trash2 size={14} />
+                          </button>
                         </div>
+
+                        {/* Blue unread dot indicator */}
+                        {isUnread && (
+                          <span className="absolute right-4 top-4 w-2 h-2 bg-blue-500 rounded-full group-hover:scale-0 transition duration-150"></span>
+                        )}
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
               {/* Footer */}
-              <div className="p-3 text-center bg-gray-50">
+              <div className="p-3 text-center bg-gray-50 border-t border-gray-100">
                 <Link
                   to="/alerts"
-                  className="text-blue-600 font-semibold text-sm hover:text-blue-700 transition"
+                  onClick={() => setShowNotifications(false)}
+                  className="text-yellow-600 font-semibold text-sm hover:text-yellow-700 transition"
                 >
                   View All Alerts →
                 </Link>
