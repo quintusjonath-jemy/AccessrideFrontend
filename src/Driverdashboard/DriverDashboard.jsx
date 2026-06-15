@@ -41,7 +41,7 @@ const DriverDashboard = () => {
 
   const acceptRide = () => {
     fetch("http://localhost/AccessrideBackend/accept.php", { method: "POST" });
-    alert("Ride Accepted");
+    navigate("/user/ride");
   };
 
   const rejectRide = () => {
