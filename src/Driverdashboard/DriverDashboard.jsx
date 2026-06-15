@@ -58,7 +58,7 @@ const DriverDashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 py-6 flex justify-center px-3 sm:px-6">
-      <div className="mx-auto w-full max-w-[430px] min-h-[932px] pb-24 overflow-hidden rounded-[2rem] bg-white shadow-[0_25px_80px_rgba(15,23,42,0.12)]">
+      <div className="mx-auto w-full max-w-[430px] min-h-[932px] flex flex-col overflow-hidden rounded-[2rem] bg-white shadow-[0_25px_80px_rgba(15,23,42,0.12)]">
         <div className="border-b border-slate-200 px-5 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -163,25 +163,23 @@ const DriverDashboard = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-10px_30px_rgba(15,23,42,0.08)] px-3 py-3">
-          <div className="flex justify-around">
-            <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-[#00236F]">
-              <span className="text-xl">🏠</span>
-              <p className="text-xs">Home</p>
-            </button>
-            <button onClick={() => navigate("/driver-trips")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
-              <span className="text-xl">🚗</span>
-              <p className="text-xs">Trips</p>
-            </button>
-            <button onClick={() => navigate("/driver-earnings")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
-              <span className="text-xl">💰</span>
-              <p className="text-xs">Earnings</p>
-            </button>
-            <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
-              <span className="text-xl">👤</span>
-              <p className="text-xs">Profile</p>
-            </button>
-          </div>
+        <div className="flex justify-around py-3 border-t mt-auto bg-white">
+          <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-[#00236F]">
+            <span className="text-xl">🏠</span>
+            <p className="text-xs">Home</p>
+          </button>
+          <button onClick={() => navigate("/driver-trips")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+            <span className="text-xl">🚗</span>
+            <p className="text-xs">Trips</p>
+          </button>
+          <button onClick={() => navigate("/driver-earnings")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+            <span className="text-xl">💰</span>
+            <p className="text-xs">Earnings</p>
+          </button>
+          <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+            <span className="text-xl">👤</span>
+            <p className="text-xs">Profile</p>
+          </button>
         </div>
       </div>
     </div>
