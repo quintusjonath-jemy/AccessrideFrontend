@@ -10,7 +10,6 @@ const MainLayout = ({ children }) => {
     location.pathname === "/my-rides" || location.pathname === "/profile";
   const isEmergencyPage = location.pathname === "/emergency";
   const isDriverDashboardPage = location.pathname === "/driver-dashboard";
-  const isMobilePage = location.pathname === "/my-rides" || location.pathname === "/profile";
 
   if (isEmergencyPage || isMobilePage || isDriverDashboardPage) {
     return <div className="w-screen min-h-screen overflow-auto">{children}</div>;
