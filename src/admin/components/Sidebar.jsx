@@ -15,6 +15,7 @@ import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   const [admin, setAdmin] = useState({});
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     axios
@@ -23,6 +24,25 @@ const Sidebar = () => {
         setAdmin(res.data);
       })
       .catch((err) => console.log(err));
+  }, []);
+
+  useEffect(() => {
+    const fetchAlerts = () => {
+      axios
+        .get("http://localhost/admin/api/alerts.php")
+        .then((res) => {
+          const alerts = Array.isArray(res.data) ? res.data : [];
+          const activeCount = alerts.filter(
+            (alert) => alert.status !== "resolved"
+          ).length;
+          setUnreadCount(activeCount);
+        })
+        .catch((err) => console.log(err));
+    };
+
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 5000);
+    return () => clearInterval(interval);
   }, []);
   const menuClass = ({ isActive }) =>
     `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group
@@ -101,7 +121,14 @@ const Sidebar = () => {
             <li>
               <NavLink to="/alerts" className={menuClass}>
                 <FaBell size={18} />
-                Alerts
+                <span className="flex-1 flex justify-between items-center">
+                  Alerts
+                  {unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </span>
               </NavLink>
             </li>
           </ul>

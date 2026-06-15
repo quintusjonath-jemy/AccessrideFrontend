@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import LiveMap from "../components/LiveMap";
 import { useLocation, useNavigate } from "react-router-dom";
-import { MapPinned, Navigation, Car, Search, X } from "lucide-react";
+import { MapPinned, Navigation, Car, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 const NavigationPage = () => {
   const [rides, setRides] = useState([]);
@@ -10,6 +10,7 @@ const NavigationPage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [mapCenter, setMapCenter] = useState([79.8612, 6.9271]);
+  const [isPanelExpanded, setIsPanelExpanded] = useState(true);
 
   const location = useLocation();
   const trackedRide = location.state?.rideId;
@@ -114,172 +115,190 @@ const NavigationPage = () => {
         <LiveMap rides={filteredRides} center={mapCenter} />
 
         {/* LEFT FLOAT PANEL */}
-        <div className="absolute top-5 left-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-6 w-80 border border-gray-100 z-10 max-h-[80vh] overflow-y-auto">
-
-          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <MapPinned className="w-5 h-5 text-blue-600" />
-            Live Overview
-          </h2>
-
-          {/* DRIVER TRACKING BADGE */}
-          {trackedDriver && (
-            <div className="mb-4 bg-yellow-50 border border-yellow-100 p-3 rounded-xl flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500">Tracking Driver ID</p>
-                <p className="text-sm font-bold text-yellow-750">#{trackedDriver}</p>
-              </div>
+        {isPanelExpanded ? (
+          <div className="absolute top-5 left-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-6 w-80 border border-gray-100 z-10 max-h-[80vh] overflow-y-auto transition-all duration-300">
+            {/* PANEL HEADER WITH COLLAPSE BUTTON */}
+            <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-2">
+              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <MapPinned className="w-5 h-5 text-blue-600" />
+                Live Overview
+              </h2>
               <button
-                onClick={() => navigate("/navigation", { replace: true, state: {} })}
-                className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg transition font-medium"
+                onClick={() => setIsPanelExpanded(false)}
+                className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-650 rounded-lg transition"
+                title="Hide Overview"
               >
-                Show All
+                <ChevronLeft className="w-5 h-5" />
               </button>
             </div>
-          )}
 
-          {/* STATUS FILTER */}
-          <div className="mb-4">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
-              Filter Status on Map
-            </label>
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition cursor-pointer"
-              >
-                <option value="all">⚙️ All Statuses</option>
-                <option value="pending">⏳ Pending</option>
-                <option value="accepted">✅ Accepted</option>
-                <option value="active">🚖 Active</option>
-                <option value="completed">🏁 Completed</option>
-                <option value="cancelled">❌ Cancelled</option>
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">
-                ▼
-              </div>
-            </div>
-          </div>
-
-          {/* SEARCH INPUT */}
-          <div className="mb-4">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
-              Search Rides
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search user, driver, location..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 pl-10 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-sm shadow-sm transition"
-              />
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <Search className="w-4 h-4" />
-              </span>
-              {searchQuery && (
+            {/* DRIVER TRACKING BADGE */}
+            {trackedDriver && (
+              <div className="mb-4 bg-yellow-50 border border-yellow-100 p-3 rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500">Tracking Driver ID</p>
+                  <p className="text-sm font-bold text-yellow-750">#{trackedDriver}</p>
+                </div>
                 <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-450 hover:text-gray-700"
+                  onClick={() => navigate("/navigation", { replace: true, state: {} })}
+                  className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg transition font-medium"
                 >
-                  <X className="w-4 h-4" />
+                  Show All
                 </button>
-              )}
-            </div>
-          </div>
-
-          {/* RIDES LIST SECTION */}
-          <div className="mb-4">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
-              Matching Rides ({filteredRides.length})
-            </label>
-            {filteredRides.length > 0 ? (
-              <div className="max-h-48 overflow-y-auto space-y-2 pr-1 border border-gray-100 rounded-xl p-1 bg-gray-50/50">
-                {filteredRides.slice(0, 15).map((ride) => {
-                  const isSelected = mapCenter[0] === parseFloat(ride.longitude) && mapCenter[1] === parseFloat(ride.latitude);
-                  return (
-                    <div
-                      key={ride.id}
-                      onClick={() => {
-                        const lng = parseFloat(ride.longitude);
-                        const lat = parseFloat(ride.latitude);
-                        if (lng && lat) {
-                          setMapCenter([lng, lat]);
-                        }
-                      }}
-                      className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all duration-200 flex justify-between items-center ${
-                        isSelected
-                          ? "bg-blue-50 border-blue-200 shadow-sm font-semibold"
-                          : "bg-white hover:bg-gray-50 border-gray-100"
-                      }`}
-                    >
-                      <div className="truncate flex-1 pr-2">
-                        <p className="font-semibold text-gray-800">
-                          Ride #{ride.id}
-                        </p>
-                        <p className="text-gray-500 truncate mt-0.5 text-[11px]">
-                          👤 {ride.user_name || "Unknown"}
-                        </p>
-                        <p className="text-gray-400 truncate text-[10px]">
-                          📍 {ride.pickup_location}
-                        </p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full font-semibold text-[10px] capitalize shrink-0 ${
-                        ride.status?.toLowerCase() === "active" ? "bg-green-100 text-green-700" :
-                        ride.status?.toLowerCase() === "pending" ? "bg-yellow-100 text-yellow-750" :
-                        ride.status?.toLowerCase() === "completed" ? "bg-blue-100 text-blue-700" :
-                        "bg-gray-100 text-gray-700"
-                      }`}>
-                        {ride.status}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="py-6 text-center text-xs text-gray-400 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
-                No matching rides on map
               </div>
             )}
+
+            {/* STATUS FILTER */}
+            <div className="mb-4">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Filter Status on Map
+              </label>
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 shadow-sm
+            focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition cursor-pointer"
+                >
+                  <option value="all">⚙️ All Statuses</option>
+                  <option value="pending">⏳ Pending</option>
+                  <option value="accepted">✅ Accepted</option>
+                  <option value="active">🚖 Active</option>
+                  <option value="completed">🏁 Completed</option>
+                  <option value="cancelled">❌ Cancelled</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">
+                  ▼
+                </div>
+              </div>
+            </div>
+
+            {/* SEARCH INPUT */}
+            <div className="mb-4">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Search Rides
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search user, driver, location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 pl-10 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-sm shadow-sm transition"
+                />
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Search className="w-4 h-4" />
+                </span>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-450 hover:text-gray-700"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* RIDES LIST SECTION */}
+            <div className="mb-4">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Matching Rides ({filteredRides.length})
+              </label>
+              {filteredRides.length > 0 ? (
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-1 border border-gray-100 rounded-xl p-1 bg-gray-50/50">
+                  {filteredRides.slice(0, 15).map((ride) => {
+                    const isSelected = mapCenter[0] === parseFloat(ride.longitude) && mapCenter[1] === parseFloat(ride.latitude);
+                    return (
+                      <div
+                        key={ride.id}
+                        onClick={() => {
+                          const lng = parseFloat(ride.longitude);
+                          const lat = parseFloat(ride.latitude);
+                          if (lng && lat) {
+                            setMapCenter([lng, lat]);
+                          }
+                        }}
+                        className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all duration-200 flex justify-between items-center ${
+                          isSelected
+                            ? "bg-blue-50 border-blue-200 shadow-sm font-semibold"
+                            : "bg-white hover:bg-gray-50 border-gray-100"
+                        }`}
+                      >
+                        <div className="truncate flex-1 pr-2">
+                          <p className="font-semibold text-gray-800">
+                            Ride #{ride.id}
+                          </p>
+                          <p className="text-gray-500 truncate mt-0.5 text-[11px]">
+                            👤 {ride.user_name || "Unknown"}
+                          </p>
+                          <p className="text-gray-400 truncate text-[10px]">
+                            📍 {ride.pickup_location}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full font-semibold text-[10px] capitalize shrink-0 ${
+                          ride.status?.toLowerCase() === "active" ? "bg-green-100 text-green-700" :
+                          ride.status?.toLowerCase() === "pending" ? "bg-yellow-100 text-yellow-755" :
+                          ride.status?.toLowerCase() === "completed" ? "bg-blue-100 text-blue-700" :
+                          "bg-gray-100 text-gray-700"
+                        }`}>
+                          {ride.status}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-6 text-center text-xs text-gray-400 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+                  No matching rides on map
+                </div>
+              )}
+            </div>
+
+            {/* DYNAMIC RIDES COUNT */}
+            <div className={`flex items-center justify-between ${theme.bg} p-4 rounded-xl border ${theme.border} mb-4 transition-all duration-300`}>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider capitalize">
+                  {statusFilter === "all" ? "Total" : statusFilter} Rides
+                </p>
+                <h3 className={`text-2xl font-bold ${theme.text} mt-0.5`}>
+                  {filteredRides.length}
+                </h3>
+              </div>
+
+              <div className={`w-12 h-12 rounded-xl ${theme.iconBg} flex items-center justify-center transition-all duration-300`}>
+                <Car className={`${theme.text} w-6 h-6`} />
+              </div>
+            </div>
+
+            {/* STATUS LIST */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Drivers Online Tracking Active
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                SOS Emergency Monitoring Enabled
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                Real-time GPS Updates Running
+              </div>
+            </div>
           </div>
-
-          {/* DYNAMIC RIDES COUNT */}
-          <div className={`flex items-center justify-between ${theme.bg} p-4 rounded-xl border ${theme.border} mb-4 transition-all duration-300`}>
-            <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider capitalize">
-                {statusFilter === "all" ? "Total" : statusFilter} Rides
-              </p>
-              <h3 className={`text-2xl font-bold ${theme.text} mt-0.5`}>
-                {filteredRides.length}
-              </h3>
-            </div>
-
-            <div className={`w-12 h-12 rounded-xl ${theme.iconBg} flex items-center justify-center transition-all duration-300`}>
-              <Car className={`${theme.text} w-6 h-6`} />
-            </div>
-          </div>
-
-          {/* STATUS LIST */}
-          <div className="space-y-3">
-
-            <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Drivers Online Tracking Active
-            </div>
-
-            <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-              SOS Emergency Monitoring Enabled
-            </div>
-
-            <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-              Real-time GPS Updates Running
-            </div>
-
-          </div>
-        </div>
+        ) : (
+          /* COLLAPSED FLOAT PANEL BUTTON */
+          <button
+            onClick={() => setIsPanelExpanded(true)}
+            className="absolute top-5 left-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-gray-100 z-10 flex items-center gap-2 hover:bg-gray-50 transition-all duration-350 font-bold text-gray-800 text-sm shadow-md"
+            title="Show Overview"
+          >
+            <MapPinned className="w-5 h-5 text-blue-600" />
+            Show Overview
+            <ChevronRight className="w-4 h-4 text-gray-400 ml-1" />
+          </button>
+        )}
 
         {/* BOTTOM RIGHT SMALL PANEL */}
         <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-gray-100 text-sm text-gray-600">
