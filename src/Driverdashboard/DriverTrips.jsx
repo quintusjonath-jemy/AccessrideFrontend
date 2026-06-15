@@ -40,9 +40,8 @@ const DriverTrips = () => {
   );
 
   return (
-    <div className="bg-gray-200 flex justify-center min-h-screen py-6 px-3">
-      <div className="w-full max-w-[360px] bg-white min-h-screen shadow-lg rounded-[2rem] overflow-hidden">
-        <div className="flex justify-between items-center px-4 py-4 border-b">
+    <>
+      <div className="flex justify-between items-center px-4 py-4 border-b">
           <h1 className="text-[#00236F] font-bold">🚕 AccessRide</h1>
           <img src="/src/Driverdashboard/drivering.webp" alt="Driver avatar" className="w-8 h-8 rounded-full" />
         </div>
@@ -109,26 +108,7 @@ const DriverTrips = () => {
           </div>
         </div>
 
-        <div className="flex justify-around py-3 border-t mt-6 bg-white">
-          <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
-            <span className="text-xl">🏠</span>
-            <p className="text-xs">Home</p>
-          </button>
-          <button className="flex flex-col items-center text-yellow-500">
-            <span className="text-xl">🚗</span>
-            <p className="text-xs">Trips</p>
-          </button>
-          <button onClick={() => navigate("/driver-earnings")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
-            <span className="text-xl">💰</span>
-            <p className="text-xs">Earnings</p>
-          </button>
-          <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
-            <span className="text-xl">👤</span>
-            <p className="text-xs">Profile</p>
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 
