@@ -1,14 +1,22 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import { Eye, EyeClosed, Pencil, Trash2, UserPlus } from "lucide-react";
 
 const Users = () => {
+  const location = useLocation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(location.state?.searchQuery || "");
+
+  useEffect(() => {
+    if (location.state?.searchQuery !== undefined) {
+      setSearch(location.state.searchQuery);
+    }
+  }, [location.state]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterLocation, setFilterLocation] = useState("all");
 

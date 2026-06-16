@@ -1,21 +1,22 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { Car, Trash2, Plus, Pencil } from "lucide-react";
 
 const Rides = () => {
+  const location = useLocation();
   const [rides, setRides] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(location.state?.searchQuery || "");
 
   const [users, setUsers] = useState([]);
 
   const [drivers, setDrivers] = useState([]);
 
-  const [searchType, setSearchType] = useState("pickup");
+  const [searchType, setSearchType] = useState(location.state?.searchType || "pickup");
   const [filterStatus, setFilterStatus] = useState("all");
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -35,6 +36,15 @@ const Rides = () => {
   const [selectedRide, setSelectedRide] = useState(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.searchQuery !== undefined) {
+      setSearch(location.state.searchQuery);
+    }
+    if (location.state?.searchType !== undefined) {
+      setSearchType(location.state.searchType);
+    }
+  }, [location.state]);
 
   // FETCH RIDES
   useEffect(() => {

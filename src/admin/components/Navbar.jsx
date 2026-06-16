@@ -12,12 +12,50 @@ import {
   Check,
   Trash2,
   UserCheck,
+  LayoutDashboard,
+  Navigation,
+  CreditCard,
+  Users,
 } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import LiveClock from "./LiveClock";
 import { useCallback } from "react";
+
+const adminPages = [
+  { name: "Dashboard Overview", path: "/", icon: "Dashboard", keywords: ["dashboard", "home", "stats", "analytics"] },
+  { name: "Live Map & Navigation", path: "/navigation", icon: "Navigation", keywords: ["navigation", "map", "live", "tracking", "gps", "driver location"] },
+  { name: "Users Management", path: "/users", icon: "Users", keywords: ["users", "customers", "blind", "people", "members"] },
+  { name: "Drivers Management", path: "/drivers", icon: "Drivers", keywords: ["drivers", "vehicles", "cars", "subscription", "membership"] },
+  { name: "Rides Management", path: "/rides", icon: "Rides", keywords: ["rides", "trips", "bookings", "history"] },
+  { name: "Payments & Earnings", path: "/payments", icon: "Payments", keywords: ["payments", "earnings", "transactions", "money"] },
+  { name: "Alerts & SOS Emergencies", path: "/alerts", icon: "Alerts", keywords: ["alerts", "emergency", "sos", "notifications"] },
+  { name: "System Settings", path: "/settings", icon: "Settings", keywords: ["settings", "profile", "password", "theme", "system"] },
+];
+
+const getPageIcon = (iconName) => {
+  switch (iconName) {
+    case "Dashboard":
+      return <LayoutDashboard size={16} className="text-blue-500" />;
+    case "Navigation":
+      return <Navigation size={16} className="text-green-500" />;
+    case "Users":
+      return <Users size={16} className="text-yellow-500" />;
+    case "Drivers":
+      return <Car size={16} className="text-purple-500" />;
+    case "Rides":
+      return <MapPinned size={16} className="text-indigo-500" />;
+    case "Payments":
+      return <CreditCard size={16} className="text-emerald-500" />;
+    case "Alerts":
+      return <AlertTriangle size={16} className="text-red-500" />;
+    case "Settings":
+      return <Settings size={16} className="text-slate-500" />;
+    default:
+      return <Settings size={16} className="text-gray-500" />;
+  }
+};
 
 const Navbar = () => {
   const [admin, setAdmin] = useState({});
@@ -128,12 +166,16 @@ const Navbar = () => {
   }, [fetchNotifications]);
 
   const dropdownRef = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowNotifications(false);
         setOpenMenu(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearch(false);
       }
     };
 
@@ -144,11 +186,25 @@ const Navbar = () => {
     };
   }, []);
 
+  const matchedPages = search.trim()
+    ? adminPages.filter(
+        (page) =>
+          page.name.toLowerCase().includes(search.toLowerCase()) ||
+          page.keywords.some((kw) => kw.toLowerCase().includes(search.toLowerCase()))
+      )
+    : [];
+
+  const hasResults =
+    matchedPages.length > 0 ||
+    results.users?.length > 0 ||
+    results.drivers?.length > 0 ||
+    results.rides?.length > 0;
+
   return (
     <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-40 transition-colors duration-200">
       {/* Search */}
 
-      <div className="relative w-[420px]">
+      <div ref={searchRef} className="relative w-[420px]">
         <Search
           size={18}
           className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -159,67 +215,125 @@ const Navbar = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => setShowSearch(true)}
-          placeholder="Search users, drivers, rides..."
+          placeholder="Search users, drivers, rides, or pages..."
           className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-yellow-400 outline-none transition"
         />
 
         {showSearch && search && (
-          <div className="absolute top-14 left-0 w-full bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
-            {/* USERS */}
-            <div className="p-3 border-b dark:border-slate-700">
-              <p className="text-xs text-gray-400 mb-2">Users</p>
-              {results.users?.length > 0 ? (
-                results.users.map((u) => (
-                  <div
-                    key={u.id}
-                    className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-lg"
-                  >
-                    <User size={16} />
-                    <span className="text-sm">{u.name}</span>
+          <div className="absolute top-14 left-0 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700">
+            {hasResults ? (
+              <>
+                {/* SYSTEM PAGES */}
+                {matchedPages.length > 0 && (
+                  <div className="p-3">
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-455 mb-2 uppercase tracking-wider px-2">System Pages</p>
+                    <div className="space-y-1">
+                      {matchedPages.map((page) => (
+                        <Link
+                          key={page.path}
+                          to={page.path}
+                          onClick={() => {
+                            setSearch("");
+                            setShowSearch(false);
+                          }}
+                          className="flex items-center gap-2.5 p-2 hover:bg-gray-50 dark:hover:bg-slate-705 text-gray-800 dark:text-slate-200 rounded-lg transition-colors"
+                        >
+                          {getPageIcon(page.icon)}
+                          <span className="text-sm font-medium">{page.name}</span>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400">No users found</p>
-              )}
-            </div>
+                )}
 
-            {/* DRIVERS */}
-            <div className="p-3 border-b dark:border-slate-700">
-              <p className="text-xs text-gray-400 mb-2">Drivers</p>
-              {results.drivers?.length > 0 ? (
-                results.drivers.map((d) => (
-                  <div
-                    key={d.id}
-                    className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-lg"
-                  >
-                    <Car size={16} />
-                    <span className="text-sm">{d.name}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400">No drivers found</p>
-              )}
-            </div>
+                {/* USERS */}
+                <div className="p-3">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-455 mb-2 uppercase tracking-wider px-2">Users</p>
+                  {results.users?.length > 0 ? (
+                    <div className="space-y-1">
+                      {results.users.map((u) => (
+                        <Link
+                          key={u.id}
+                          to="/users"
+                          state={{ searchQuery: u.name }}
+                          onClick={() => {
+                            setSearch("");
+                            setShowSearch(false);
+                          }}
+                          className="flex items-center gap-2.5 p-2 hover:bg-gray-50 dark:hover:bg-slate-705 text-gray-800 dark:text-slate-200 rounded-lg transition-colors"
+                        >
+                          <User size={16} className="text-yellow-500" />
+                          <span className="text-sm">{u.name}</span>
+                          <span className="text-xs text-gray-400 dark:text-slate-450">({u.location || "No Location"}{u.phone ? ` • ${u.phone}` : ""})</span>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 dark:text-slate-500 italic px-2">No users matching "{search}"</p>
+                  )}
+                </div>
 
-            {/* RIDES */}
-            <div className="p-3">
-              <p className="text-xs text-gray-400 mb-2">Rides</p>
-              {results.rides?.length > 0 ? (
-                results.rides.map((r) => (
-                  <div
-                    key={r.id}
-                    className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 rounded-lg"
-                  >
-                    <MapPinned size={16} />
-                    <span className="text-sm">
-                      {r.pickup_location} → {r.dropoff_location}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400">No rides found</p>
-              )}
-            </div>
+                {/* DRIVERS */}
+                <div className="p-3">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-455 mb-2 uppercase tracking-wider px-2">Drivers</p>
+                  {results.drivers?.length > 0 ? (
+                    <div className="space-y-1">
+                      {results.drivers.map((d) => (
+                        <Link
+                          key={d.id}
+                          to="/drivers"
+                          state={{ searchQuery: d.name }}
+                          onClick={() => {
+                            setSearch("");
+                            setShowSearch(false);
+                          }}
+                          className="flex items-center gap-2.5 p-2 hover:bg-gray-50 dark:hover:bg-slate-705 text-gray-800 dark:text-slate-200 rounded-lg transition-colors"
+                        >
+                          <Car size={16} className="text-purple-500" />
+                          <span className="text-sm">{d.name}</span>
+                          <span className="text-xs text-gray-400 dark:text-slate-450">({d.vehicle_number || "No Vehicle"}{d.vehicle_type ? ` • ${d.vehicle_type}` : ""}{d.phone ? ` • ${d.phone}` : ""})</span>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 dark:text-slate-500 italic px-2">No drivers matching "{search}"</p>
+                  )}
+                </div>
+
+                {/* RIDES */}
+                <div className="p-3">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-455 mb-2 uppercase tracking-wider px-2">Rides</p>
+                  {results.rides?.length > 0 ? (
+                    <div className="space-y-1">
+                      {results.rides.map((r) => (
+                        <Link
+                          key={r.id}
+                          to="/rides"
+                          state={{ searchQuery: String(r.id), searchType: "id" }}
+                          onClick={() => {
+                            setSearch("");
+                            setShowSearch(false);
+                          }}
+                          className="flex items-center gap-2.5 p-2 hover:bg-gray-50 dark:hover:bg-slate-705 text-gray-800 dark:text-slate-200 rounded-lg transition-colors"
+                        >
+                          <MapPinned size={16} className="text-indigo-500" />
+                          <span className="text-sm">
+                            Ride #{r.id} ({r.pickup_location} → {r.dropoff_location})
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-900 text-gray-550 dark:text-slate-400 font-semibold uppercase">{r.status}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 dark:text-slate-500 italic px-2">No rides matching "{search}"</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="p-6 text-center text-gray-400 dark:text-slate-500">
+                No matching pages or records found for "{search}"
+              </div>
+            )}
           </div>
         )}
       </div>

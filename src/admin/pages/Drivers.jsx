@@ -1,11 +1,19 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Car, Eye, Trash2, UserPlus, Pencil, EyeClosed, ShieldCheck, ShieldAlert, CreditCard } from "lucide-react";
 
 const Drivers = () => {
+  const location = useLocation();
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(location.state?.searchQuery || "");
+
+  useEffect(() => {
+    if (location.state?.searchQuery !== undefined) {
+      setSearch(location.state.searchQuery);
+    }
+  }, [location.state]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
