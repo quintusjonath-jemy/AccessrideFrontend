@@ -113,6 +113,13 @@ const Sidebar = () => {
             </li>
 
             <li>
+              <NavLink to="/earnings" className={menuClass}>
+                <FaCoins size={18} />
+                Earnings
+              </NavLink>
+            </li>
+
+            <li>
               <NavLink to="/navigation" className={menuClass}>
                 <FaMapMarkerAlt size={18} />
                 Navigation
@@ -145,13 +152,6 @@ const Sidebar = () => {
               <NavLink to="/settings" className={menuClass}>
                 <FaCog size={18} />
                 Settings
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink to="/settings/earnings" className={menuClass}>
-                <FaCoins size={18} />
-                Earnings
               </NavLink>
             </li>
           </ul>
