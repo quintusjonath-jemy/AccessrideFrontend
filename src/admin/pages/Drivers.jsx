@@ -211,13 +211,13 @@ const Drivers = () => {
     <div className="space-y-8">
 
       {/* HEADER */}
-      <div className="bg-white/80 backdrop-blur-md border border-gray-100 rounded-2xl p-6 shadow-sm flex justify-between items-center">
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex justify-between items-center transition-colors">
 
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100">
             Driver Management
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 dark:text-slate-400 mt-1">
             Manage drivers and live vehicle activity
           </p>
         </div>
@@ -232,21 +232,21 @@ const Drivers = () => {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+      <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-center transition-colors">
         <div className="flex-1">
           <input
             type="text"
             placeholder="Search by name, email, phone, or vehicle number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+            className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-400 text-gray-850 dark:text-slate-105 text-sm"
           />
         </div>
         <div className="flex gap-3">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-850 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="online">Online</option>
@@ -258,7 +258,7 @@ const Drivers = () => {
           <select
             value={filterVehicle}
             onChange={(e) => setFilterVehicle(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer max-w-[200px] capitalize"
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-850 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer max-w-[200px] capitalize"
           >
             <option value="all">All Vehicles</option>
             {uniqueVehicles.map((v) => (
@@ -270,44 +270,44 @@ const Drivers = () => {
 
       {/* DRIVER TABLE */}
 
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-slate-900/40">
             <tr>
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Driver
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Vehicle
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Phone
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Status
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Subscription
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Location
               </th>
 
-              <th className="text-right px-6 py-4 text-sm text-gray-500">
+              <th className="text-right px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {loading ? (
               <tr>
-                <td colSpan="6" className="text-center py-10 text-gray-400">
+                <td colSpan="7" className="text-center py-10 text-gray-400 dark:text-slate-500">
                   <div className="flex justify-center items-center gap-3">
                     <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                     Loading drivers...
@@ -321,22 +321,22 @@ const Drivers = () => {
                 return (
                   <tr
                     key={driver.id}
-                    className="border-t border-gray-100 hover:bg-gray-50 transition"
+                    className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors"
                   >
                     {/* DRIVER */}
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                          <Car className="w-5 h-5 text-yellow-600" />
+                        <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-950/40 flex items-center justify-center">
+                          <Car className="w-5 h-5 text-yellow-600 dark:text-yellow-450" />
                         </div>
 
                         <div>
-                          <p className="font-semibold text-gray-800">
+                          <p className="font-semibold text-gray-800 dark:text-slate-100">
                             {driver.name}
                           </p>
 
-                          <p className="text-sm text-gray-400">
+                          <p className="text-sm text-gray-400 dark:text-slate-450">
                             {driver.email}
                           </p>
                         </div>
@@ -345,13 +345,13 @@ const Drivers = () => {
 
                     {/* VEHICLE */}
 
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="px-6 py-4 text-gray-600 dark:text-slate-300">
                       <div>
-                        <p className="font-medium">
+                        <p className="font-medium text-gray-800 dark:text-slate-200">
                           {driver.vehicle_number || driver.vehicle}
                         </p>
 
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-gray-400 dark:text-slate-550">
                           {driver.vehicle_type || "Vehicle"}
                         </p>
                       </div>
@@ -359,7 +359,7 @@ const Drivers = () => {
 
                     {/* PHONE */}
 
-                    <td className="px-6 py-4 text-gray-600">{driver.phone}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-slate-300">{driver.phone}</td>
 
                     {/* STATUS */}
 
@@ -367,7 +367,7 @@ const Drivers = () => {
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           statusStyles[driverStatus] ||
-                          "bg-gray-100 text-gray-700"
+                          "bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300"
                         }`}
                       >
                         {driver.status}
@@ -378,22 +378,22 @@ const Drivers = () => {
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-0.5">
                         {driver.subscription_status === "active" ? (
-                          <span className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full w-fit">
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 dark:bg-green-950/40 dark:text-green-400 px-2.5 py-1 rounded-full w-fit">
                             <ShieldCheck className="w-3.5 h-3.5" />
                             Active
                           </span>
                         ) : driver.subscription_status === "expired" ? (
-                          <span className="flex items-center gap-1.5 text-xs font-semibold text-red-700 bg-red-50 px-2.5 py-1 rounded-full w-fit">
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-red-700 bg-red-50 dark:bg-red-950/40 dark:text-red-400 px-2.5 py-1 rounded-full w-fit">
                             <ShieldAlert className="w-3.5 h-3.5 animate-pulse" />
                             Expired
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full w-fit border border-gray-100">
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 dark:bg-slate-900/40 dark:text-slate-400 px-2.5 py-1 rounded-full w-fit border border-gray-100 dark:border-slate-750">
                             No Membership
                           </span>
                         )}
                         {driver.subscription_expires_at && driver.subscription_status !== "none" && (
-                          <span className="text-[11px] text-gray-400 font-medium pl-1">
+                          <span className="text-[11px] text-gray-400 dark:text-slate-450 font-medium pl-1">
                             {driver.subscription_status === "active" ? "Renews" : "Expired"}: {driver.subscription_expires_at}
                           </span>
                         )}
@@ -401,7 +401,7 @@ const Drivers = () => {
                     </td>
 
                     {/* LOCATION */}
-                    <td className="px-6 py-4 text-gray-500">
+                    <td className="px-6 py-4 text-gray-500 dark:text-slate-400">
                       📍 {driver.current_location || "Unknown"}
                     </td>
 
@@ -413,8 +413,8 @@ const Drivers = () => {
                           onClick={() => toggleDriverStatus(driver)}
                           className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
                             driver.status?.toLowerCase() === "blocked"
-                              ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                              : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                              ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-400 dark:hover:bg-yellow-900/40"
+                              : "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-950/40 dark:text-blue-450 dark:hover:bg-blue-900/40"
                           }`}
                         >
                           {driver.status?.toLowerCase() === "blocked" ? (
@@ -429,14 +429,14 @@ const Drivers = () => {
                             setSelectedDriver(driver);
                             setShowEditModal(true);
                           }}
-                          className="p-2 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
+                          className="p-2 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 dark:bg-yellow-950/30 dark:text-yellow-400 dark:hover:bg-yellow-900/30"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
 
                         <button
                           onClick={() => handleDelete(driver.id)}
-                          className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                          className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/30"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -454,13 +454,13 @@ const Drivers = () => {
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 p-6">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 p-6 transition-colors">
             {/* Header */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
                 Add New Driver
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                 Fill in the driver details below to create a new profile
               </p>
             </div>
@@ -468,7 +468,7 @@ const Drivers = () => {
             {/* Form */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Driver Name
                 </label>
                 <input
@@ -477,12 +477,12 @@ const Drivers = () => {
                   placeholder="Enter driver name"
                   value={newDriver.name}
                   onChange={handleAddChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Email
                 </label>
                 <input
@@ -491,12 +491,12 @@ const Drivers = () => {
                   placeholder="Enter email"
                   value={newDriver.email}
                   onChange={handleAddChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Phone Number
                 </label>
                 <input
@@ -505,12 +505,12 @@ const Drivers = () => {
                   placeholder="Enter phone number"
                   value={newDriver.phone}
                   onChange={handleAddChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Vehicle Number
                 </label>
                 <input
@@ -519,12 +519,12 @@ const Drivers = () => {
                   placeholder="Enter vehicle number"
                   value={newDriver.vehicle_number}
                   onChange={handleAddChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Vehicle Type
                 </label>
                 <input
@@ -533,12 +533,12 @@ const Drivers = () => {
                   placeholder="Enter vehicle type"
                   value={newDriver.vehicle_type}
                   onChange={handleAddChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Location
                 </label>
                 <input
@@ -547,19 +547,19 @@ const Drivers = () => {
                   placeholder="Enter current location"
                   value={newDriver.current_location}
                   onChange={handleAddChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Status
                 </label>
                 <select
                   name="status"
                   value={newDriver.status}
                   onChange={handleAddChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 >
                   <option value="online">Online</option>
                   <option value="busy">Busy</option>
@@ -568,24 +568,24 @@ const Drivers = () => {
               </div>
 
               {/* SUBSCRIPTION SETTINGS */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-4 mt-2">
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 dark:border-slate-700 pt-4 mt-2">
                 <div className="md:col-span-2">
-                  <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-yellow-500" />
                     Membership & Subscription
                   </h3>
-                  <p className="text-xs text-gray-400 mt-0.5">Manage the driver's monthly membership payment configuration</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-450 mt-0.5">Manage the driver's monthly membership payment configuration</p>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Subscription Status
                   </label>
                   <select
                     name="subscription_status"
                     value={newDriver.subscription_status}
                     onChange={handleAddChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                   >
                     <option value="none">No Membership</option>
                     <option value="active">Active</option>
@@ -594,7 +594,7 @@ const Drivers = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Monthly Payment Amount ($)
                   </label>
                   <input
@@ -603,12 +603,12 @@ const Drivers = () => {
                     name="subscription_amount"
                     value={newDriver.subscription_amount}
                     onChange={handleAddChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Expiry Date
                   </label>
                   <input
@@ -616,12 +616,12 @@ const Drivers = () => {
                     name="subscription_expires_at"
                     value={newDriver.subscription_expires_at}
                     onChange={handleAddChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Last Payment Date
                   </label>
                   <input
@@ -629,17 +629,17 @@ const Drivers = () => {
                     name="last_payment_date"
                     value={newDriver.last_payment_date}
                     onChange={handleAddChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                   />
                 </div>
               </div>
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium"
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-750 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition font-medium"
               >
                 Cancel
               </button>
@@ -659,11 +659,11 @@ const Drivers = () => {
 
       {showEditModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 p-6">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 p-6 transition-colors">
             {/* Header */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Edit Driver</h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Edit Driver</h2>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                 Update driver details and save changes
               </p>
             </div>
@@ -671,7 +671,7 @@ const Drivers = () => {
             {/* Form */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Driver Name
                 </label>
                 <input
@@ -680,12 +680,12 @@ const Drivers = () => {
                   value={selectedDriver.name}
                   onChange={handleEditChange}
                   placeholder="Enter driver name"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Email
                 </label>
                 <input
@@ -694,12 +694,12 @@ const Drivers = () => {
                   value={selectedDriver.email}
                   onChange={handleEditChange}
                   placeholder="Enter email"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Phone
                 </label>
                 <input
@@ -708,12 +708,12 @@ const Drivers = () => {
                   value={selectedDriver.phone}
                   onChange={handleEditChange}
                   placeholder="Enter phone number"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Vehicle Number
                 </label>
                 <input
@@ -722,12 +722,12 @@ const Drivers = () => {
                   value={selectedDriver.vehicle_number}
                   onChange={handleEditChange}
                   placeholder="Enter vehicle number"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Vehicle Type
                 </label>
                 <input
@@ -736,12 +736,12 @@ const Drivers = () => {
                   value={selectedDriver.vehicle_type}
                   onChange={handleEditChange}
                   placeholder="Enter vehicle type"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Location
                 </label>
                 <input
@@ -750,19 +750,19 @@ const Drivers = () => {
                   value={selectedDriver.current_location}
                   onChange={handleEditChange}
                   placeholder="Enter current location"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Status
                 </label>
                 <select
                   name="status"
                   value={selectedDriver.status}
                   onChange={handleEditChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 >
                   <option value="online">Online</option>
                   <option value="busy">Busy</option>
@@ -772,24 +772,24 @@ const Drivers = () => {
               </div>
 
               {/* SUBSCRIPTION SETTINGS */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-4 mt-2">
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 dark:border-slate-700 pt-4 mt-2">
                 <div className="md:col-span-2">
-                  <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-yellow-500" />
                     Membership & Subscription
                   </h3>
-                  <p className="text-xs text-gray-400 mt-0.5">Manage the driver's monthly membership payment configuration</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-450 mt-0.5">Manage the driver's monthly membership payment configuration</p>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Subscription Status
                   </label>
                   <select
                     name="subscription_status"
                     value={selectedDriver.subscription_status || "none"}
                     onChange={handleEditChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                   >
                     <option value="none">No Membership</option>
                     <option value="active">Active</option>
@@ -798,7 +798,7 @@ const Drivers = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Monthly Payment Amount ($)
                   </label>
                   <input
@@ -807,12 +807,12 @@ const Drivers = () => {
                     name="subscription_amount"
                     value={selectedDriver.subscription_amount || 0.00}
                     onChange={handleEditChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Expiry Date
                   </label>
                   <input
@@ -820,12 +820,12 @@ const Drivers = () => {
                     name="subscription_expires_at"
                     value={selectedDriver.subscription_expires_at || ""}
                     onChange={handleEditChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-500">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                     Last Payment Date
                   </label>
                   <input
@@ -833,17 +833,17 @@ const Drivers = () => {
                     name="last_payment_date"
                     value={selectedDriver.last_payment_date || ""}
                     onChange={handleEditChange}
-                    className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                    className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                   />
                 </div>
               </div>
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium"
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-750 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition font-medium"
               >
                 Cancel
               </button>

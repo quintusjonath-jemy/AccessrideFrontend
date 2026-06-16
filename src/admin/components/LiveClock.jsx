@@ -26,10 +26,10 @@ const LiveClock = () => {
   });
 
   return (
-    <div className="bg-white px-4 py-2 rounded-xl shadow-md">
-      <p className="text-xl font-semibold text-center">{timeString}</p>
+    <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-xl shadow-md border dark:border-slate-700">
+      <p className="text-xl font-semibold text-center text-gray-800 dark:text-slate-100">{timeString}</p>
 
-      <h2 className="text-lg">{dateString}</h2>
+      <h2 className="text-lg text-gray-600 dark:text-slate-400">{dateString}</h2>
     </div>
   );
 };

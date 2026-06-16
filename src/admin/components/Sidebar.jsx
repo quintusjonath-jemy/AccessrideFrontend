@@ -53,11 +53,11 @@ const Sidebar = () => {
     }`;
 
   return (
-    <aside className="w-72 bg-[#0F172A] text-white min-h-screen flex flex-col justify-between shadow-2xl">
+    <aside className="w-72 bg-[#0F172A] dark:bg-slate-950 text-white min-h-screen flex flex-col justify-between shadow-2xl transition-colors duration-250">
       {/* Logo Section */}
 
       <div>
-        <div className="p-6 border-b border-slate-700">
+        <div className="p-6 border-b border-slate-700 dark:border-slate-800">
           <h1 className="text-3xl font-extrabold">
             <span className="text-yellow-400">Access</span>
             <span className="text-white">Ride</span>
@@ -152,10 +152,10 @@ const Sidebar = () => {
 
       {/* Footer */}
 
-      <div className="p-4 border-t border-slate-700">
+      <div className="p-4 border-t border-slate-700 dark:border-slate-800">
         {/* Admin Profile */}
 
-        <div className="flex items-center gap-3 bg-slate-800 p-3 rounded-xl mb-4">
+        <div className="flex items-center gap-3 bg-slate-800 dark:bg-slate-900/60 p-3 rounded-xl mb-4">
           <img
             src={
               admin.profile_image

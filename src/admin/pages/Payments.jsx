@@ -144,10 +144,10 @@ const Payments = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-md border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Payments & Earnings</h1>
-          <p className="text-gray-500 mt-1">Manage system revenues, transactions, and driver payouts</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100 tracking-tight">Payments & Earnings</h1>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">Manage system revenues, transactions, and driver payouts</p>
         </div>
         <button
           onClick={() => fetchPaymentsData(true)}
@@ -180,55 +180,55 @@ const Payments = () => {
         </div>
 
         {/* Pending Cash */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36">
+        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-colors">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-wider">Pending Cash</p>
-              <h3 className="text-2xl font-black text-slate-800 mt-2">Rs. {stats.total_pending.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
+              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Pending Cash</p>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">Rs. {stats.total_pending.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
             </div>
-            <div className="p-2.5 bg-amber-50 rounded-xl text-amber-500">
+            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl text-amber-500">
               <Clock size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 font-medium mt-auto">To be collected by drivers</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">To be collected by drivers</p>
           <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-amber-500/5 rounded-full blur-xl pointer-events-none" />
         </div>
 
         {/* Success Rate */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36">
+        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-colors">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-wider">Success Rate</p>
-              <h3 className="text-2xl font-black text-slate-800 mt-2">{stats.success_rate}%</h3>
+              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Success Rate</p>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{stats.success_rate}%</h3>
             </div>
-            <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-500">
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-emerald-500">
               <CheckCircle size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 font-medium mt-auto">Completed vs. failed transactions</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">Completed vs. failed transactions</p>
           <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
         </div>
 
         {/* Total Transactions */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36">
+        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-colors">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-wider">Transactions</p>
-              <h3 className="text-2xl font-black text-slate-800 mt-2">{stats.total_transactions}</h3>
+              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Transactions</p>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{stats.total_transactions}</h3>
             </div>
-            <div className="p-2.5 bg-blue-50 rounded-xl text-blue-500">
+            <div className="p-2.5 bg-blue-50 dark:bg-blue-950/20 rounded-xl text-blue-500">
               <CreditCard size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 font-medium mt-auto">Overall payment records stored</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">Overall payment records stored</p>
           <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-blue-500/5 rounded-full blur-xl pointer-events-none" />
         </div>
       </div>
 
       {/* Filters & Table */}
-      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden transition-colors">
         {/* Filter Bar */}
-        <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center bg-gray-50/50">
+        <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center bg-gray-50/50 dark:bg-slate-900/40">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -237,22 +237,22 @@ const Payments = () => {
               placeholder="Search by User, Driver, Ride ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-yellow-400 outline-none transition"
+              className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-850 dark:text-slate-100 focus:ring-2 focus:ring-yellow-400 outline-none transition"
             />
           </div>
-          
+
           {/* Dropdown Filters */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700">
               <SlidersHorizontal size={14} className="text-slate-400" />
-              <span className="text-xs text-slate-500 font-semibold">Filters:</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Filters:</span>
             </div>
 
             {/* User Filter */}
             <select
               value={filterUser}
               onChange={(e) => setFilterUser(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
             >
               <option value="all">All Users</option>
               {uniqueUsers.map((user) => (
@@ -264,19 +264,19 @@ const Payments = () => {
             <select
               value={filterDriver}
               onChange={(e) => setFilterDriver(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
             >
               <option value="all">All Drivers</option>
               {uniqueDrivers.map((driver) => (
                 <option key={driver} value={driver}>{driver}</option>
               ))}
             </select>
-            
+
             {/* Method Filter */}
             <select
               value={filterMethod}
               onChange={(e) => setFilterMethod(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
             >
               <option value="all">All Methods</option>
               <option value="cash">Cash</option>
@@ -287,7 +287,7 @@ const Payments = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
             >
               <option value="all">All Statuses</option>
               <option value="pending">Pending</option>
@@ -301,20 +301,20 @@ const Payments = () => {
         {/* Data Table */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-12 text-center text-slate-400">
+            <div className="p-12 text-center text-slate-400 dark:text-slate-500">
               <RefreshCw size={24} className="animate-spin mx-auto mb-2 text-yellow-400" />
               Loading payments data...
             </div>
           ) : filteredPayments.length === 0 ? (
-            <div className="p-16 text-center text-slate-400 bg-white">
-              <CreditCard size={48} className="mx-auto mb-3 text-slate-200" />
-              <h4 className="font-bold text-slate-700 text-sm">No Payments Found</h4>
-              <p className="text-xs text-slate-400 mt-1">Try resetting the search terms or filters.</p>
+            <div className="p-16 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800">
+              <CreditCard size={48} className="mx-auto mb-3 text-slate-200 dark:text-slate-700" />
+              <h4 className="font-bold text-slate-700 dark:text-slate-350 text-sm">No Payments Found</h4>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Try resetting the search terms or filters.</p>
             </div>
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-gray-100 text-slate-400 font-bold text-xs uppercase">
+                <tr className="bg-slate-50/50 dark:bg-slate-900/40 border-b border-gray-100 dark:border-slate-700 text-slate-400 dark:text-slate-400 font-bold text-xs uppercase">
                   <th className="py-4 px-6">ID</th>
                   <th className="py-4 px-6">Ride ID</th>
                   <th className="py-4 px-6">Customer</th>
@@ -326,22 +326,22 @@ const Payments = () => {
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-700 text-sm">
                 {filteredPayments.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/20 transition">
-                    <td className="py-4 px-6 font-semibold text-slate-500">#{p.id}</td>
-                    <td className="py-4 px-6 font-bold text-slate-800">#{p.ride_id}</td>
+                  <tr key={p.id} className="hover:bg-slate-50/20 dark:hover:bg-slate-700/20 transition-colors">
+                    <td className="py-4 px-6 font-semibold text-slate-500 dark:text-slate-400">#{p.id}</td>
+                    <td className="py-4 px-6 font-bold text-slate-800 dark:text-slate-100">#{p.ride_id}</td>
                     <td className="py-4 px-6">
-                      <div className="font-semibold text-slate-800">{p.user_name || "N/A"}</div>
+                      <div className="font-semibold text-slate-800 dark:text-slate-200">{p.user_name || "N/A"}</div>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="font-semibold text-slate-700">{p.driver_name || "Unassigned"}</div>
+                      <div className="font-semibold text-slate-700 dark:text-slate-300">{p.driver_name || "Unassigned"}</div>
                     </td>
-                    <td className="py-4 px-6 font-bold text-slate-900">
+                    <td className="py-4 px-6 font-bold text-slate-900 dark:text-slate-100">
                       Rs. {p.amount.toFixed(2)}
                     </td>
                     <td className="py-4 px-6">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
+                      <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-450 text-[10px] font-bold uppercase tracking-wider">
                         {p.payment_method}
                       </span>
                     </td>
@@ -355,7 +355,7 @@ const Payments = () => {
                         {p.status}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-xs text-slate-400 font-medium">
+                    <td className="py-4 px-6 text-xs text-slate-400 dark:text-slate-450 font-medium">
                       {p.created_at}
                     </td>
                     <td className="py-4 px-6 text-right space-x-1">
@@ -364,12 +364,12 @@ const Payments = () => {
                           setSelectedPayment(p);
                           setShowDetailsModal(true);
                         }}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition inline-flex items-center gap-1"
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition inline-flex items-center gap-1"
                       >
                         Details
                         <ArrowUpRight size={12} />
                       </button>
-                      
+
                       {p.status === "pending" && (
                         <button
                           onClick={() => handleUpdateStatus(p.id, "completed")}
@@ -391,19 +391,19 @@ const Payments = () => {
       {/* Details Modal */}
       {showDetailsModal && selectedPayment && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-xl overflow-hidden border border-gray-100">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full shadow-xl overflow-hidden border border-gray-100 dark:border-slate-700">
             {/* Header */}
-            <div className="p-6 bg-slate-50 border-b border-gray-100 flex justify-between items-center">
+            <div className="p-6 bg-slate-50 dark:bg-slate-900 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-[#0F172A] text-lg">Transaction Receipt</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Reference ID: {selectedPayment.transaction_id || "Cash Ride"}</p>
+                <h3 className="font-bold text-[#0F172A] dark:text-slate-100 text-lg">Transaction Receipt</h3>
+                <p className="text-xs text-gray-400 dark:text-slate-400 mt-0.5">Reference ID: {selectedPayment.transaction_id || "Cash Ride"}</p>
               </div>
               <button
                 onClick={() => {
                   setSelectedPayment(null);
                   setShowDetailsModal(false);
                 }}
-                className="p-2 bg-white hover:bg-gray-100 border border-gray-100 rounded-full text-slate-500 transition"
+                className="p-2 bg-white dark:bg-slate-900 hover:bg-gray-100 dark:hover:bg-slate-850 border border-gray-100 dark:border-slate-750 rounded-full text-slate-500 dark:text-slate-400 transition"
               >
                 <X size={16} />
               </button>
@@ -412,39 +412,39 @@ const Payments = () => {
             {/* Body */}
             <div className="p-6 space-y-5">
               {/* Receipt Info */}
-              <div className="flex flex-col items-center justify-center p-6 bg-yellow-50/50 border border-yellow-100 rounded-2xl text-center">
-                <span className="text-xs text-yellow-800 font-bold bg-yellow-100 px-3 py-0.5 rounded-full uppercase tracking-wider">AccessRide</span>
-                <span className="text-3xl font-black text-slate-800 mt-3">Rs. {selectedPayment.amount.toFixed(2)}</span>
-                <span className="text-xs text-slate-400 mt-1">Method: {selectedPayment.payment_method.toUpperCase()}</span>
+              <div className="flex flex-col items-center justify-center p-6 bg-yellow-50/50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/40 rounded-2xl text-center">
+                <span className="text-xs text-yellow-800 dark:text-yellow-400 font-bold bg-yellow-100 dark:bg-yellow-900/40 px-3 py-0.5 rounded-full uppercase tracking-wider">AccessRide</span>
+                <span className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-3">Rs. {selectedPayment.amount.toFixed(2)}</span>
+                <span className="text-xs text-slate-400 dark:text-slate-450 mt-1">Method: {selectedPayment.payment_method.toUpperCase()}</span>
               </div>
 
               {/* Grid Info */}
               <div className="grid grid-cols-2 gap-4 text-xs">
-                <div className="bg-slate-50/50 p-3 border border-slate-100/50 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Customer</span>
-                  <span className="font-bold text-slate-700 mt-0.5 block">{selectedPayment.user_name || "N/A"}</span>
-                  <span className="text-[9px] text-slate-400">ID: #{selectedPayment.user_id}</span>
+                <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
+                  <span className="text-xs text-slate-400 dark:text-slate-450 block">Customer</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block">{selectedPayment.user_name || "N/A"}</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500">ID: #{selectedPayment.user_id}</span>
                 </div>
-                <div className="bg-slate-50/50 p-3 border border-slate-100/50 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Driver Received</span>
-                  <span className="font-bold text-slate-700 mt-0.5 block">{selectedPayment.driver_name || "Unassigned"}</span>
-                  <span className="text-[9px] text-slate-400">ID: #{selectedPayment.driver_id || "N/A"}</span>
+                <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
+                  <span className="text-xs text-slate-400 dark:text-slate-450 block">Driver Received</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block">{selectedPayment.driver_name || "Unassigned"}</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500">ID: #{selectedPayment.driver_id || "N/A"}</span>
                 </div>
-                <div className="bg-slate-50/50 p-3 border border-slate-100/50 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Ride ID</span>
-                  <span className="font-bold text-slate-700 mt-0.5 block">#{selectedPayment.ride_id}</span>
+                <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
+                  <span className="text-xs text-slate-400 dark:text-slate-450 block">Ride ID</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block">#{selectedPayment.ride_id}</span>
                 </div>
-                <div className="bg-slate-50/50 p-3 border border-slate-100/50 rounded-xl">
-                  <span className="text-xs text-slate-400 block">Transaction Date</span>
-                  <span className="font-bold text-slate-700 mt-0.5 block text-xs">{selectedPayment.created_at}</span>
+                <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
+                  <span className="text-xs text-slate-400 dark:text-slate-450 block">Transaction Date</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block text-xs">{selectedPayment.created_at}</span>
                 </div>
               </div>
 
               {/* Status Section */}
-              <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+              <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-750">
                 <div>
-                  <span className="text-xs text-slate-400 block">Current Status</span>
-                  <span className="font-bold text-slate-700 uppercase text-xs mt-0.5 block">{selectedPayment.status}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-450 block">Current Status</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200 uppercase text-xs mt-0.5 block">{selectedPayment.status}</span>
                 </div>
                 <span className={`px-2.5 py-0.5 rounded-full border text-xs font-semibold flex items-center gap-1 capitalize ${statusColorClass(selectedPayment.status)}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${
@@ -458,7 +458,7 @@ const Payments = () => {
             </div>
 
             {/* Footer */}
-            <div className="p-6 bg-slate-50 border-t border-gray-100 flex gap-3">
+            <div className="p-6 bg-slate-50 dark:bg-slate-900 border-t border-gray-100 dark:border-slate-700 flex gap-3">
               {selectedPayment.status === "pending" ? (
                 <>
                   <button
@@ -497,7 +497,7 @@ const Payments = () => {
                     setSelectedPayment(null);
                     setShowDetailsModal(false);
                   }}
-                  className="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-center text-sm"
+                  className="w-full py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition text-center text-sm"
                 >
                   Close
                 </button>
