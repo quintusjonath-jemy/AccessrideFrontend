@@ -67,12 +67,12 @@ const NavigationPage = () => {
   });
 
   const statusColors = {
-    all: { bg: "bg-blue-50", border: "border-blue-100", text: "text-blue-600", iconBg: "bg-blue-100" },
-    pending: { bg: "bg-yellow-50", border: "border-yellow-100", text: "text-yellow-600", iconBg: "bg-yellow-100" },
-    accepted: { bg: "bg-indigo-50", border: "border-indigo-100", text: "text-indigo-600", iconBg: "bg-indigo-100" },
-    active: { bg: "bg-green-50", border: "border-green-100", text: "text-green-600", iconBg: "bg-green-100" },
-    completed: { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-600", iconBg: "bg-emerald-100" },
-    cancelled: { bg: "bg-red-50", border: "border-red-100", text: "text-red-600", iconBg: "bg-red-100" }
+    all: { bg: "bg-blue-50 dark:bg-blue-950/20", border: "border-blue-100 dark:border-blue-900/30", text: "text-blue-600 dark:text-blue-400", iconBg: "bg-blue-100 dark:bg-blue-900/40" },
+    pending: { bg: "bg-yellow-50 dark:bg-yellow-950/20", border: "border-yellow-100 dark:border-yellow-900/30", text: "text-yellow-600 dark:text-yellow-400", iconBg: "bg-yellow-100 dark:bg-yellow-900/40" },
+    accepted: { bg: "bg-indigo-50 dark:bg-indigo-950/20", border: "border-indigo-100 dark:border-indigo-900/30", text: "text-indigo-600 dark:text-indigo-400", iconBg: "bg-indigo-100 dark:bg-indigo-900/40" },
+    active: { bg: "bg-green-50 dark:bg-green-950/20", border: "border-green-100 dark:border-green-900/30", text: "text-green-600 dark:text-green-400", iconBg: "bg-green-100 dark:bg-green-900/40" },
+    completed: { bg: "bg-emerald-50 dark:bg-emerald-950/20", border: "border-emerald-100 dark:border-emerald-900/30", text: "text-emerald-600 dark:text-emerald-400", iconBg: "bg-emerald-100 dark:bg-emerald-900/40" },
+    cancelled: { bg: "bg-red-50 dark:bg-red-950/20", border: "border-red-100 dark:border-red-900/30", text: "text-red-600 dark:text-red-400", iconBg: "bg-red-100 dark:bg-red-900/40" }
   };
   const theme = statusColors[statusFilter] || statusColors.all;
 
@@ -83,10 +83,10 @@ const NavigationPage = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
 
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100">
             Navigation Management
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 dark:text-slate-400 mt-1">
             Monitor live ride tracking and driver movement
           </p>
         </div>
@@ -95,7 +95,7 @@ const NavigationPage = () => {
         <div className="flex items-center gap-3">
 
           {/* LIVE BADGE */}
-          <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-semibold border border-green-200 shadow-sm">
+          <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 px-4 py-2 rounded-full text-sm font-semibold border border-green-200 dark:border-green-900/50 shadow-sm">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
             LIVE TRACKING
           </div>
@@ -103,7 +103,7 @@ const NavigationPage = () => {
           {/* BUTTON */}
           <button
             onClick={() => setShowDriversOnly(!showDriversOnly)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md transition"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md transition"
           >
             <Navigation className="w-4 h-4" />
             {showDriversOnly ? "Live Navigation" : "Drivers Location"}
@@ -113,23 +113,23 @@ const NavigationPage = () => {
       </div>
 
       {/* MAP CONTAINER */}
-      <div className="relative h-[85vh] rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
+      <div className="relative h-[85vh] rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-slate-800">
 
         {/* MAP */}
         <LiveMap rides={filteredRides} center={mapCenter} driversOnly={showDriversOnly} />
 
         {/* LEFT FLOAT PANEL */}
         {isPanelExpanded ? (
-          <div className="absolute top-5 left-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-6 w-80 border border-gray-100 z-10 max-h-[80vh] overflow-y-auto transition-all duration-300">
+          <div className="absolute top-5 left-5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl p-6 w-80 border border-gray-100 dark:border-slate-800 z-10 max-h-[80vh] overflow-y-auto transition-all duration-300">
             {/* PANEL HEADER WITH COLLAPSE BUTTON */}
-            <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-2">
-              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <MapPinned className="w-5 h-5 text-blue-600" />
+            <div className="flex items-center justify-between mb-4 border-b border-gray-50 dark:border-slate-800 pb-2">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-slate-150 flex items-center gap-2">
+                <MapPinned className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 Live Overview
               </h2>
               <button
                 onClick={() => setIsPanelExpanded(false)}
-                className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-650 rounded-lg transition"
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-400 hover:text-gray-600 dark:hover:text-slate-350 rounded-lg transition"
                 title="Hide Overview"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -138,14 +138,14 @@ const NavigationPage = () => {
 
             {/* DRIVER TRACKING BADGE */}
             {trackedDriver && (
-              <div className="mb-4 bg-yellow-50 border border-yellow-100 p-3 rounded-xl flex items-center justify-between">
+              <div className="mb-4 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/40 p-3 rounded-xl flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500">Tracking Driver ID</p>
-                  <p className="text-sm font-bold text-yellow-750">#{trackedDriver}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Tracking Driver ID</p>
+                  <p className="text-sm font-bold text-yellow-750 dark:text-yellow-450">#{trackedDriver}</p>
                 </div>
                 <button
                   onClick={() => navigate("/navigation", { replace: true, state: {} })}
-                  className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg transition font-medium"
+                  className="text-xs bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/40 dark:hover:bg-yellow-900/60 text-yellow-800 dark:text-yellow-400 px-2.5 py-1.5 rounded-lg transition font-medium"
                 >
                   Show All
                 </button>
@@ -154,22 +154,22 @@ const NavigationPage = () => {
 
             {/* STATUS FILTER */}
             <div className="mb-4">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
                 Filter Status on Map
               </label>
               <div className="relative">
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 shadow-sm
-            focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition cursor-pointer"
+                  className="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm font-medium text-gray-700 dark:text-slate-150 shadow-sm
+            focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:border-blue-400 dark:focus:border-blue-500 transition cursor-pointer"
                 >
-                  <option value="all">⚙️ All Statuses</option>
-                  <option value="pending">⏳ Pending</option>
-                  <option value="accepted">✅ Accepted</option>
-                  <option value="active">🚖 Active</option>
-                  <option value="completed">🏁 Completed</option>
-                  <option value="cancelled">❌ Cancelled</option>
+                  <option value="all" className="dark:bg-slate-800">⚙️ All Statuses</option>
+                  <option value="pending" className="dark:bg-slate-800">⏳ Pending</option>
+                  <option value="accepted" className="dark:bg-slate-800">✅ Accepted</option>
+                  <option value="active" className="dark:bg-slate-800">🚖 Active</option>
+                  <option value="completed" className="dark:bg-slate-800">🏁 Completed</option>
+                  <option value="cancelled" className="dark:bg-slate-800">❌ Cancelled</option>
                 </select>
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">
                   ▼
@@ -179,7 +179,7 @@ const NavigationPage = () => {
 
             {/* SEARCH INPUT */}
             <div className="mb-4">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
                 Search Rides
               </label>
               <div className="relative">
@@ -188,7 +188,7 @@ const NavigationPage = () => {
                   placeholder="Search user, driver, location..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 pl-10 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 text-sm shadow-sm transition"
+                  className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 pl-10 outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:border-blue-400 dark:focus:border-blue-500 text-sm shadow-sm transition text-gray-800 dark:text-slate-150"
                 />
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                   <Search className="w-4 h-4" />
@@ -196,7 +196,7 @@ const NavigationPage = () => {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-450 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-450 hover:text-gray-700 dark:text-slate-500 dark:hover:text-slate-350"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -206,11 +206,11 @@ const NavigationPage = () => {
 
             {/* RIDES LIST SECTION */}
             <div className="mb-4">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
                 Matching Rides ({filteredRides.length})
               </label>
               {filteredRides.length > 0 ? (
-                <div className="max-h-48 overflow-y-auto space-y-2 pr-1 border border-gray-100 rounded-xl p-1 bg-gray-50/50">
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-1 border border-gray-100 dark:border-slate-800 rounded-xl p-1 bg-gray-50/50 dark:bg-slate-850/50">
                   {filteredRides.slice(0, 15).map((ride) => {
                     const isSelected = mapCenter[0] === parseFloat(ride.longitude) && mapCenter[1] === parseFloat(ride.latitude);
                     return (
@@ -225,26 +225,26 @@ const NavigationPage = () => {
                         }}
                         className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all duration-200 flex justify-between items-center ${
                           isSelected
-                            ? "bg-blue-50 border-blue-200 shadow-sm font-semibold"
-                            : "bg-white hover:bg-gray-50 border-gray-100"
+                            ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/50 shadow-sm font-semibold"
+                            : "bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-750/50 border-gray-100 dark:border-slate-700"
                         }`}
                       >
                         <div className="truncate flex-1 pr-2">
-                          <p className="font-semibold text-gray-800">
+                          <p className="font-semibold text-gray-800 dark:text-slate-200">
                             Ride #{ride.id}
                           </p>
-                          <p className="text-gray-500 truncate mt-0.5 text-[11px]">
+                          <p className="text-gray-500 dark:text-slate-400 truncate mt-0.5 text-[11px]">
                             👤 {ride.user_name || "Unknown"}
                           </p>
-                          <p className="text-gray-400 truncate text-[10px]">
+                          <p className="text-gray-400 dark:text-slate-450 truncate text-[10px]">
                             📍 {ride.pickup_location}
                           </p>
                         </div>
                         <span className={`px-2 py-0.5 rounded-full font-semibold text-[10px] capitalize shrink-0 ${
-                          ride.status?.toLowerCase() === "active" ? "bg-green-100 text-green-700" :
-                          ride.status?.toLowerCase() === "pending" ? "bg-yellow-100 text-yellow-755" :
-                          ride.status?.toLowerCase() === "completed" ? "bg-blue-100 text-blue-700" :
-                          "bg-gray-100 text-gray-700"
+                          ride.status?.toLowerCase() === "active" ? "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400" :
+                          ride.status?.toLowerCase() === "pending" ? "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-755 dark:text-yellow-400" :
+                          ride.status?.toLowerCase() === "completed" ? "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400" :
+                          "bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-350"
                         }`}>
                           {ride.status}
                         </span>
@@ -253,7 +253,7 @@ const NavigationPage = () => {
                   })}
                 </div>
               ) : (
-                <div className="py-6 text-center text-xs text-gray-400 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+                <div className="py-6 text-center text-xs text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900/40 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl">
                   No matching rides on map
                 </div>
               )}
@@ -262,7 +262,7 @@ const NavigationPage = () => {
             {/* DYNAMIC RIDES COUNT */}
             <div className={`flex items-center justify-between ${theme.bg} p-4 rounded-xl border ${theme.border} mb-4 transition-all duration-300`}>
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider capitalize">
+                <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider capitalize">
                   {statusFilter === "all" ? "Total" : statusFilter} Rides
                 </p>
                 <h3 className={`text-2xl font-bold ${theme.text} mt-0.5`}>
@@ -277,15 +277,15 @@ const NavigationPage = () => {
 
             {/* STATUS LIST */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+              <div className="flex items-center gap-3 text-sm text-gray-650 dark:text-slate-300 bg-gray-50 dark:bg-slate-850 p-3 rounded-lg">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 Drivers Online Tracking Active
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+              <div className="flex items-center gap-3 text-sm text-gray-655 dark:text-slate-300 bg-gray-50 dark:bg-slate-850 p-3 rounded-lg">
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 SOS Emergency Monitoring Enabled
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+              <div className="flex items-center gap-3 text-sm text-gray-650 dark:text-slate-300 bg-gray-50 dark:bg-slate-850 p-3 rounded-lg">
                 <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                 Real-time GPS Updates Running
               </div>
@@ -295,17 +295,17 @@ const NavigationPage = () => {
           /* COLLAPSED FLOAT PANEL BUTTON */
           <button
             onClick={() => setIsPanelExpanded(true)}
-            className="absolute top-5 left-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-gray-100 z-10 flex items-center gap-2 hover:bg-gray-50 transition-all duration-350 font-bold text-gray-800 text-sm shadow-md"
+            className="absolute top-5 left-5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-gray-100 dark:border-slate-800 z-10 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-350 font-bold text-gray-800 dark:text-slate-200 text-sm shadow-md"
             title="Show Overview"
           >
-            <MapPinned className="w-5 h-5 text-blue-600" />
+            <MapPinned className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Show Overview
             <ChevronRight className="w-4 h-4 text-gray-400 ml-1" />
           </button>
         )}
 
         {/* BOTTOM RIGHT SMALL PANEL */}
-        <div className="absolute bottom-5 right-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-gray-100 text-sm text-gray-600">
+        <div className="absolute bottom-5 right-5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-gray-100 dark:border-slate-800 text-sm text-gray-600 dark:text-slate-400">
           System Status: <span className="text-green-600 font-semibold">Healthy</span>
         </div>
 

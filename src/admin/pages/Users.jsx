@@ -172,10 +172,10 @@ const Users = () => {
     <div className="space-y-8">
       {/* Header */}
 
-      <div className="bg-white/80 backdrop-blur-md border border-gray-100 rounded-2xl p-6 shadow-sm flex justify-between items-center">
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex justify-between items-center transition-colors">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Users Management</h1>
-          <p className="text-gray-500 mt-1">Manage blind assistance users</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100">Users Management</h1>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">Manage blind assistance users</p>
         </div>
 
         <button
@@ -188,21 +188,21 @@ const Users = () => {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+      <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-center transition-colors">
         <div className="flex-1">
           <input
             type="text"
             placeholder="Search by name, email, or location..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+            className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-yellow-400 text-gray-850 dark:text-slate-100 text-sm"
           />
         </div>
         <div className="flex gap-3">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-850 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -212,7 +212,7 @@ const Users = () => {
           <select
             value={filterLocation}
             onChange={(e) => setFilterLocation(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer max-w-[200px]"
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-850 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer max-w-[200px]"
           >
             <option value="all">All Locations</option>
             {uniqueLocations.map((loc) => (
@@ -224,36 +224,36 @@ const Users = () => {
 
       {/* Users Table */}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-slate-900/40">
             <tr>
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Name
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Email
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 status
               </th>
 
-              <th className="text-left px-6 py-4 text-sm text-gray-500">
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Location
               </th>
 
-              <th className="text-right px-6 py-4 text-sm text-gray-500">
+              <th className="text-right px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {loading ? (
               <tr>
-                <td colSpan="5" className="text-center py-10 text-gray-400">
+                <td colSpan="5" className="text-center py-10 text-gray-400 dark:text-slate-500">
                   Loading users...
                 </td>
               </tr>
@@ -261,11 +261,11 @@ const Users = () => {
               filteredUsers.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-t border-gray-100 hover:bg-gray-50 transition"
+                  className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors"
                 >
-                  <td className="px-6 py-4 font-medium">{user.name}</td>
+                  <td className="px-6 py-4 font-medium text-gray-850 dark:text-slate-100">{user.name}</td>
 
-                  <td className="px-6 py-4 text-gray-500">{user.email}</td>
+                  <td className="px-6 py-4 text-gray-500 dark:text-slate-400">{user.email}</td>
 
                   <td className="px-6 py-4">
                     <span
@@ -275,7 +275,7 @@ const Users = () => {
                     </span>
                   </td>
 
-                  <td className="px-6 py-4 text-gray-500">{user.location}</td>
+                  <td className="px-6 py-4 text-gray-500 dark:text-slate-400">{user.location}</td>
 
                   <td className="px-6 py-4">
                     <div className="flex justify-end gap-2">
@@ -283,8 +283,8 @@ const Users = () => {
                         onClick={() => toggleUserStatus(user)}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
                           user.status?.toLowerCase() === "blocked"
-                            ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
-                            : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                            ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-400 dark:hover:bg-yellow-900/40"
+                            : "bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-900/40"
                         }`}
                       >
                         {user.status?.toLowerCase() === "blocked" ? (
@@ -299,14 +299,14 @@ const Users = () => {
                           setSelectedUser(user);
                           setShowEditModal(true);
                         }}
-                        className="p-2 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
+                        className="p-2 rounded-lg bg-yellow-50 text-yellow-600 hover:bg-yellow-100 dark:bg-yellow-950/30 dark:text-yellow-400 dark:hover:bg-yellow-900/30"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
 
                       <button
                         onClick={() => deleteUser(user.id)}
-                        className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                        className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -323,11 +323,11 @@ const Users = () => {
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 p-6">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 p-6">
             {/* Header */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Add New User</h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Add New User</h2>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                 Create a new user account in the system
               </p>
             </div>
@@ -335,7 +335,7 @@ const Users = () => {
             {/* Form */}
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Full Name
                 </label>
                 <input
@@ -347,12 +347,12 @@ const Users = () => {
                       name: e.target.value,
                     })
                   }
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Email Address
                 </label>
                 <input
@@ -364,12 +364,12 @@ const Users = () => {
                       email: e.target.value,
                     })
                   }
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-500">
+                <label className="text-xs font-semibold text-gray-500 dark:text-slate-400">
                   Location
                 </label>
                 <input
@@ -381,16 +381,16 @@ const Users = () => {
                       location: e.target.value,
                     })
                   }
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
+                  className="mt-1 w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition"
                 />
               </div>
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-medium"
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-750 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition font-medium"
               >
                 Cancel
               </button>
@@ -410,11 +410,11 @@ const Users = () => {
 
       {showEditModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden">
             {/* HEADER */}
-            <div className="px-6 py-4 bg-gray-50">
-              <h2 className="text-xl font-bold text-gray-800">Edit User</h2>
-              <p className="text-sm text-gray-500">Update user information</p>
+            <div className="px-6 py-4 bg-gray-50 dark:bg-slate-900">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Edit User</h2>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Update user information</p>
             </div>
 
             {/* FORM */}
@@ -425,7 +425,7 @@ const Users = () => {
                 value={selectedUser.name}
                 onChange={handleEditChange}
                 placeholder="Name"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 text-gray-800 dark:text-slate-100 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               />
 
               <input
@@ -434,7 +434,7 @@ const Users = () => {
                 value={selectedUser.email}
                 onChange={handleEditChange}
                 placeholder="Email"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 text-gray-800 dark:text-slate-100 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               />
 
               <input
@@ -443,14 +443,14 @@ const Users = () => {
                 value={selectedUser.location}
                 onChange={handleEditChange}
                 placeholder="Location"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 text-gray-800 dark:text-slate-100 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               />
 
               <select
                 name="status"
                 value={selectedUser.status}
                 onChange={handleEditChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 text-gray-800 dark:text-slate-100 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none transition"
               >
                 <option value="active">Active</option>
                 <option value="emergency">Emergency</option>
@@ -459,10 +459,10 @@ const Users = () => {
             </div>
 
             {/* ACTIONS */}
-            <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50">
+            <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 dark:bg-slate-900">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+                className="px-5 py-2 rounded-xl bg-gray-200 dark:bg-slate-750 text-gray-700 dark:text-slate-300 hover:bg-gray-300 dark:hover:bg-slate-700 transition"
               >
                 Cancel
               </button>

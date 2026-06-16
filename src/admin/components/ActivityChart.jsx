@@ -52,14 +52,16 @@ const ActivityChart = () => {
   const labels = chartData.map((item) => item.ride_date || "N/A");
   const values = chartData.map((item) => item.count || 0);
 
+  const isDark = document.body.classList.contains("dark");
+
   const data = {
     labels,
     datasets: [
       {
         label: "Ride Activity",
         data: values,
-        borderColor: "#2563eb",
-        backgroundColor: "rgba(37, 99, 235, 0.15)",
+        borderColor: isDark ? "#3b82f6" : "#2563eb",
+        backgroundColor: isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(37, 99, 235, 0.15)",
         borderWidth: 2,
         pointRadius: 3,
         pointHoverRadius: 6,
@@ -80,7 +82,7 @@ const ActivityChart = () => {
       legend: {
         position: "top",
         labels: {
-          color: "#374151",
+          color: isDark ? "#cbd5e1" : "#374151",
           font: {
             size: 12,
             weight: "bold",
@@ -95,13 +97,19 @@ const ActivityChart = () => {
       y: {
         beginAtZero: true,
         grid: {
-          color: "#f1f5f9",
+          color: isDark ? "#334155" : "#f1f5f9",
         },
+        ticks: {
+          color: isDark ? "#94a3b8" : "#64748b",
+        }
       },
       x: {
         grid: {
           display: false,
         },
+        ticks: {
+          color: isDark ? "#94a3b8" : "#64748b",
+        }
       },
     },
   };
@@ -122,21 +130,21 @@ const ActivityChart = () => {
         {/* Button */}
         <button
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center justify-between bg-white/80 backdrop-blur-md border border-gray-200 px-4 py-2.5 rounded-xl shadow-sm text-left hover:shadow-md transition-all"
+          className="w-full flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-gray-200 dark:border-slate-700 px-4 py-2.5 rounded-xl shadow-sm text-left hover:shadow-md transition-all text-gray-700 dark:text-slate-200"
         >
           <div>
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
               {selected?.label}
             </p>
-            <p className="text-xs text-gray-400">{selected?.desc}</p>
+            <p className="text-xs text-gray-400 dark:text-slate-400">{selected?.desc}</p>
           </div>
 
-          <span className="text-gray-400 text-xs">▼</span>
+          <span className="text-gray-400 dark:text-slate-500 text-xs">▼</span>
         </button>
 
         {/* Dropdown */}
         {open && (
-          <div className="absolute mt-2 w-full bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-50">
+          <div className="absolute mt-2 w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-lg overflow-hidden z-50">
             {options.map((opt) => (
               <div
                 key={opt.value}
@@ -144,14 +152,14 @@ const ActivityChart = () => {
                   setFilter(opt.value);
                   setOpen(false);
                 }}
-                className={`px-4 py-3 cursor-pointer transition-all hover:bg-blue-50 ${
-                  filter === opt.value ? "bg-blue-50" : ""
+                className={`px-4 py-3 cursor-pointer transition-all hover:bg-blue-50 dark:hover:bg-blue-950/40 ${
+                  filter === opt.value ? "bg-blue-50 dark:bg-blue-950/40" : ""
                 }`}
               >
-                <p className="text-sm font-semibold text-gray-700">
+                <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
                   {opt.label}
                 </p>
-                <p className="text-xs text-gray-400">{opt.desc}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400">{opt.desc}</p>
               </div>
             ))}
           </div>
@@ -161,14 +169,14 @@ const ActivityChart = () => {
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg p-6 rounded-3xl shadow-xl border border-gray-100 transition-all duration-300 hover:shadow-2xl">
+    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700 transition-all duration-300 hover:shadow-2xl">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
             Ride Activity Analytics
           </h2>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-slate-400">
             Real-time ride performance overview
           </p>
         </div>
@@ -180,9 +188,9 @@ const ActivityChart = () => {
       {/* CONTENT */}
       <div className="h-[350px] flex items-center justify-center">
         {loading ? (
-          <p className="text-gray-400 animate-pulse">Loading chart...</p>
+          <p className="text-gray-400 dark:text-slate-500 animate-pulse">Loading chart...</p>
         ) : chartData.length === 0 ? (
-          <p className="text-gray-400">No data available</p>
+          <p className="text-gray-400 dark:text-slate-500">No data available</p>
         ) : (
           <Line data={data} options={options} />
         )}

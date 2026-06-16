@@ -88,7 +88,7 @@ const ProfileSettings = () => {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Profile Card */}
 
-        <div className="bg-white rounded-3xl shadow-lg p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-lg p-8 border dark:border-slate-700 transition-colors">
           <div className="flex flex-col items-center">
             <div className="relative">
               <img
@@ -100,7 +100,7 @@ const ProfileSettings = () => {
                       : "https://via.placeholder.com/200"
                 }
                 alt="Profile"
-                className="w-40 h-40 rounded-full object-cover border-4 border-blue-100 shadow-lg"
+                className="w-40 h-40 rounded-full object-cover border-4 border-blue-100 dark:border-slate-700 shadow-lg"
               />
 
               <label className="absolute bottom-2 right-2 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-700">
@@ -114,23 +114,23 @@ const ProfileSettings = () => {
               </label>
             </div>
 
-            <h2 className="text-2xl font-bold mt-5 text-gray-800">
+            <h2 className="text-2xl font-bold mt-5 text-gray-800 dark:text-slate-100">
               {admin.name}
             </h2>
 
-            <p className="text-gray-500">System Administrator</p>
+            <p className="text-gray-500 dark:text-slate-400">System Administrator</p>
 
             <div className="w-full mt-6 space-y-4">
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <p className="text-sm text-gray-500">Email</p>
+              <div className="bg-gray-50 dark:bg-slate-900/60 p-4 rounded-xl transition-colors">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Email</p>
 
-                <p className="font-medium text-gray-800">{admin.email}</p>
+                <p className="font-medium text-gray-800 dark:text-slate-200">{admin.email}</p>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <p className="text-sm text-gray-500">Phone</p>
+              <div className="bg-gray-50 dark:bg-slate-900/60 p-4 rounded-xl transition-colors">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Phone</p>
 
-                <p className="font-medium text-gray-800">{admin.phone}</p>
+                <p className="font-medium text-gray-800 dark:text-slate-200">{admin.phone}</p>
               </div>
             </div>
           </div>
@@ -138,14 +138,14 @@ const ProfileSettings = () => {
 
         {/* Edit Form */}
 
-        <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-3xl shadow-lg p-8 border dark:border-slate-700 transition-colors">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-6">
             Account Information
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-600">
+              <label className="block mb-2 text-sm font-semibold text-gray-600 dark:text-slate-300">
                 Full Name
               </label>
 
@@ -154,12 +154,12 @@ const ProfileSettings = () => {
                 name="name"
                 value={admin.name || ""}
                 onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-200 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-600">
+              <label className="block mb-2 text-sm font-semibold text-gray-600 dark:text-slate-300">
                 Email Address
               </label>
 
@@ -168,12 +168,12 @@ const ProfileSettings = () => {
                 name="email"
                 value={admin.email || ""}
                 onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-200 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-semibold text-gray-600">
+              <label className="block mb-2 text-sm font-semibold text-gray-600 dark:text-slate-300">
                 Phone Number
               </label>
 
@@ -182,7 +182,7 @@ const ProfileSettings = () => {
                 name="phone"
                 value={admin.phone || ""}
                 onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-200 dark:border-slate-700 rounded-xl p-4 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
