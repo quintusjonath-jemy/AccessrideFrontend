@@ -14,7 +14,14 @@
   <div class="w-full max-w-md bg-slate-50 min-h-screen pb-[90px] relative flex flex-col">
     <!-- Header -->
     <header class="flex justify-between items-center p-4 bg-slate-50 sticky top-0 z-10">
-      <button class="text-[#0d1b2a]"><i data-lucide="menu"></i></button>
+      <button class="text-[#0d1b2a]" id="menu-toggle"><i data-lucide="menu"></i></button>
+      <nav id="side-menu" class="hidden">
+        <ul>
+          <li><a herf="/history">History</a></li>
+          <li><a herf="/profile">Profile</a></li>
+          <li><a herf="/settings">Settings</a></li>
+        </ul>
+        </nav>
       <h1 class="text-xl font-extrabold text-[#0d1b2a] m-0">AccessRide</h1>
       <button class="text-[#0d1b2a] flex items-center justify-center"><i data-lucide="bell" class="w-6 h-6"></i></button>
     </header>
