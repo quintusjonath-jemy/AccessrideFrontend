@@ -32,6 +32,7 @@ const adminPages = [
   { name: "Payments & Earnings", path: "/payments", icon: "Payments", keywords: ["payments", "earnings", "transactions", "money"] },
   { name: "Alerts & SOS Emergencies", path: "/alerts", icon: "Alerts", keywords: ["alerts", "emergency", "sos", "notifications"] },
   { name: "System Settings", path: "/settings", icon: "Settings", keywords: ["settings", "profile", "password", "theme", "system"] },
+  { name: "Earnings Settings", path: "/settings/earnings", icon: "Payments", keywords: ["earnings", "payouts", "revenue", "commissions", "subscriptions", "settings"] },
 ];
 
 const getPageIcon = (iconName) => {

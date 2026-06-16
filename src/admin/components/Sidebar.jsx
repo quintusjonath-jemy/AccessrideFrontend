@@ -8,6 +8,7 @@ import {
   FaCar,
   FaRoad,
   FaCreditCard,
+  FaCoins,
 } from "react-icons/fa";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -144,6 +145,13 @@ const Sidebar = () => {
               <NavLink to="/settings" className={menuClass}>
                 <FaCog size={18} />
                 Settings
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/settings/earnings" className={menuClass}>
+                <FaCoins size={18} />
+                Earnings
               </NavLink>
             </li>
           </ul>
