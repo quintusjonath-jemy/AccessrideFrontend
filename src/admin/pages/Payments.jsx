@@ -146,7 +146,7 @@ const Payments = () => {
       {/* Header */}
       <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100 tracking-tight">Payments & Earnings</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100 tracking-tight">Payments Dashboard</h1>
           <p className="text-gray-500 dark:text-slate-400 mt-1">Manage system revenues, transactions, and driver payouts</p>
         </div>
         <button
