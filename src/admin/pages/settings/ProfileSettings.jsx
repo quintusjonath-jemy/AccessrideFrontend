@@ -51,6 +51,8 @@ const ProfileSettings = () => {
 
     if (image) {
       formData.append("profile_image", image);
+    } else if (admin.profile_image) {
+      formData.append("profile_image", admin.profile_image);
     }
 
     try {
@@ -150,6 +152,7 @@ const ProfileSettings = () => {
               <input
                 type="text"
                 name="name"
+                value={admin.name || ""}
                 onChange={handleChange}
                 className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
               />
@@ -163,6 +166,7 @@ const ProfileSettings = () => {
               <input
                 type="email"
                 name="email"
+                value={admin.email || ""}
                 onChange={handleChange}
                 className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
               />
@@ -176,6 +180,7 @@ const ProfileSettings = () => {
               <input
                 type="text"
                 name="phone"
+                value={admin.phone || ""}
                 onChange={handleChange}
                 className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none"
               />
