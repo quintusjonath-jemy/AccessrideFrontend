@@ -15,9 +15,10 @@ import {
 const Earnings = () => {
   const [platform, setPlatform] = useState({
     total_gross_fare: 0,
-    commission_rate: 20,
+    commission_rate: 0,
     commission_earnings: 0,
     subscription_earnings: 0,
+    active_sub_count: 0,
     total_earnings: 0,
     total_completed_rides: 0,
   });
@@ -38,9 +39,10 @@ const Earnings = () => {
         if (res.data.success) {
           setPlatform(res.data.platform || {
             total_gross_fare: 0,
-            commission_rate: 20,
+            commission_rate: 0,
             commission_earnings: 0,
             subscription_earnings: 0,
+            active_sub_count: 0,
             total_earnings: 0,
             total_completed_rides: 0,
           });
@@ -111,52 +113,35 @@ const Earnings = () => {
             </div>
           </div>
           <div className="text-[10px] text-slate-900 font-bold mt-auto z-10">
-            <span className="bg-white/30 px-2 py-0.5 rounded-full">Commissions + Subscriptions</span>
+            <span className="bg-white/30 px-2 py-0.5 rounded-full">Driver Membership Fees</span>
           </div>
           <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
         </div>
 
-        {/* Ride Commissions */}
+        {/* Active Memberships */}
         <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-colors">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Ride Commissions ({platform.commission_rate}%)</p>
+              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Active Memberships</p>
               <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">
-                Rs. {loading ? "0" : platform.commission_earnings.toLocaleString()}
+                {loading ? "0" : (platform.active_sub_count || 0)}
               </h3>
             </div>
             <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-emerald-500">
-              <CreditCard size={18} />
+              <User size={18} />
             </div>
           </div>
           <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">
-            From {platform.total_completed_rides} completed rides
+            Drivers with active membership plans
           </p>
           <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
-        </div>
-
-        {/* Driver Memberships */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-colors">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Driver Memberships</p>
-              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">
-                Rs. {loading ? "0" : platform.subscription_earnings.toLocaleString()}
-              </h3>
-            </div>
-            <div className="p-2.5 bg-purple-50 dark:bg-purple-950/20 rounded-xl text-purple-500">
-              <Award size={18} />
-            </div>
-          </div>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">From active driver subscriptions</p>
-          <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-purple-500/5 rounded-full blur-xl pointer-events-none" />
         </div>
 
         {/* Gross Bookings Volume */}
         <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-colors">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Gross Fare Volume</p>
+              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Gross Booking Volume</p>
               <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">
                 Rs. {loading ? "0" : platform.total_gross_fare.toLocaleString()}
               </h3>
@@ -165,8 +150,25 @@ const Earnings = () => {
               <TrendingUp size={18} />
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">Total completed fares value</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">Total completed ride fares value</p>
           <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-indigo-500/5 rounded-full blur-xl pointer-events-none" />
+        </div>
+
+        {/* Total Completed Rides */}
+        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-36 transition-colors">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-slate-400 dark:text-slate-400 font-bold text-xs uppercase tracking-wider">Completed Rides</p>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">
+                {loading ? "0" : platform.total_completed_rides}
+              </h3>
+            </div>
+            <div className="p-2.5 bg-purple-50 dark:bg-purple-950/20 rounded-xl text-purple-500">
+              <Car size={18} />
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-auto">Overall trips served by platform</p>
+          <div className="absolute -right-10 -bottom-10 w-28 h-28 bg-purple-500/5 rounded-full blur-xl pointer-events-none" />
         </div>
       </div>
 
@@ -179,7 +181,7 @@ const Earnings = () => {
             Drivers Payouts & Subscriptions
           </h2>
           <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-            Details of completed rides, gross fares, deducted commissions, and driver payouts
+            Details of completed rides, gross fares, and driver subscription plans
           </p>
         </div>
 
@@ -237,10 +239,9 @@ const Earnings = () => {
                 <tr className="bg-slate-50/50 dark:bg-slate-900/40 border-b border-gray-100 dark:border-slate-700 text-slate-400 dark:text-slate-400 font-bold text-xs uppercase">
                   <th className="py-4 px-6">Driver Details</th>
                   <th className="py-4 px-6 text-center">Completed Rides</th>
-                  <th className="py-4 px-6">Gross Bookings</th>
-                  <th className="py-4 px-6">Commission Deducted (20%)</th>
-                  <th className="py-4 px-6 font-bold text-blue-600 dark:text-blue-400">Net Driver Payout (80%)</th>
-                  <th className="py-4 px-6 text-right">Membership Plan</th>
+                  <th className="py-4 px-6">Gross Bookings (100% Payout)</th>
+                  <th className="py-4 px-6">Membership Fee</th>
+                  <th className="py-4 px-6 text-right">Membership Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-slate-700 text-sm">
@@ -272,42 +273,32 @@ const Earnings = () => {
                     </td>
 
                     {/* Gross Bookings */}
-                    <td className="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200">
+                    <td className="py-4 px-6 font-bold text-slate-850 dark:text-slate-200">
                       Rs. {driver.gross_earnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
 
-                    {/* Commission Deducted */}
-                    <td className="py-4 px-6 text-rose-500 font-medium">
-                      - Rs. {driver.commission_deducted.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {/* Membership Fee */}
+                    <td className="py-4 px-6 font-semibold text-slate-700 dark:text-slate-300">
+                      Rs. {(driver.subscription_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
 
-                    {/* Net Payout */}
-                    <td className="py-4 px-6 font-bold text-blue-600 dark:text-blue-400">
-                      Rs. {driver.net_earnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
-
-                    {/* Membership plan */}
+                    {/* Membership status */}
                     <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full border text-xs font-semibold flex items-center w-max gap-1 capitalize ${
-                            driver.subscription_status === "active"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                              : driver.subscription_status === "expired"
-                              ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse"
-                              : "bg-slate-50 text-slate-600 border-slate-100"
-                          }`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            driver.subscription_status === "active" ? "bg-emerald-500" :
-                            driver.subscription_status === "expired" ? "bg-rose-500" : "bg-slate-400"
-                          }`} />
-                          {driver.subscription_status === "active" ? "Active" : driver.subscription_status === "expired" ? "Expired" : "No Plan"}
-                        </span>
-                        <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                          Rs. {(driver.subscription_amount || 0).toLocaleString()}
-                        </span>
-                      </div>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full border text-xs font-semibold flex items-center w-max ml-auto gap-1 capitalize ${
+                          driver.subscription_status === "active"
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                            : driver.subscription_status === "expired"
+                            ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse"
+                            : "bg-slate-50 text-slate-600 border-slate-100"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          driver.subscription_status === "active" ? "bg-emerald-500" :
+                          driver.subscription_status === "expired" ? "bg-rose-500" : "bg-slate-400"
+                        }`} />
+                        {driver.subscription_status === "active" ? "Active" : driver.subscription_status === "expired" ? "Expired" : "No Plan"}
+                      </span>
                     </td>
                   </tr>
                 ))}
