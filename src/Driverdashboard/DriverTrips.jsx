@@ -12,11 +12,7 @@ const DriverTrips = () => {
     []
   );
 
-  const [recentTrips, setRecentTrips] = useState([
-    { initials: "PA", name: "Passenger A.", time: "Today, 2:45 PM", amount: "Rs. 100.00" },
-    { initials: "MK", name: "Michael K.", time: "Yesterday", amount: "Rs. 250.00" },
-    { initials: "JS", name: "John S.", time: "2 days ago", amount: "Rs. 150.00" },
-  ]);
+  const [recentTrips, setRecentTrips] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost/AccessrideBackend/Driverdashboard/recent_trips.php")
