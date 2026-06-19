@@ -1,12 +1,12 @@
 import {
-  CategoryScale,
   Chart as ChartJS,
-  Legend,
+  CategoryScale,
   LinearScale,
-  LineElement,
   PointElement,
+  LineElement,
   Title,
   Tooltip,
+  Legend,
 } from "chart.js";
 
 import { Line } from "react-chartjs-2";
@@ -23,8 +23,9 @@ ChartJS.register(
   Legend,
 );
 
-const ActivityChart = () => {
-  const [chartData, setChartData] = useState([]);
+const WeeklyGrowthChart = () => {
+  const [users, setUsers] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [filter, setFilter] = useState("week");
   const [loading, setLoading] = useState(true);
 
@@ -34,13 +35,15 @@ const ActivityChart = () => {
         setLoading(true);
 
         const res = await axios.get(
-          `http://localhost/admin/api/chart_stats.php?filter=${filter}`,
+          `http://localhost/admin/api/weekly_growth.php?filter=${filter}`,
         );
 
-        setChartData(Array.isArray(res.data) ? res.data : []);
+        setUsers(Array.isArray(res.data?.users) ? res.data.users : []);
+        setDrivers(Array.isArray(res.data?.drivers) ? res.data.drivers : []);
       } catch (err) {
-        console.error("Chart data error:", err);
-        setChartData([]);
+        console.error("Growth chart error:", err);
+        setUsers([]);
+        setDrivers([]);
       } finally {
         setLoading(false);
       }
@@ -49,22 +52,30 @@ const ActivityChart = () => {
     fetchData();
   }, [filter]);
 
-  const labels = chartData.map((item) => item.ride_date || "N/A");
-  const values = chartData.map((item) => item.count || 0);
+  const labels = users.map((item) => item.label || "N/A");
 
   const data = {
     labels,
     datasets: [
       {
-        label: "Ride Activity",
-        data: values,
+        label: "New Users",
+        data: users.map((item) => item.total_users || 0),
         borderColor: "#2563eb",
         backgroundColor: "rgba(37, 99, 235, 0.15)",
-        borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 6,
         tension: 0.4,
         fill: true,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      },
+      {
+        label: "New Drivers",
+        data: drivers.map((item) => item.total_drivers || 0),
+        borderColor: "#16a34a",
+        backgroundColor: "rgba(22, 163, 74, 0.15)",
+        tension: 0.4,
+        fill: true,
+        pointRadius: 3,
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -166,23 +177,30 @@ const ActivityChart = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
-            Ride Activity Analytics
+            Platform Growth Analytics
           </h2>
           <p className="text-sm text-gray-400">
-            Real-time ride performance overview
+            New users and drivers growth overview
           </p>
         </div>
 
         {/* FILTER */}
-        <FilterDropdown filter={filter} setFilter={setFilter} />
+        <div className="relative">
+          <FilterDropdown filter={filter} setFilter={setFilter} />
+
+          {/* dropdown icon */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+            ▼
+          </div>
+        </div>
       </div>
 
-      {/* CONTENT */}
+      {/* CHART AREA */}
       <div className="h-[350px] flex items-center justify-center">
         {loading ? (
-          <p className="text-gray-400 animate-pulse">Loading chart...</p>
-        ) : chartData.length === 0 ? (
-          <p className="text-gray-400">No data available</p>
+          <p className="text-gray-400 animate-pulse">Loading growth data...</p>
+        ) : labels.length === 0 ? (
+          <p className="text-gray-400">No growth data available</p>
         ) : (
           <Line data={data} options={options} />
         )}
@@ -191,4 +209,4 @@ const ActivityChart = () => {
   );
 };
 
-export default ActivityChart;
+export default WeeklyGrowthChart;
