@@ -6,8 +6,9 @@ const DriverLogin = () => {
   const [password, setPassword] = useState("");
   const [otpPhone, setOtpPhone] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!phone || !password) {
@@ -15,11 +16,39 @@ const DriverLogin = () => {
       return;
     }
 
-    alert(`Driver signed in: ${phone}`);
+    const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
 
-    setPhone("");
-    setPassword("");
-    setRememberMe(false);
+    try {
+      const response = await fetch(`${backendBase}/api/login.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone,
+          password,
+          isDriver: true,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || "Login failed");
+        return;
+      }
+
+      setError("");
+      alert(result.message || `Driver signed in: ${phone}`);
+
+      setPhone("");
+      setPassword("");
+      setRememberMe(false);
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+      setError(error.message);
+    }
   };
 
   const sendOtp = () => {
@@ -120,6 +149,8 @@ const DriverLogin = () => {
             >
               Sign In
             </button>
+
+              {error && <p className="text-red-500 mt-2">{error}</p>}
 
             {/* OTP Section */}
             <div className="text-center text-sm text-gray-500">

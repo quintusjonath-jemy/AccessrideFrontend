@@ -14,31 +14,85 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userError, setUserError] = useState("");
 
   const [dphone, setDphone] = useState("");
   const [dpassword, setDpassword] = useState("");
+  const [driverError, setDriverError] = useState("");
   const [otpPhone, setOtpPhone] = useState("");
 
-  const loginUser = () => {
+  const loginUser = async () => {
     if (!email || !password) {
       alert("Please enter email and password");
       return;
     }
 
-    alert("Login Successful!");
-    setEmail("");
-    setPassword("");
+    const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
+
+    try {
+      const response = await fetch(`${backendBase}/api/login.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          isDriver: false,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setUserError(result.error || "Login failed");
+        return;
+      }
+
+      setUserError("");
+      alert(result.message || "Login Successful!");
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      setUserError("Unable to connect to server. Please try again.");
+    }
   };
 
-  const driverLogin = () => {
+  const driverLogin = async () => {
     if (!dphone || !dpassword) {
       alert("Please enter phone and password");
       return;
     }
 
-    alert(`Driver Login Successful: ${dphone}`);
-    setDphone("");
-    setDpassword("");
+    const backendBase = "http://localhost/AccessRide/AccessrideBackend/login";
+
+    try {
+      const response = await fetch(`${backendBase}/api/login.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: dphone,
+          password: dpassword,
+          isDriver: true,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setDriverError(result.error || "Login failed");
+        return;
+      }
+
+      setDriverError("");
+      alert(result.message || `Driver Login Successful: ${dphone}`);
+      setDphone("");
+      setDpassword("");
+    } catch (error) {
+      setDriverError("Unable to connect to server. Please try again.");
+    }
   };
 
   const sendOtp = () => {
@@ -155,6 +209,8 @@ const Login = () => {
                 Login
               </button>
 
+              {userError && <p className="text-red-500 mt-2">{userError}</p>}
+
               {/* Voice Login */}
               <div className="text-center mt-10">
                 <button
@@ -176,7 +232,7 @@ const Login = () => {
               </div>
 
               <div className="text-center text-gray-500">
-                Don't have an account?{" "}
+                Don't have an account?{' '}
                 <a
                   href="/register"
                   className="text-blue-900 font-bold hover:underline"
@@ -254,6 +310,8 @@ const Login = () => {
               >
                 Sign In
               </button>
+
+              {driverError && <p className="text-red-500 mt-2">{driverError}</p>}
 
               <div className="text-center text-gray-500 mt-4">
                 or sign in with OTP

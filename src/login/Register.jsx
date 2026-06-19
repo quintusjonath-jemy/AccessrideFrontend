@@ -6,7 +6,7 @@ function Register() {
   const [searchParams] = useSearchParams();
   const defaultDriver = searchParams.get("driver") === "true";
   const [isDriver, setIsDriver] = useState(defaultDriver);
-  const backendBase = import.meta.env.VITE_BACKEND_BASE || "http://localhost";
+  const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -67,7 +67,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch(`${backendBase}/logi/api/register.php`, {
+      const response = await fetch(`${backendBase}/api/register.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
