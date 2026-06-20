@@ -1,23 +1,4 @@
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-
-// import MainLayout from "./admin/layouts/MainLayout";
-// import Alerts from "./admin/pages/Alerts";
-// import Dashboard from "./admin/pages/Dashboard";
-// import Drivers from "./admin/pages/Drivers";
-// import Navigation from "./admin/pages/Navigation";
-// import Rides from "./admin/pages/Rides";
-// import Settings from "./admin/pages/Settings";
-// import NotificationSettings from "./admin/pages/settings/NotificationSettings";
-// import ProfileSettings from "./admin/pages/settings/ProfileSettings";
-// import SecuritySettings from "./admin/pages/settings/SecuritySettings";
-// import SystemSettings from "./admin/pages/settings/SystemSettings";
-// import Users from "./admin/pages/Users";
-
-import UserDashboard from "./UserDashboard/pages/UserDashboard";
-import UserLayout from "./UserDashboard/layouts/UserLayout";
-import RidePage from "./Ridepage/RidePage";
-import EmergencySOS from "./Emergency/EmergencySOS";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, Outlet } from "react-router-dom";
 
 import MainLayout from "./admin/layouts/MainLayout";
 import Alerts from "./admin/pages/Alerts";
@@ -25,73 +6,76 @@ import Dashboard from "./admin/pages/Dashboard";
 import Drivers from "./admin/pages/Drivers";
 import Navigation from "./admin/pages/Navigation";
 import Rides from "./admin/pages/Rides";
-import RidePage from "./Ridepage/RidePage";
-import DriverDashboard from "./Driverdashboard/DriverDashboard";
-import DriverTrips from "./Driverdashboard/DriverTrips";
-import Earnings from "./Driverdashboard/Earnings";
-import EmergencySOS from "./Emergency/EmergencySOS";
+import Payments from "./admin/pages/Payments";
 import Settings from "./admin/pages/Settings";
 import NotificationSettings from "./admin/pages/settings/NotificationSettings";
 import ProfileSettings from "./admin/pages/settings/ProfileSettings";
 import SecuritySettings from "./admin/pages/settings/SecuritySettings";
 import SystemSettings from "./admin/pages/settings/SystemSettings";
+import AdminEarnings from "./admin/pages/Earnings";
 import Users from "./admin/pages/Users";
-// import MyRides from "./history-page/Index";
-// import CustomerProfile from "./history-page/Profile";
+
+import UserDashboard from "./UserDashboard/pages/UserDashboard";
+import UserLayout from "./UserDashboard/layouts/UserLayout";
+import RideTrackingPage from "./UserDashboard/pages/RideTrackingPage";
+import EmergencySOS from "./Emergency/EmergencySOS";
+import BookingPage from "./UserDashboard/pages/BookingPage";
+import SchedulePage from "./UserDashboard/pages/SchedulePage";
+
+import DriverDashboard from "./Driverdashboard/DriverDashboard";
+import DriverTrips from "./Driverdashboard/DriverTrips";
+import Earnings from "./Driverdashboard/Earnings";
+import RidePage from "./Ridepage/RidePage";
+import LoginPage from "./login/Login";
+
+const AdminLayout = () => {
+  return (
+    <MainLayout>
+      <Outlet />
+    </MainLayout>
+  );
+};
 
 const App = () => {
   return (
     <BrowserRouter>
-      {/* <MainLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-
-          <Route path="/navigation" element={<Navigation />} />
-
-          <Route path="/users" element={<Users />} />
-
-          <Route path="/alerts" element={<Alerts />} />
-
-          <Route path="/drivers" element={<Drivers />} />
-
-          <Route path="/rides" element={<Rides />} />
-          <Route path="/ride" element={<RidePage />} />
-          <Route path="/driver-dashboard" element={<DriverDashboard />} />
-          <Route path="/driver-trips" element={<DriverTrips />} />
-          <Route path="/driver-earnings" element={<Earnings />} />
-          <Route path="/emergency" element={<EmergencySOS />} />
-
-          {/* <Route path="/my-rides" element={<MyRides />} /> */}
-
-          {/* <Route path="/profile" element={<CustomerProfile />} /> */}
-
-          <Route path="/settings" element={<Settings />} />
-
-          <Route path="/settings" element={<Settings />} />
-
-          <Route path="/settings/profile" element={<ProfileSettings />} />
-
-          <Route path="/settings/security" element={<SecuritySettings />} />
-
-          <Route
-            path="/settings/notifications"
-            element={<NotificationSettings />}
-          />
-
-          <Route path="/settings/system" element={<SystemSettings />} />
-        </Routes>
-      </MainLayout> */}
-
       <Routes>
-        {/* redirect root */}
-        <Route path="/" element={<Navigate to="/user/dashboard" />} />
+        {/* admin routes at root level */}
+        <Route path="/" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="navigation" element={<Navigation />} />
+          <Route path="users" element={<Users />} />
+          <Route path="alerts" element={<Alerts />} />
+          <Route path="drivers" element={<Drivers />} />
+          <Route path="rides" element={<Rides />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="settings/profile" element={<ProfileSettings />} />
+          <Route path="settings/security" element={<SecuritySettings />} />
+          <Route path="settings/notifications" element={<NotificationSettings />} />
+          <Route path="settings/system" element={<SystemSettings />} />
+          <Route path="earnings" element={<AdminEarnings />} />
+        </Route>
 
         {/* user routes */}
         <Route path="/user" element={<UserLayout />}>
+          <Route index element={<UserDashboard />} />
           <Route path="dashboard" element={<UserDashboard />} />
-          <Route path="ride" element={<RidePage />} />
+          <Route path="booking" element={<BookingPage />} />
+          <Route path="schedule" element={<SchedulePage />} />
+          <Route path="ride" element={<RideTrackingPage />} />
           <Route path="sos" element={<EmergencySOS />} />
         </Route>
+
+        {/* login routes */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* driver & other routes */}
+        <Route path="/ride" element={<RidePage />} />
+        <Route path="/driver-dashboard" element={<DriverDashboard />} />
+        <Route path="/driver-trips" element={<DriverTrips />} />
+        <Route path="/driver-earnings" element={<Earnings />} />
+        <Route path="/emergency" element={<EmergencySOS />} />
       </Routes>
     </BrowserRouter>
   );
