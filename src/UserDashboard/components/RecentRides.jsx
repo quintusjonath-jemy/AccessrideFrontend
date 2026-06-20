@@ -28,16 +28,22 @@ function RecentRides({ rides }) {
                   {ride.pickup_location ? ride.pickup_location.replace(/\s*\(Vehicle:\s*[^\)]+\)/i, "") : ""}
                 </p>
                 {(() => {
-                  const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
-                  if (match) {
-                    const type = match[1].trim().toLowerCase();
+                  let vehicleType = ride.vehicle_type;
+                  if (!vehicleType) {
+                    const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
+                    if (match) {
+                      vehicleType = match[1];
+                    }
+                  }
+                  if (vehicleType) {
+                    const type = vehicleType.trim().toLowerCase();
                     let emoji = "🚗";
                     if (type.includes("bike") || type.includes("motorcycle")) emoji = "🏍️";
                     else if (type.includes("van") || type.includes("suv")) emoji = "🚐";
                     else if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) emoji = "🛺";
                     return (
                       <span className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold gap-1 border border-blue-100">
-                        {emoji} {match[1]}
+                        {emoji} {vehicleType}
                       </span>
                     );
                   }
