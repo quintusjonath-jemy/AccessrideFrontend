@@ -23,7 +23,7 @@ function SystemSettings() {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/admin.php?action=system")
+      .get("http://localhost/admin/api/settings.php?action=system")
       .then((res) => {
         setSettings({
           id: 1,
@@ -57,7 +57,7 @@ function SystemSettings() {
       formData.append("tracking_enabled", settings.tracking_enabled);
 
       await axios.post(
-        "http://localhost/admin/api/admin.php?action=system",
+        "http://localhost/admin/api/settings.php?action=system",
         formData
       );
 
