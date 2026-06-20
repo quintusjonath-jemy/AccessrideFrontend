@@ -5,6 +5,10 @@ import Alerts from "./admin/pages/Alerts";
 import Dashboard from "./admin/pages/Dashboard";
 import Drivers from "./admin/pages/Drivers";
 import Navigation from "./admin/pages/Navigation";
+import LoginPage from "./login/Login";
+import RegisterPage from "./login/Register";
+import AdminLogin from "./login/AdminLogin";
+import DriverLogin from "./login/DriverLogin";
 import Rides from "./admin/pages/Rides";
 import Payments from "./admin/pages/Payments";
 import Settings from "./admin/pages/Settings";
@@ -14,6 +18,35 @@ import SecuritySettings from "./admin/pages/settings/SecuritySettings";
 import SystemSettings from "./admin/pages/settings/SystemSettings";
 import AdminEarnings from "./admin/pages/Earnings";
 import Users from "./admin/pages/Users";
+// import MyRides from "./history-page/Index";
+// import CustomerProfile from "./history-page/Profile";
+
+const App = () => {
+  return (
+    <BrowserRouter>
+      {/* <MainLayout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+
+          <Route path="/navigation" element={<Navigation />} />
+
+          <Route path="/users" element={<Users />} />
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/driver-login" element={<DriverLogin />} />
+
+          <Route path="/alerts" element={<Alerts />} />
+
+          <Route path="/drivers" element={<Drivers />} />
+
+          <Route path="/rides" element={<Rides />} />
+          <Route path="/ride" element={<RidePage />} />
+          <Route path="/driver-dashboard" element={<DriverDashboard />} />
+          <Route path="/driver-trips" element={<DriverTrips />} />
+          <Route path="/driver-earnings" element={<Earnings />} />
+          <Route path="/emergency" element={<EmergencySOS />} />
 
 import UserDashboard from "./UserDashboard/pages/UserDashboard";
 import UserLayout from "./UserDashboard/layouts/UserLayout";
