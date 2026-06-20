@@ -42,6 +42,7 @@ const Users = () => {
     const matchesSearch =
       (user.name || "").toLowerCase().includes(searchLower) ||
       (user.email || "").toLowerCase().includes(searchLower) ||
+      (user.phone || "").toLowerCase().includes(searchLower) ||
       (user.location || "").toLowerCase().includes(searchLower);
 
     const matchesStatus =
@@ -241,6 +242,10 @@ const Users = () => {
               </th>
 
               <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
+                Phone
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Email
               </th>
 
@@ -261,7 +266,7 @@ const Users = () => {
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {loading ? (
               <tr>
-                <td colSpan="5" className="text-center py-10 text-gray-400 dark:text-slate-500">
+                <td colSpan="6" className="text-center py-10 text-gray-400 dark:text-slate-500">
                   Loading users...
                 </td>
               </tr>
@@ -272,6 +277,8 @@ const Users = () => {
                   className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors"
                 >
                   <td className="px-6 py-4 font-medium text-gray-850 dark:text-slate-100">{user.name}</td>
+
+                  <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-medium">{user.phone || "N/A"}</td>
 
                   <td className="px-6 py-4 text-gray-500 dark:text-slate-400">{user.email}</td>
 
