@@ -49,22 +49,22 @@ const Sidebar = () => {
     `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group
     ${
       isActive
-        ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg font-semibold"
-        : "text-gray-300 hover:bg-gray-800 hover:text-white"
+        ? "bg-[#FEC329] text-slate-900 shadow-sm font-bold"
+        : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white"
     }`;
 
   return (
-    <aside className="w-72 bg-[#0F172A] dark:bg-slate-950 text-white min-h-screen flex flex-col justify-between shadow-2xl transition-colors duration-250">
+    <aside className="w-72 bg-[#F1F5F9] dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between shadow-md border-r border-slate-200 dark:border-slate-800 transition-colors duration-250">
       {/* Logo Section */}
 
       <div>
-        <div className="p-6 border-b border-slate-700 dark:border-slate-800">
+        <div className="p-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
           <h1 className="text-3xl font-extrabold">
-            <span className="text-yellow-400">Access</span>
-            <span className="text-white">Ride</span>
+            <span className="text-[#FEC329]">Access</span>
+            <span className="text-[#0B2F89] dark:text-white">Ride</span>
           </h1>
 
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Blind Assistance Dashboard
           </p>
         </div>
@@ -72,7 +72,7 @@ const Sidebar = () => {
         {/* Navigation */}
 
         <nav className="p-4">
-          <p className="text-xs uppercase text-gray-500 mb-3 px-3 tracking-wider">
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500 mb-3 px-3 tracking-wider">
             Main Menu
           </p>
 
@@ -143,7 +143,7 @@ const Sidebar = () => {
 
           {/* Settings Group */}
 
-          <p className="text-xs uppercase text-gray-500 mt-8 mb-3 px-3 tracking-wider">
+          <p className="text-xs uppercase text-slate-400 dark:text-slate-500 mt-8 mb-3 px-3 tracking-wider">
             System
           </p>
 
@@ -160,10 +160,10 @@ const Sidebar = () => {
 
       {/* Footer */}
 
-      <div className="p-4 border-t border-slate-700 dark:border-slate-800">
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800">
         {/* Admin Profile */}
 
-        <div className="flex items-center gap-3 bg-slate-800 dark:bg-slate-900/60 p-3 rounded-xl mb-4">
+        <div className="flex items-center gap-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3 rounded-xl mb-4">
           <img
             src={
               admin.profile_image
@@ -175,15 +175,15 @@ const Sidebar = () => {
           />
 
           <div>
-            <h4 className="font-semibold">Administrator</h4>
+            <h4 className="font-semibold text-slate-800 dark:text-slate-200">Administrator</h4>
 
-            <p className="text-xs text-gray-400">System Manager</p>
+            <p className="text-xs text-slate-500">System Manager</p>
           </div>
         </div>
 
         {/* Logout */}
 
-        <button className="w-full flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg">
+        <button className="w-full flex items-center justify-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50/50 dark:hover:bg-red-950/10 py-3 rounded-xl font-semibold transition-all duration-300">
           <FaSignOutAlt />
           Logout
         </button>
