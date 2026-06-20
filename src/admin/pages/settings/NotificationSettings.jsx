@@ -61,7 +61,7 @@ const NotificationSettings = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/admin.php?action=notifications")
+      .get("http://localhost/admin/api/settings.php?action=notifications")
       .then((res) => {
         setSettings({
           id: 1,
@@ -91,7 +91,7 @@ const NotificationSettings = () => {
       formData.append("email_notifications", settings.email_notifications);
 
       const res = await axios.post(
-        "http://localhost/admin/api/admin.php?action=notifications",
+        "http://localhost/admin/api/settings.php?action=notifications",
         formData,
       );
 

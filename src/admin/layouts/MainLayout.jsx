@@ -9,7 +9,7 @@ const MainLayout = ({ children }) => {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/admin.php?action=system")
+      .get("http://localhost/admin/api/settings.php?action=system")
       .then((res) => {
         if (res.data?.theme === "dark") {
           document.body.classList.add("dark");
