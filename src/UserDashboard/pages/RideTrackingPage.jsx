@@ -529,7 +529,20 @@ const RideTrackingPage = () => {
           </div>
 
           {/* Action Row: SOS trigger, Cancel & Back */}
-          <div className="flex flex-col gap-2 border-t border-slate-50 pt-4">
+          <div className="flex flex-col gap-3 border-t border-slate-50 pt-4">
+            {ride && (ride.status === "pending" || ride.status === "accepted") && (
+              <div className="bg-[#0B2F89]/5 border border-[#0B2F89]/10 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Share OTP with Driver</span>
+                  <p className="text-slate-600 text-xs mt-0.5 font-medium">Verify your ride before boarding</p>
+                </div>
+                <div className="bg-white border border-[#0B2F89]/10 px-4 py-2 rounded-2xl shadow-sm text-center shrink-0">
+                  <span className="text-base font-black text-[#0B2F89] tracking-widest font-mono">
+                    {((ride.id * 127 + 3571) % 9000 + 1000)}
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={() => navigate("/user/sos")}
