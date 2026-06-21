@@ -414,7 +414,7 @@ const RideTrackingPage = () => {
           </div>
 
           <h2 className="text-2xl font-black text-white tracking-tight animate-pulse">
-            Finding Your Ride
+            Finding Your Driver
           </h2>
           <p className="text-slate-350 text-sm max-w-[280px] mt-2 leading-relaxed">
             Searching for a nearby <span className="text-[#FEC329] font-bold capitalize">{ride.vehicle_type || "driver"}</span>...

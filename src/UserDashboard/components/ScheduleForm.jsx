@@ -86,6 +86,16 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isScheduling, setIsScheduling] = useState(false);
 
+  const handlePickerClick = (e) => {
+    try {
+      if (typeof e.target.showPicker === "function") {
+        e.target.showPicker();
+      }
+    } catch (err) {
+      console.warn("showPicker is not supported:", err);
+    }
+  };
+
   // Mapbox Refs & State
   const mapContainerRef = useRef(null);
   const [map, setMap] = useState(null);
@@ -410,33 +420,52 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
           </div>
 
           {/* Date and Time Picker Row */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Date Picker */}
-            <div className="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex items-center gap-2">
+            <div className="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex items-center gap-3 relative cursor-pointer hover:bg-slate-50 transition min-h-[58px]">
               <Calendar size={18} className="text-[#0B2F89] shrink-0" />
               <div className="flex-1">
                 <label className="block text-[9px] text-gray-400 font-bold uppercase tracking-wider">Date</label>
+                <div className="text-xs font-semibold text-[#0B2F89] mt-0.5">
+                  {date ? (() => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+                  })() : "Select Date"}
+                </div>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
+                  onClick={handlePickerClick}
+                  onFocus={handlePickerClick}
                   required
-                  className="w-full text-xs font-semibold text-[#0B2F89] outline-none bg-transparent cursor-pointer mt-0.5"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                 />
               </div>
             </div>
 
             {/* Time Picker */}
-            <div className="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex items-center gap-2">
+            <div className="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex items-center gap-3 relative cursor-pointer hover:bg-slate-50 transition min-h-[58px]">
               <Clock size={18} className="text-[#0B2F89] shrink-0" />
               <div className="flex-1">
                 <label className="block text-[9px] text-gray-400 font-bold uppercase tracking-wider">Time</label>
+                <div className="text-xs font-semibold text-[#0B2F89] mt-0.5">
+                  {time ? (() => {
+                    const [hours, minutes] = time.split(":");
+                    const h = parseInt(hours, 10);
+                    const ampm = h >= 12 ? "PM" : "AM";
+                    const formattedHours = h % 12 || 12;
+                    return `${formattedHours}:${minutes} ${ampm}`;
+                  })() : "Select Time"}
+                </div>
                 <input
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
+                  onClick={handlePickerClick}
+                  onFocus={handlePickerClick}
                   required
-                  className="w-full text-xs font-semibold text-[#0B2F89] outline-none bg-transparent cursor-pointer mt-0.5"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                 />
               </div>
             </div>
