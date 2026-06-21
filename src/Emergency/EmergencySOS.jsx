@@ -113,7 +113,7 @@ const EmergencySOS = () => {
         <header className="flex items-center justify-between mb-6">
           <button 
             onClick={() => navigate("/user/dashboard")}
-            className="text-slate-600 hover:text-slate-900 text-xl"
+            className="text-slate-600 hover:text-slate-900 text-xl cursor-pointer"
           >
             <FiArrowLeft className="h-6 w-6" />
           </button>
