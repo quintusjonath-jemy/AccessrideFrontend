@@ -9,7 +9,7 @@ const BottomNavigation = () => {
   const isSchedule = location.pathname === "/user/schedule";
 
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-white border-t border-slate-100 flex justify-around items-center py-2 shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center py-2 shadow-lg z-50">
       {/* Home (Highlighted capsule) */}
       <button
         onClick={() => navigate("/user/dashboard")}
