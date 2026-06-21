@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { FiPhoneCall, FiMapPin, FiUsers, FiX, FiArrowLeft, FiUser } from "react-icons/fi";
 import LiveMap from "../admin/components/LiveMap";
+import { useNavigate } from "react-router-dom";
 
 const EmergencySOS = () => {
+  const navigate = useNavigate();
   const [sosActivated, setSOSActivated] = useState(false);
   const [showLiveMap, setShowLiveMap] = useState(false);
   const [userLocation, setUserLocation] = useState([79.8612, 6.9271]);
@@ -106,10 +108,13 @@ const EmergencySOS = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center py-6 px-4">
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg p-6 ring-1 ring-slate-200">
+    <div className="min-h-screen bg-slate-100 flex justify-center">
+      <div className="w-full max-w-sm bg-white shadow-lg p-6 ring-1 ring-slate-200 min-h-screen flex flex-col">
         <header className="flex items-center justify-between mb-6">
-          <button className="text-slate-600 hover:text-slate-900 text-xl">
+          <button 
+            onClick={() => navigate("/user/dashboard")}
+            className="text-slate-600 hover:text-slate-900 text-xl"
+          >
             <FiArrowLeft className="h-6 w-6" />
           </button>
           <h2 className="font-bold text-lg text-slate-900">Emergency Help</h2>
