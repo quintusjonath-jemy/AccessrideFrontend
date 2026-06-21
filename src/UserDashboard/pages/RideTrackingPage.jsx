@@ -400,6 +400,48 @@ const RideTrackingPage = () => {
       {/* Map Layout */}
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0" />
 
+      {/* Searching Overlay */}
+      {ride.driver_status === "pending" && (
+        <div className="absolute inset-0 z-30 bg-slate-900/90 backdrop-blur-md flex flex-col justify-center items-center p-6 text-center">
+          <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-blue-500/10 border border-blue-500/20 animate-ping" />
+            <div className="absolute inset-4 rounded-full bg-blue-500/20 border border-blue-500/35 animate-pulse" />
+            <div className="absolute inset-10 rounded-full bg-blue-500/30 border border-blue-500/50 animate-ping [animation-delay:0.5s]" />
+            <div className="relative w-20 h-20 bg-gradient-to-tr from-[#0B2F89] to-blue-600 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/20">
+              <Car size={32} className="text-white animate-bounce" />
+            </div>
+            <div className="absolute inset-0 border-2 border-dashed border-blue-500/20 rounded-full animate-[spin_4s_linear_infinite]" />
+          </div>
+
+          <h2 className="text-2xl font-black text-white tracking-tight animate-pulse">
+            Finding Your Ride
+          </h2>
+          <p className="text-slate-350 text-sm max-w-[280px] mt-2 leading-relaxed">
+            Searching for a nearby <span className="text-[#FEC329] font-bold capitalize">{ride.vehicle_type || "driver"}</span>...
+          </p>
+
+          <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-4 w-full max-w-xs space-y-2 text-left">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Ride Details</div>
+            <div className="text-xs text-slate-200 truncate">
+              <span className="font-bold text-[#FEC329]">📍 Pickup:</span> {ride.pickup_location}
+            </div>
+            <div className="text-xs text-slate-200 truncate">
+              <span className="font-bold text-blue-400">🏁 Dropoff:</span> {ride.dropoff_location}
+            </div>
+            <div className="text-xs text-slate-200">
+              <span className="font-bold text-emerald-400">💰 Est. Fare:</span> Rs. {parseFloat(ride.fare).toFixed(2)}
+            </div>
+          </div>
+
+          <button
+            onClick={handleCancelRide}
+            className="mt-10 px-8 py-3 bg-red-600/25 hover:bg-red-650 border border-red-500/30 hover:border-red-500 text-red-500 hover:text-white font-bold text-xs rounded-2xl shadow transition duration-200 cursor-pointer flex items-center gap-1.5"
+          >
+            Cancel Request
+          </button>
+        </div>
+      )}
+
       {/* Header Back Link */}
       <div className="absolute top-4 left-4 z-10">
         <button
