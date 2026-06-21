@@ -12,9 +12,10 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
   const [admin, setAdmin] = useState({});
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -183,7 +184,10 @@ const Sidebar = () => {
 
         {/* Logout */}
 
-        <button className="w-full flex items-center justify-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50/50 dark:hover:bg-red-950/10 py-3 rounded-xl font-semibold transition-all duration-300">
+        <button 
+          onClick={() => navigate("/admin-login")}
+          className="w-full flex items-center justify-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50/50 dark:hover:bg-red-950/10 py-3 rounded-xl font-semibold transition-all duration-300"
+        >
           <FaSignOutAlt />
           Logout
         </button>
