@@ -31,16 +31,41 @@ const Dashboard = () => {
         setLoading(false);
       });
 
-    axios.get("http://localhost/admin/api/rides.php")
-      .then((res) => {
-        setRides(Array.isArray(res.data) ? res.data : []);
-      });
-
     axios.get("http://localhost/admin/api/dashboard_stats.php")
       .then((res) => setStats(res.data));
 
-    axios.get("http://localhost/admin/api/alerts.php")
-      .then((res) => setAlerts(Array.isArray(res.data) ? res.data : []));
+    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=all");
+
+    const handleAlerts = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setAlerts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error parsing dashboard alerts stream:", err);
+      }
+    };
+
+    const handleRides = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setRides(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error parsing dashboard rides stream:", err);
+      }
+    };
+
+    eventSource.addEventListener("alerts", handleAlerts);
+    eventSource.addEventListener("rides", handleRides);
+
+    eventSource.onerror = (err) => {
+      console.error("Dashboard SSE stream error:", err);
+    };
+
+    return () => {
+      eventSource.removeEventListener("alerts", handleAlerts);
+      eventSource.removeEventListener("rides", handleRides);
+      eventSource.close();
+    };
   }, []);
 
   return (

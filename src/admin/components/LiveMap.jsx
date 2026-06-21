@@ -6,6 +6,39 @@ import axios from "axios";
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
 
+// Calculate distance in km between two points using Haversine formula
+const haversineDistance = (coords1, coords2) => {
+  if (!coords1 || !coords2) return 0;
+  const [lon1, lat1] = coords1;
+  const [lon2, lat2] = coords2;
+  const R = 6371; // Radius of Earth in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Calculate minimum distance from a driver to any coordinate in the route geometry
+const getMinDistanceToRoute = (driverCoords, geometry) => {
+  if (!driverCoords || !geometry || !geometry.coordinates || geometry.coordinates.length === 0) {
+    return 0;
+  }
+  let minDistance = Infinity;
+  for (const coord of geometry.coordinates) {
+    const dist = haversineDistance(driverCoords, coord);
+    if (dist < minDistance) {
+      minDistance = dist;
+    }
+  }
+  return minDistance;
+};
+
 // Geocode a location query to [longitude, latitude] coordinates
 const geocodeLocation = async (query) => {
   if (!query) return null;
@@ -31,12 +64,13 @@ const geocodeLocation = async (query) => {
   return null;
 };
 
-const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }) => {
+const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, onDeviationsChange }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersRef = useRef([]);
   const routeLayersRef = useRef([]);
   const userMarkerRef = useRef(null);
+  const lastDeviationsRef = useRef({});
   const [routesData, setRoutesData] = useState({});
 
   // CREATE MAP
@@ -166,6 +200,59 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }
         }
       });
       routeLayersRef.current = [];
+
+      // 1. Calculate active ride deviations using Haversine formula
+      const currentDeviations = {};
+      rides.forEach((ride) => {
+        const status = ride.status?.toLowerCase().trim();
+        if (status === "active") {
+          const driverLng = parseFloat(ride.longitude);
+          const driverLat = parseFloat(ride.latitude);
+          let driverCoords = driverLng && driverLat ? [driverLng, driverLat] : null;
+
+          const cacheKey = `${ride.id}-${driverLng}-${driverLat}-${ride.driver_current_location || ""}-${status}`;
+          const rData = routesData[cacheKey];
+
+          if (!driverCoords && rData && rData.resolvedDriverCoords) {
+            driverCoords = rData.resolvedDriverCoords;
+          }
+
+          if (driverCoords && rData && rData.geometry) {
+            const dist = getMinDistanceToRoute(driverCoords, rData.geometry);
+            // Threshold: 0.5 km (500 meters)
+            if (dist > 0.5) {
+              currentDeviations[ride.id] = {
+                distance: dist,
+                user_name: ride.user_name,
+                driver_name: ride.driver_name,
+              };
+            }
+          }
+        }
+      });
+
+      // Emit deviations changes if changed (defer to next tick to avoid React warning)
+      const keys1 = Object.keys(currentDeviations);
+      const keys2 = Object.keys(lastDeviationsRef.current);
+      let hasChanged = keys1.length !== keys2.length;
+      if (!hasChanged) {
+        for (const key of keys1) {
+          if (
+            !lastDeviationsRef.current[key] ||
+            Math.abs(lastDeviationsRef.current[key].distance - currentDeviations[key].distance) > 0.05
+          ) {
+            hasChanged = true;
+            break;
+          }
+        }
+      }
+
+      if (hasChanged) {
+        lastDeviationsRef.current = currentDeviations;
+        if (onDeviationsChange) {
+          setTimeout(() => onDeviationsChange(currentDeviations), 0);
+        }
+      }
 
       rides.forEach((ride) => {
         const status = ride.status?.toLowerCase().trim();
