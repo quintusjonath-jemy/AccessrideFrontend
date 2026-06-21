@@ -178,13 +178,46 @@ const Alerts = () => {
                       </td>
 
                       {/* MESSAGE */}
-                      <td className="px-6 py-4 text-gray-600 dark:text-slate-300">
-                        {alert.message}
+                      <td className="px-6 py-4 text-gray-650 dark:text-slate-350">
+                        <div className="font-medium text-gray-800 dark:text-slate-200">{alert.message}</div>
+                        {alert.latitude && alert.longitude && (
+                          <div className="text-[11px] text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1 font-semibold">
+                            <span>🗺️</span> GPS: {parseFloat(alert.latitude).toFixed(5)}, {parseFloat(alert.longitude).toFixed(5)}
+                          </div>
+                        )}
+                        {alert.driver_name && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 border-t border-gray-100 dark:border-slate-700/40 pt-1.5">
+                            <span className="font-semibold text-gray-700 dark:text-slate-300">Assigned Driver:</span>
+                            <div className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                              <span>🚗 {alert.driver_name}</span>
+                              {alert.driver_phone && <span className="text-gray-400">({alert.driver_phone})</span>}
+                            </div>
+                          </div>
+                        )}
                       </td>
 
                       {/* USER */}
-                      <td className="px-6 py-4 font-medium text-gray-800 dark:text-slate-100">
-                        {alert.user_name || "Unknown"}
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-800 dark:text-slate-100">
+                          {alert.user_name || "Unknown"}
+                        </div>
+                        {alert.user_phone && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
+                            <span>📞</span> {alert.user_phone}
+                          </div>
+                        )}
+                        {alert.user_location && (
+                          <div className="text-xs text-slate-550 dark:text-slate-450 mt-0.5 flex items-center gap-1">
+                            <span>📍</span> {alert.user_location}
+                          </div>
+                        )}
+                        {alert.emergency_contact_name && (
+                          <div className="text-[11px] text-red-600 dark:text-red-400 mt-2 border-t border-gray-100 dark:border-slate-700/40 pt-1.5 font-semibold">
+                            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">SOS Contact</p>
+                            👤 {alert.emergency_contact_name} 
+                            {alert.emergency_contact_phone && ` (${alert.emergency_contact_phone})`}
+                          </div>
+                        )}
                       </td>
 
                       {/* STATUS */}
