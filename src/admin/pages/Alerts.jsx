@@ -22,32 +22,41 @@ const Alerts = () => {
   };
 
   useEffect(() => {
-    const fetchAlerts = () => {
-      axios
-        .get("http://localhost/admin/api/alerts.php")
-        .then((res) => {
-          const newAlerts = Array.isArray(res.data) ? res.data : [];
+    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=alerts");
 
+    eventSource.onmessage = (event) => {
+      try {
+        const newAlerts = JSON.parse(event.data);
+        if (Array.isArray(newAlerts)) {
           const sosAlerts = newAlerts.filter(
             (alert) =>
               alert.alert_type === "sos" && alert.status !== "resolved"
           );
 
-          if (sosAlerts.length > lastAlertCount && lastAlertCount !== 0) {
-            playAlertSound();
-          }
+          setLastAlertCount((prevCount) => {
+            if (sosAlerts.length > prevCount && prevCount !== 0) {
+              playAlertSound();
+            }
+            return sosAlerts.length;
+          });
 
-          setLastAlertCount(sosAlerts.length);
           setAlerts(newAlerts);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to parse alerts stream data:", err);
+        setLoading(false);
+      }
     };
 
-    fetchAlerts();
-    const interval = setInterval(fetchAlerts, 5000);
+    eventSource.onerror = (err) => {
+      console.error("Alerts SSE connection error:", err);
+      setLoading(false);
+    };
 
-    return () => clearInterval(interval);
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const alertStyles = {
