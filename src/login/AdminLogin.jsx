@@ -21,10 +21,6 @@ const AdminLogin = () => {
     setRemember(false);
   };
 
-  const handleGoogleSSO = () => {
-    alert("Redirecting to Google SSO (mock)");
-  };
-
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-100 to-gray-200 flex items-center justify-center p-5">
       <main className="w-full max-w-md mx-auto">
@@ -120,28 +116,6 @@ const AdminLogin = () => {
               className="w-full py-3 bg-blue-900 hover:bg-blue-800 text-white rounded-lg font-semibold shadow"
             >
               Sign In
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <div className="text-gray-500 text-sm">or</div>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-
-            {/* Google Login */}
-            <button
-              type="button"
-              onClick={handleGoogleSSO}
-              className="w-full py-3 bg-white text-gray-900 rounded-lg font-semibold shadow border border-gray-200 flex items-center justify-center gap-3 hover:bg-gray-50"
-            >
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google"
-                className="w-5 h-5"
-              />
-
-              Sign in with Google
             </button>
 
           </form>

@@ -176,6 +176,17 @@ const DriverLogin = () => {
             </div>
 
           </form>
+          <div className="text-center mt-4">
+            <p className="text-gray-600 text-sm">
+              Don’t have an account?{" "}
+              <a
+                href="/driver-register"
+                className="text-blue-900 font-semibold hover:underline"
+              >
+                Create Account
+              </a>
+            </p>
+          </div>
 
           {/* Footer */}
           <p className="text-gray-500 text-xs mt-6 text-center">
