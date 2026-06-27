@@ -19,7 +19,7 @@ const DriverLogin = () => {
     const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
 
     try {
-      const response = await fetch(`${backendBase}/api/login.php`, {
+      const response = await fetch(`${backendBase}/api/driver_login.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

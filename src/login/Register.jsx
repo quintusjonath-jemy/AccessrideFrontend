@@ -66,7 +66,7 @@ function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...formData, isDriver }),
+        body: JSON.stringify({ ...formData, isDriver: false }),
       });
 
       const result = await response.json();

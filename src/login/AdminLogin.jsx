@@ -6,26 +6,44 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      alert("Please enter email and password");
-      return;
+    try {
+
+      const response = await fetch(
+        "http://localhost/AccessRide/AccessrideBackend/login/api/admin_login.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        alert(result.error);
+        return;
+      }
+
+      alert(result.message);
+
+    } catch (error) {
+      alert("Unable to connect to server");
     }
-
-    alert(`Signed in as ${email}`);
-
-    setEmail("");
-    setPassword("");
-    setRemember(false);
   };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-100 to-gray-200 flex items-center justify-center p-5">
       <main className="w-full max-w-md mx-auto">
         <div className="bg-white rounded-3xl shadow-2xl p-8">
-          
+
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-14 h-14 bg-blue-900 rounded-3xl flex items-center justify-center shadow-lg">
@@ -45,7 +63,7 @@ const AdminLogin = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            
+
             {/* Email */}
             <div>
               <label className="text-blue-900 text-sm font-medium">
