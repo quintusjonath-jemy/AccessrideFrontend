@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import {useNavigate} from "react-router-dom";
 import { Car, Phone, Lock } from "lucide-react";
 
 const DriverLogin = () => {
@@ -7,6 +8,8 @@ const DriverLogin = () => {
   const [otpPhone, setOtpPhone] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -44,6 +47,7 @@ const DriverLogin = () => {
       setPhone("");
       setPassword("");
       setRememberMe(false);
+      navigate("/driver-dashboard");
     } catch (error) {
       console.error(error);
       alert(error.message);

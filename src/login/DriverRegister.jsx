@@ -111,20 +111,28 @@ const DriverRegister = () => {
         });
 
     };
-
     const sendOTP = () => {
 
-        if (!formData.phone) {
 
-            alert("Please enter phone number");
+        const phone = formData.phone.trim();
 
+        const phoneRegex = /^(?:\+94|0)7[01245678]\d{7}$/;
+
+        if (!phone) {
+            alert("Please enter your phone number.");
             return;
         }
 
-        alert("Demo OTP Sent : 1234");
+        // Check phone number format
+        if (!phoneRegex.test(phone)) {
+            alert("Please enter a valid Sri Lankan mobile number.");
+            return;
+        }
+
+        // Demo OTP
+        alert(" OTP Sent: 1234");
 
         setOtpSent(true);
-
     };
 
     const verifyOTP = () => {
@@ -287,21 +295,37 @@ const DriverRegister = () => {
 
         const newErrors = {};
 
-        if (!formData.password)
+        const passwordRegex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+        if (!formData.password) {
+
             newErrors.password = "Password is required";
 
-        if (!formData.confirmPassword)
-            newErrors.confirmPassword = "Confirm Password";
+        } else if (!passwordRegex.test(formData.password)) {
 
-        if (
-            formData.password &&
-            formData.confirmPassword &&
-            formData.password !== formData.confirmPassword
-        ) {
+            newErrors.password =
+                "Password must contain:\n" +
+                "• At least 8 characters\n" +
+                "• One uppercase letter (A-Z)\n" +
+                "• One lowercase letter (a-z)\n" +
+                "• One number (0-9)\n" +
+                "• One special character (@$!%*?&)";
+
+        }
+
+        if (!formData.confirmPassword) {
+
+            newErrors.confirmPassword = "Please confirm your password";
+
+        } else if (formData.password !== formData.confirmPassword) {
+
             newErrors.confirmPassword = "Passwords do not match";
+
         }
 
         setErrors(newErrors);
+
         return Object.keys(newErrors).length === 0;
     };
 
@@ -649,10 +673,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.street && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.street}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.street}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -665,10 +689,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.town && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.town}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.town}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -681,10 +705,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.district && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.district}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.district}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -707,10 +731,10 @@ const DriverRegister = () => {
                         <option>Sabaragamuwa</option>
                     </select>
                     {errors.province && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.province}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.province}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -723,10 +747,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.postalCode && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.postalCode}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.postalCode}
+                        </p>
+                    )}
                 </div>
 
             </div>
@@ -798,10 +822,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.vehicleBrand && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.vehicleBrand}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleBrand}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -818,10 +842,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.vehicleModel && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.vehicleModel}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleModel}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -838,10 +862,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.vehicleColor && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.vehicleColor}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleColor}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -858,10 +882,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.yearManufacture && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.yearManufacture}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.yearManufacture}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -878,10 +902,10 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     />
                     {errors.vehicleRegistrationNumber && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.vehicleRegistrationNumber}
-    </p>
-)}
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleRegistrationNumber}
+                        </p>
+                    )}
                 </div>
 
             </div>
@@ -987,7 +1011,7 @@ const DriverRegister = () => {
                 fit="contain"
                 instructions="Upload a clear image of the front side of your vehicle registration certificate.
                All text must be visible. "
-               error={errors.registrationImage}
+                error={errors.registrationImage}
             />
 
             <label className="mt-4 block">
@@ -1001,10 +1025,10 @@ const DriverRegister = () => {
                 className="w-full border p-3 rounded-lg mb-6"
             />
             {errors.registrationExpiry && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.registrationExpiry}
-    </p>
-)}
+                <p className="text-red-500 text-sm mt-1">
+                    {errors.registrationExpiry}
+                </p>
+            )}
 
             <UploadCard
                 title="Insurance Certificate"
@@ -1014,7 +1038,7 @@ const DriverRegister = () => {
                 fit="contain"
                 instructions="Upload a clear image of your insurance certificate.
                All text must be visible. "
-               error={errors.insuranceImage}
+                error={errors.insuranceImage}
             />
 
             <label className="mt-4 block">
@@ -1028,10 +1052,10 @@ const DriverRegister = () => {
                 className="w-full border p-3 rounded-lg"
             />
             {errors.insuranceExpiry && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.insuranceExpiry}
-    </p>
-)}
+                <p className="text-red-500 text-sm mt-1">
+                    {errors.insuranceExpiry}
+                </p>
+            )}
 
             <div className="flex justify-between mt-8">
                 <button onClick={prevStep}
@@ -1189,10 +1213,10 @@ const DriverRegister = () => {
                 className="w-full border p-3 rounded-lg mb-4"
             />
             {errors.password && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.password}
-    </p>
-)}
+                <p className="text-red-500 text-sm mt-1 whitespace-pre-line">
+                    {errors.password}
+                </p>
+            )}
 
             <input
                 type="password"
@@ -1202,10 +1226,10 @@ const DriverRegister = () => {
                 className="w-full border p-3 rounded-lg"
             />
             {errors.confirmPassword && (
-    <p className="text-red-500 text-sm mt-1">
-        {errors.confirmPassword}
-    </p>
-)}
+                <p className="text-red-500 text-sm mt-1">
+                    {errors.confirmPassword}
+                </p>
+            )}
 
             <div className="flex justify-between mt-8">
 
