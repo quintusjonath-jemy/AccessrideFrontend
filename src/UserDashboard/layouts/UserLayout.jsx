@@ -1,0 +1,21 @@
+import { Outlet, useLocation } from "react-router-dom";
+import BottomNavigation from "../components/BottomNavigation";
+
+const UserLayout = () => {
+  const location = useLocation();
+  const isSOSPage = location.pathname === "/user/sos";
+
+  return (
+    <div className={`min-h-screen bg-slate-100 ${!isSOSPage ? "pb-16" : ""}`}>
+      <Outlet />
+
+      {!isSOSPage && (
+        <div className="fixed bottom-0 left-0 w-full">
+          <BottomNavigation />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserLayout;

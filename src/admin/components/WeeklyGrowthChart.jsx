@@ -1,0 +1,215 @@
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import { Line } from "react-chartjs-2";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+);
+
+const WeeklyGrowthChart = () => {
+  const [users, setUsers] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const [filter, setFilter] = useState("week");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const res = await axios.get(
+          `http://localhost/admin/api/weekly_growth.php?filter=${filter}`,
+        );
+
+        setUsers(Array.isArray(res.data?.users) ? res.data.users : []);
+        setDrivers(Array.isArray(res.data?.drivers) ? res.data.drivers : []);
+      } catch (err) {
+        console.error("Growth chart error:", err);
+        setUsers([]);
+        setDrivers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [filter]);
+
+  const labels = users.map((item) => item.label || "N/A");
+
+  const isDark = document.body.classList.contains("dark");
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "New Users",
+        data: users.map((item) => item.total_users || 0),
+        borderColor: isDark ? "#3b82f6" : "#2563eb",
+        backgroundColor: isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(37, 99, 235, 0.15)",
+        tension: 0.4,
+        fill: true,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      },
+      {
+        label: "New Drivers",
+        data: drivers.map((item) => item.total_drivers || 0),
+        borderColor: isDark ? "#4ade80" : "#16a34a",
+        backgroundColor: isDark ? "rgba(74, 222, 128, 0.15)" : "rgba(22, 163, 74, 0.15)",
+        tension: 0.4,
+        fill: true,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: "index",
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        position: "top",
+        labels: {
+          color: isDark ? "#cbd5e1" : "#374151",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+        },
+      },
+      tooltip: {
+        enabled: true,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: isDark ? "#334155" : "#f1f5f9",
+        },
+        ticks: {
+          color: isDark ? "#94a3b8" : "#64748b",
+        }
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          color: isDark ? "#94a3b8" : "#64748b",
+        }
+      },
+    },
+  };
+
+  const FilterDropdown = ({ filter, setFilter }) => {
+    const [open, setOpen] = useState(false);
+
+    const options = [
+      { value: "day", label: "Last 24 Hours", desc: "Today’s activity" },
+      { value: "week", label: "Last 7 Days", desc: "Weekly overview" },
+      { value: "month", label: "Last 30 Days", desc: "Monthly trend" },
+    ];
+
+    const selected = options.find((o) => o.value === filter);
+
+    return (
+      <div className="relative w-56">
+        {/* Button */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-full flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-gray-200 dark:border-slate-700 px-4 py-2.5 rounded-xl shadow-sm text-left hover:shadow-md transition-all text-gray-700 dark:text-slate-200"
+        >
+          <div>
+            <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+              {selected?.label}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-slate-400">{selected?.desc}</p>
+          </div>
+
+          <span className="text-gray-400 dark:text-slate-500 text-xs">▼</span>
+        </button>
+
+        {/* Dropdown */}
+        {open && (
+          <div className="absolute mt-2 w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-lg overflow-hidden z-50">
+            {options.map((opt) => (
+              <div
+                key={opt.value}
+                onClick={() => {
+                  setFilter(opt.value);
+                  setOpen(false);
+                }}
+                className={`px-4 py-3 cursor-pointer transition-all hover:bg-blue-50 dark:hover:bg-blue-950/40 ${
+                  filter === opt.value ? "bg-blue-50 dark:bg-blue-950/40" : ""
+                }`}
+              >
+                <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                  {opt.label}
+                </p>
+                <p className="text-xs text-gray-400 dark:text-slate-400">{opt.desc}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700 transition-all duration-300 hover:shadow-2xl">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
+            Platform Growth Analytics
+          </h2>
+          <p className="text-sm text-gray-400 dark:text-slate-400">
+            New users and drivers growth overview
+          </p>
+        </div>
+
+        {/* FILTER */}
+        <div className="relative">
+          <FilterDropdown filter={filter} setFilter={setFilter} />
+        </div>
+      </div>
+
+      {/* CHART AREA */}
+      <div className="h-[350px] flex items-center justify-center">
+        {loading ? (
+          <p className="text-gray-400 dark:text-slate-500 animate-pulse">Loading growth data...</p>
+        ) : labels.length === 0 ? (
+          <p className="text-gray-400 dark:text-slate-500">No growth data available</p>
+        ) : (
+          <Line data={data} options={options} />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default WeeklyGrowthChart;
