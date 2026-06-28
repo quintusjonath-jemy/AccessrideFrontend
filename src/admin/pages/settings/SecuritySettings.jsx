@@ -122,10 +122,10 @@ const SecuritySettings = () => {
 
       {/* Main Card */}
 
-      <div className="bg-white rounded-2xl shadow-md p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-6 border dark:border-slate-700 transition-colors">
 
         {message && (
-          <div className="mb-5 p-3 rounded-lg bg-blue-50 text-blue-700">
+          <div className="mb-5 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border dark:border-blue-900/30 text-blue-700 dark:text-blue-400 transition-colors">
             {message}
           </div>
         )}
@@ -135,7 +135,7 @@ const SecuritySettings = () => {
           {/* Current Password */}
 
           <div>
-            <label className="font-medium flex items-center gap-2 mb-2">
+            <label className="font-medium text-gray-800 dark:text-slate-200 flex items-center gap-2 mb-2">
               <Lock size={16} />
               Current Password
             </label>
@@ -146,7 +146,7 @@ const SecuritySettings = () => {
                 name="current_password"
                 value={security.current_password}
                 onChange={handleChange}
-                className="w-full border rounded-xl p-3 pr-12 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-200 dark:border-slate-700 rounded-xl p-3 pr-12 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
               <button
@@ -154,7 +154,7 @@ const SecuritySettings = () => {
                 onClick={() =>
                   setShowCurrent(!showCurrent)
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400"
               >
                 {showCurrent ? (
                   <EyeOff size={18} />
@@ -168,7 +168,7 @@ const SecuritySettings = () => {
           {/* New Password */}
 
           <div>
-            <label className="font-medium flex items-center gap-2 mb-2">
+            <label className="font-medium text-gray-800 dark:text-slate-200 flex items-center gap-2 mb-2">
               <KeyRound size={16} />
               New Password
             </label>
@@ -179,7 +179,7 @@ const SecuritySettings = () => {
                 name="new_password"
                 value={security.new_password}
                 onChange={handleChange}
-                className="w-full border rounded-xl p-3 pr-12 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-200 dark:border-slate-700 rounded-xl p-3 pr-12 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
               <button
@@ -187,7 +187,7 @@ const SecuritySettings = () => {
                 onClick={() =>
                   setShowNew(!showNew)
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400"
               >
                 {showNew ? (
                   <EyeOff size={18} />
@@ -199,7 +199,7 @@ const SecuritySettings = () => {
 
             {security.new_password && (
               <div className="mt-3">
-                <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                <div className="h-2 rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden">
                   <div
                     className={`h-full ${strength.color}`}
                     style={{
@@ -213,7 +213,7 @@ const SecuritySettings = () => {
                   />
                 </div>
 
-                <p className="text-sm mt-1 text-gray-600">
+                <p className="text-sm mt-1 text-gray-600 dark:text-slate-400">
                   Password Strength:
                   {" "}
                   {strength.text}
@@ -225,7 +225,7 @@ const SecuritySettings = () => {
           {/* Confirm Password */}
 
           <div>
-            <label className="font-medium mb-2 block">
+            <label className="font-medium text-gray-800 dark:text-slate-200 mb-2 block">
               Confirm Password
             </label>
 
@@ -239,7 +239,7 @@ const SecuritySettings = () => {
                 name="confirm_password"
                 value={security.confirm_password}
                 onChange={handleChange}
-                className="w-full border rounded-xl p-3 pr-12 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-200 dark:border-slate-700 rounded-xl p-3 pr-12 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
               <button
@@ -247,7 +247,7 @@ const SecuritySettings = () => {
                 onClick={() =>
                   setShowConfirm(!showConfirm)
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400"
               >
                 {showConfirm ? (
                   <EyeOff size={18} />
@@ -269,12 +269,12 @@ const SecuritySettings = () => {
 
       {/* Security Tips */}
 
-      <div className="bg-yellow-50 border border-yellow-200 p-5 rounded-2xl">
-        <h3 className="font-semibold text-yellow-700 mb-2">
+      <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900/40 p-5 rounded-2xl transition-colors">
+        <h3 className="font-semibold text-yellow-700 dark:text-yellow-400 mb-2">
           Security Recommendations
         </h3>
 
-        <ul className="text-sm text-gray-600 space-y-1">
+        <ul className="text-sm text-gray-600 dark:text-slate-400 space-y-1">
           <li>
             • Use at least 8 characters
           </li>

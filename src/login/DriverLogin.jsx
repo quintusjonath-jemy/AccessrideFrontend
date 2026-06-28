@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Car, Phone, Lock } from "lucide-react";
 
 const DriverLogin = () => {
+  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [otpPhone, setOtpPhone] = useState("");
@@ -190,6 +191,14 @@ const DriverLogin = () => {
                 Create Account
               </a>
             </p>
+            <div className="text-center mt-3 border-t pt-3">
+              <a
+                href="/"
+                className="text-gray-500 hover:text-gray-700 font-semibold hover:underline text-sm"
+              >
+                ← Back to Selector
+              </a>
+            </div>
           </div>
 
           {/* Footer */}

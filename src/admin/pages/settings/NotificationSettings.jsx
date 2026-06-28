@@ -19,15 +19,15 @@ const SettingCard = ({
   checked,
   handleToggle,
 }) => (
-  <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
+  <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200">
     <div className="flex justify-between items-center">
       <div className="flex gap-4">
-        <div className="bg-blue-50 p-3 rounded-xl">{icon}</div>
+        <div className="bg-blue-50 dark:bg-slate-900/60 p-3 rounded-xl">{icon}</div>
 
         <div>
-          <h3 className="font-semibold text-gray-800">{title}</h3>
+          <h3 className="font-semibold text-gray-800 dark:text-slate-100">{title}</h3>
 
-          <p className="text-sm text-gray-500">{description}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">{description}</p>
         </div>
       </div>
 
@@ -40,7 +40,7 @@ const SettingCard = ({
           className="sr-only peer"
         />
 
-        <div className="w-14 h-7 bg-gray-300 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+        <div className="w-14 h-7 bg-gray-300 dark:bg-slate-700 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
 
         <div className="absolute left-1 top-1 bg-white w-5 h-5 rounded-full shadow transition-all peer-checked:translate-x-7"></div>
       </label>
@@ -61,7 +61,7 @@ const NotificationSettings = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/admin.php?action=notifications")
+      .get("http://localhost/admin/api/settings.php?action=notifications")
       .then((res) => {
         setSettings({
           id: 1,
@@ -91,7 +91,7 @@ const NotificationSettings = () => {
       formData.append("email_notifications", settings.email_notifications);
 
       const res = await axios.post(
-        "http://localhost/admin/api/admin.php?action=notifications",
+        "http://localhost/admin/api/settings.php?action=notifications",
         formData,
       );
 
@@ -128,7 +128,7 @@ const NotificationSettings = () => {
       {/* Success Message */}
 
       {message && (
-        <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl flex items-center gap-2">
+        <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/40 text-green-700 dark:text-green-400 p-4 rounded-xl flex items-center gap-2 transition-colors">
           <CheckCircle size={18} />
           {message}
         </div>
@@ -137,34 +137,34 @@ const NotificationSettings = () => {
       {/* Summary Cards */}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-red-50 p-5 rounded-2xl">
-          <h4 className="text-sm text-gray-500">SOS Alerts</h4>
+        <div className="bg-red-50 dark:bg-red-950/25 p-5 rounded-2xl border dark:border-red-900/30 transition-colors">
+          <h4 className="text-sm text-gray-500 dark:text-slate-400">SOS Alerts</h4>
 
-          <p className="text-2xl font-bold text-red-600">
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">
             {settings.sos_alert ? "ON" : "OFF"}
           </p>
         </div>
 
-        <div className="bg-green-50 p-5 rounded-2xl">
-          <h4 className="text-sm text-gray-500">Ride Alerts</h4>
+        <div className="bg-green-50 dark:bg-green-950/25 p-5 rounded-2xl border dark:border-green-900/30 transition-colors">
+          <h4 className="text-sm text-gray-500 dark:text-slate-400">Ride Alerts</h4>
 
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
             {settings.ride_alert ? "ON" : "OFF"}
           </p>
         </div>
 
-        <div className="bg-yellow-50 p-5 rounded-2xl">
-          <h4 className="text-sm text-gray-500">Driver Alerts</h4>
+        <div className="bg-yellow-50 dark:bg-yellow-950/25 p-5 rounded-2xl border dark:border-yellow-900/30 transition-colors">
+          <h4 className="text-sm text-gray-500 dark:text-slate-400">Driver Alerts</h4>
 
-          <p className="text-2xl font-bold text-yellow-600">
+          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
             {settings.driver_alert ? "ON" : "OFF"}
           </p>
         </div>
 
-        <div className="bg-purple-50 p-5 rounded-2xl">
-          <h4 className="text-sm text-gray-500">Email Alerts</h4>
+        <div className="bg-purple-50 dark:bg-purple-950/25 p-5 rounded-2xl border dark:border-purple-900/30 transition-colors">
+          <h4 className="text-sm text-gray-500 dark:text-slate-400">Email Alerts</h4>
 
-          <p className="text-2xl font-bold text-purple-600">
+          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {settings.email_notifications ? "ON" : "OFF"}
           </p>
         </div>
@@ -174,7 +174,7 @@ const NotificationSettings = () => {
 
       <div className="space-y-4">
         <SettingCard
-          icon={<Siren className="text-red-600" size={22} />}
+          icon={<Siren className="text-red-600 dark:text-red-400" size={22} />}
           title="SOS Alerts"
           description="Receive emergency SOS notifications instantly."
           name="sos_alert"
@@ -183,7 +183,7 @@ const NotificationSettings = () => {
         />
 
         <SettingCard
-          icon={<Car className="text-green-600" size={22} />}
+          icon={<Car className="text-green-600 dark:text-green-400" size={22} />}
           title="Ride Alerts"
           description="Get notifications for ride updates and activity."
           name="ride_alert"
@@ -192,7 +192,7 @@ const NotificationSettings = () => {
         />
 
         <SettingCard
-          icon={<UserCog className="text-yellow-600" size={22} />}
+          icon={<UserCog className="text-yellow-600 dark:text-yellow-400" size={22} />}
           title="Driver Alerts"
           description="Receive driver registration and status alerts."
           name="driver_alert"
@@ -201,7 +201,7 @@ const NotificationSettings = () => {
         />
 
         <SettingCard
-          icon={<Mail className="text-purple-600" size={22} />}
+          icon={<Mail className="text-purple-600 dark:text-purple-400" size={22} />}
           title="Email Notifications"
           description="Receive important updates through email."
           name="email_notifications"

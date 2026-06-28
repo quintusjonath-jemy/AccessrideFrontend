@@ -1,10 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Bell, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const activeAlerts = alerts.filter(
     (alert) => alert.status !== "resolved"
@@ -20,40 +22,49 @@ const Alerts = () => {
   };
 
   useEffect(() => {
-    const fetchAlerts = () => {
-      axios
-        .get("http://localhost/admin/api/alerts.php")
-        .then((res) => {
-          const newAlerts = Array.isArray(res.data) ? res.data : [];
+    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=alerts");
 
+    eventSource.onmessage = (event) => {
+      try {
+        const newAlerts = JSON.parse(event.data);
+        if (Array.isArray(newAlerts)) {
           const sosAlerts = newAlerts.filter(
             (alert) =>
               alert.alert_type === "sos" && alert.status !== "resolved"
           );
 
-          if (sosAlerts.length > lastAlertCount && lastAlertCount !== 0) {
-            playAlertSound();
-          }
+          setLastAlertCount((prevCount) => {
+            if (sosAlerts.length > prevCount && prevCount !== 0) {
+              playAlertSound();
+            }
+            return sosAlerts.length;
+          });
 
-          setLastAlertCount(sosAlerts.length);
           setAlerts(newAlerts);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to parse alerts stream data:", err);
+        setLoading(false);
+      }
     };
 
-    fetchAlerts();
-    const interval = setInterval(fetchAlerts, 5000);
+    eventSource.onerror = (err) => {
+      console.error("Alerts SSE connection error:", err);
+      setLoading(false);
+    };
 
-    return () => clearInterval(interval);
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const alertStyles = {
-    sos: "bg-red-50 text-red-700 border-red-200",
-    low_battery: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    navigation: "bg-blue-50 text-blue-700 border-blue-200",
-    driver_emergency: "bg-orange-50 text-orange-700 border-orange-200",
-    system: "bg-gray-50 text-gray-700 border-gray-200",
+    sos: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50",
+    low_battery: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/30 dark:text-yellow-400 dark:border-yellow-900/50",
+    navigation: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/50",
+    driver_emergency: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50",
+    system: "bg-gray-50 text-gray-700 border-gray-200 dark:bg-slate-900 dark:text-slate-350 dark:border-slate-700",
   };
 
   const resolveAlert = async (id) => {
@@ -78,18 +89,18 @@ const Alerts = () => {
     <div className="space-y-8">
 
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 bg-white/70 backdrop-blur-md border border-gray-100 p-6 rounded-2xl shadow-sm">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 bg-white/70 dark:bg-slate-800/80 backdrop-blur-md border border-gray-100 dark:border-slate-700 p-6 rounded-2xl shadow-sm">
 
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100">
             Alerts Management
           </h1>
 
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 dark:text-slate-400 mt-1">
             Monitor emergency and system alerts in real time
           </p>
 
-          <p className="mt-2 text-red-500 font-semibold">
+          <p className="mt-2 text-red-500 dark:text-red-400 font-semibold">
             {activeAlerts} active alerts detected
           </p>
         </div>
@@ -100,7 +111,7 @@ const Alerts = () => {
           Active Alerts
 
           {activeAlerts > 0 && (
-            <span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow animate-pulse">
+            <span className="absolute -top-2 -right-2 bg-white dark:bg-slate-900 text-red-600 dark:text-red-400 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow animate-pulse">
               {activeAlerts}
             </span>
           )}
@@ -108,27 +119,27 @@ const Alerts = () => {
       </div>
 
       {/* TABLE WRAPPER */}
-      <div className="bg-white/90 backdrop-blur-md border border-gray-100 rounded-3xl shadow-lg overflow-hidden">
+      <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-3xl shadow-lg overflow-hidden">
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
 
             {/* HEADER */}
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-700">
               <tr>
-                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500">
+                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">
                   Alert Type
                 </th>
-                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500">
+                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">
                   Message
                 </th>
-                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500">
+                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">
                   User
                 </th>
-                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500">
+                <th className="text-left px-6 py-4 text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">
                   Status
                 </th>
-                <th className="text-right px-6 py-4 text-xs uppercase tracking-wide text-gray-500">
+                <th className="text-right px-6 py-4 text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">
                   Action
                 </th>
               </tr>
@@ -139,7 +150,7 @@ const Alerts = () => {
               {/* LOADING */}
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-12 text-gray-400">
+                  <td colSpan="5" className="text-center py-12 text-gray-400 dark:text-slate-500">
                     <div className="flex justify-center items-center gap-3">
                       <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
                       Loading alerts...
@@ -156,9 +167,9 @@ const Alerts = () => {
                   return (
                     <tr
                       key={alert.id}
-                      className={`border-b border-gray-100 hover:bg-gray-50 transition ${
+                      className={`border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition ${
                         alert.alert_type === "sos"
-                          ? "bg-red-50"
+                          ? "bg-red-50/50 dark:bg-red-950/15"
                           : ""
                       }`}
                     >
@@ -168,7 +179,7 @@ const Alerts = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold border ${
                             alertStyles[type] ||
-                            "bg-gray-50 text-gray-600 border-gray-200"
+                            "bg-gray-50 text-gray-600 border-gray-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700"
                           }`}
                         >
                           {alert.alert_type?.replace("_", " ")}
@@ -176,13 +187,46 @@ const Alerts = () => {
                       </td>
 
                       {/* MESSAGE */}
-                      <td className="px-6 py-4 text-gray-600">
-                        {alert.message}
+                      <td className="px-6 py-4 text-gray-650 dark:text-slate-350">
+                        <div className="font-medium text-gray-800 dark:text-slate-200">{alert.message}</div>
+                        {alert.latitude && alert.longitude && (
+                          <div className="text-[11px] text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1 font-semibold">
+                            <span>🗺️</span> GPS: {parseFloat(alert.latitude).toFixed(5)}, {parseFloat(alert.longitude).toFixed(5)}
+                          </div>
+                        )}
+                        {alert.driver_name && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 border-t border-gray-100 dark:border-slate-700/40 pt-1.5">
+                            <span className="font-semibold text-gray-700 dark:text-slate-300">Assigned Driver:</span>
+                            <div className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                              <span>🚗 {alert.driver_name}</span>
+                              {alert.driver_phone && <span className="text-gray-400">({alert.driver_phone})</span>}
+                            </div>
+                          </div>
+                        )}
                       </td>
 
                       {/* USER */}
-                      <td className="px-6 py-4 font-medium text-gray-800">
-                        {alert.user_name || "Unknown"}
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-800 dark:text-slate-100">
+                          {alert.user_name || "Unknown"}
+                        </div>
+                        {alert.user_phone && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
+                            <span>📞</span> {alert.user_phone}
+                          </div>
+                        )}
+                        {alert.user_location && (
+                          <div className="text-xs text-slate-550 dark:text-slate-450 mt-0.5 flex items-center gap-1">
+                            <span>📍</span> {alert.user_location}
+                          </div>
+                        )}
+                        {alert.emergency_contact_name && (
+                          <div className="text-[11px] text-red-600 dark:text-red-400 mt-2 border-t border-gray-100 dark:border-slate-700/40 pt-1.5 font-semibold">
+                            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">SOS Contact</p>
+                            👤 {alert.emergency_contact_name} 
+                            {alert.emergency_contact_phone && ` (${alert.emergency_contact_phone})`}
+                          </div>
+                        )}
                       </td>
 
                       {/* STATUS */}
@@ -190,8 +234,8 @@ const Alerts = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             alert.status === "resolved"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
+                              ? "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                              : "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400"
                           }`}
                         >
                           {alert.status}
@@ -200,15 +244,31 @@ const Alerts = () => {
 
                       {/* ACTION */}
                       <td className="px-6 py-4 text-right">
-                        {alert.status !== "resolved" && (
-                          <button
-                            onClick={() => resolveAlert(alert.id)}
-                            className="inline-flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-600 px-3 py-2 rounded-lg text-sm font-medium transition"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Resolve
-                          </button>
-                        )}
+                        <div className="flex justify-end gap-2">
+                          {alert.driver_id && (
+                            <button
+                              onClick={() =>
+                                navigate("/admin/navigation", {
+                                  state: {
+                                    driverId: alert.driver_id,
+                                  },
+                                })
+                              }
+                              className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg text-xs font-semibold transition animate-pulse"
+                            >
+                              Track
+                            </button>
+                          )}
+                          {alert.status !== "resolved" && (
+                            <button
+                              onClick={() => resolveAlert(alert.id)}
+                              className="inline-flex items-center gap-2 bg-green-50 hover:bg-green-100 dark:bg-green-950/40 dark:hover:bg-green-900/40 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg text-xs font-semibold transition"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              Resolve
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                     </tr>

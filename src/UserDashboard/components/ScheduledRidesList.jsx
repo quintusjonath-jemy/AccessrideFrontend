@@ -48,14 +48,35 @@ const ScheduledRidesList = ({ rides = [], onCancel, onEdit }) => {
                 <p className="font-bold text-sm text-[#0B2F89]">
                   {formatDateTime(ride.ride_date)}
                 </p>
-                {(ride.vehicle_type || (ride.wheelchair_type && ride.wheelchair_type !== "none")) && (
-                  <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold bg-amber-50 px-2.5 py-0.5 rounded-full w-max mt-1.5 capitalize">
-                    <Car size={10} />
-                    <span>
-                      {ride.vehicle_type || ride.wheelchair_type}
-                    </span>
-                  </div>
-                )}
+                {(() => {
+                  let vehicleType = ride.vehicle_type;
+                  if (!vehicleType) {
+                    const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
+                    if (match) {
+                      vehicleType = match[1];
+                    }
+                  }
+                  const hasWheelchair = ride.wheelchair_type && ride.wheelchair_type !== "none";
+                  if (vehicleType || hasWheelchair) {
+                    return (
+                      <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold bg-amber-50 px-2.5 py-0.5 rounded-full w-max mt-1.5 capitalize">
+                        <span>
+                          {(() => {
+                            const type = (vehicleType || "").toLowerCase();
+                            if (type.includes("bike") || type.includes("motorcycle")) return "🏍️";
+                            if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) return "🛺";
+                            if (type.includes("van") || type.includes("suv")) return "🚐";
+                            return "🚗";
+                          })()}
+                        </span>
+                        <span>
+                          {vehicleType || ride.wheelchair_type}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
             
@@ -82,10 +103,34 @@ const ScheduledRidesList = ({ rides = [], onCancel, onEdit }) => {
           <div className="space-y-2 text-xs border-t border-slate-50 pt-3">
             <div className="flex items-start gap-2">
               <div className="h-2 w-2 rounded-full bg-emerald-500 mt-1 shrink-0" />
-              <p className="text-slate-600 font-medium truncate">
+              <div className="text-slate-600 font-medium flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
                 <span className="text-gray-400 text-[10px] uppercase font-bold mr-1">From:</span>
-                {ride.pickup_location}
-              </p>
+                <span className="truncate">
+                  {ride.pickup_location ? ride.pickup_location.replace(/\s*\(Vehicle:\s*[^\)]+\)/i, "") : ""}
+                </span>
+                {(() => {
+                  let vehicleType = ride.vehicle_type;
+                  if (!vehicleType) {
+                    const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
+                    if (match) {
+                      vehicleType = match[1];
+                    }
+                  }
+                  if (vehicleType) {
+                    const type = vehicleType.trim().toLowerCase();
+                    let emoji = "🚗";
+                    if (type.includes("bike") || type.includes("motorcycle")) emoji = "🏍️";
+                    else if (type.includes("van") || type.includes("suv")) emoji = "🚐";
+                    else if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) emoji = "🛺";
+                    return (
+                      <span className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold gap-1 border border-blue-100 shrink-0">
+                        {emoji} {vehicleType}
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
             </div>
             <div className="flex items-start gap-2">
               <MapPin size={10} className="text-red-500 mt-1 shrink-0" />
@@ -94,6 +139,28 @@ const ScheduledRidesList = ({ rides = [], onCancel, onEdit }) => {
                 {ride.dropoff_location}
               </p>
             </div>
+          </div>
+
+          {/* Details Row (Distance, Fare & Payment) */}
+          <div className="flex justify-between items-center text-[10px] bg-slate-50 rounded-2xl p-3 border border-slate-100/50 text-slate-500">
+            {ride.distance_km && (
+              <div>
+                <span className="font-bold text-gray-400 uppercase mr-1">Dist:</span>
+                <span className="font-extrabold text-slate-800">{parseFloat(ride.distance_km).toFixed(1)} km</span>
+              </div>
+            )}
+            {ride.fare && (
+              <div>
+                <span className="font-bold text-gray-400 uppercase mr-1">Fare:</span>
+                <span className="font-extrabold text-slate-800">Rs. {parseFloat(ride.fare).toFixed(2)}</span>
+              </div>
+            )}
+            {ride.payment_method && (
+              <div>
+                <span className="font-bold text-gray-400 uppercase mr-1">Pay:</span>
+                <span className="font-black text-[#0B2F89] capitalize">{ride.payment_method}</span>
+              </div>
+            )}
           </div>
         </div>
       ))}

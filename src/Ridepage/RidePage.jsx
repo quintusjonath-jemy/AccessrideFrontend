@@ -104,15 +104,15 @@ const RidePage = () => {
   };
 
   return (
-    <div className="bg-gray-200 flex justify-center items-center min-h-screen p-4">
-      <div className="w-full max-w-[390px] h-[844px] bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col">
+    <div className="bg-gray-200 flex justify-center items-center min-h-screen sm:p-4">
+      <div className="w-full max-w-[390px] h-[100vh] sm:h-[calc(100vh-2rem)] sm:max-h-[844px] bg-white sm:rounded-3xl shadow-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-4 border-b">
           <button className="text-xl">←</button>
           <h1 className="font-bold text-lg text-blue-900">Ride in Progress</h1>
           <div className="w-6" />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <div className="relative bg-gray-300 rounded-2xl h-52 overflow-hidden">
             <div ref={mapContainer} className="w-full h-full rounded-2xl" />
 
