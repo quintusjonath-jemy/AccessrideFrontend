@@ -111,7 +111,7 @@ const Dashboard = () => {
               </p>
             </div>
 
-            <Link to="/rides">
+            <Link to="/admin/rides">
               <button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-5 py-2 rounded-xl shadow-md hover:scale-105 transition">
                 View All
               </button>
@@ -187,7 +187,7 @@ const Dashboard = () => {
                           <td>
                             <button
                               onClick={() =>
-                                navigate("/navigation", {
+                                navigate("/admin/navigation", {
                                   state: {
                                     rideId: ride.id,
                                     driverId: ride.driver_id,

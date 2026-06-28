@@ -248,7 +248,7 @@ const Alerts = () => {
                           {alert.driver_id && (
                             <button
                               onClick={() =>
-                                navigate("/navigation", {
+                                navigate("/admin/navigation", {
                                   state: {
                                     driverId: alert.driver_id,
                                   },

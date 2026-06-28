@@ -403,7 +403,7 @@ const Rides = () => {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() =>
-                            navigate("/navigation", {
+                            navigate("/admin/navigation", {
                               state: {
                                 rideId: ride.id,
                                 driverId: ride.driver_id,

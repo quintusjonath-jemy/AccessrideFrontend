@@ -185,7 +185,7 @@ const NavigationPage = () => {
                   <p className="text-sm font-bold text-yellow-750 dark:text-yellow-450">#{trackedDriver}</p>
                 </div>
                 <button
-                  onClick={() => navigate("/navigation", { replace: true, state: {} })}
+                  onClick={() => navigate("/admin/navigation", { replace: true, state: {} })}
                   className="text-xs bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/40 dark:hover:bg-yellow-900/60 text-yellow-800 dark:text-yellow-400 px-2.5 py-1.5 rounded-lg transition font-medium"
                 >
                   Show All
