@@ -89,10 +89,10 @@ const Dashboard = () => {
 
       {/* STATS */}
       <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
-        <StatsCard title="Total Users" value={users?.length || 0} color="text-blue-600 dark:text-blue-400" />
-        <StatsCard title="Total Drivers" value={stats.totalDrivers} color="text-yellow-600 dark:text-yellow-400" />
-        <StatsCard title="Total Rides" value={stats.totalRides} color="text-purple-600 dark:text-purple-400" />
-        <StatsCard title="Active Rides" value={stats.activeRides} color="text-green-600 dark:text-green-400" />
+        <StatsCard title="Total Users"   value={users?.length || 0}  bg="bg-gradient-to-br from-blue-500 to-blue-700"     icon="👤" />
+        <StatsCard title="Total Drivers" value={stats.totalDrivers}   bg="bg-gradient-to-br from-amber-400 to-orange-500"  icon="🚗" />
+        <StatsCard title="Total Rides"   value={stats.totalRides}     bg="bg-gradient-to-br from-purple-500 to-purple-700" icon="🛣️" />
+        <StatsCard title="Active Rides"  value={stats.activeRides}    bg="bg-gradient-to-br from-emerald-500 to-green-600" icon="✅" />
       </div>
 
       {/* MAIN CONTENT */}
