@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Car, Phone, Lock } from "lucide-react";
 
 const DriverLogin = () => {
+  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [otpPhone, setOtpPhone] = useState("");
@@ -44,6 +46,7 @@ const DriverLogin = () => {
       setPhone("");
       setPassword("");
       setRememberMe(false);
+      navigate("/driver-dashboard");
     } catch (error) {
       console.error(error);
       alert(error.message);
@@ -176,6 +179,25 @@ const DriverLogin = () => {
             </div>
 
           </form>
+          <div className="text-center mt-4">
+            <p className="text-gray-600 text-sm">
+              Don’t have an account?{" "}
+              <a
+                href="/driver-register"
+                className="text-blue-900 font-semibold hover:underline"
+              >
+                Create Account
+              </a>
+            </p>
+            <div className="text-center mt-3 border-t pt-3">
+              <a
+                href="/"
+                className="text-gray-500 hover:text-gray-700 font-semibold hover:underline text-sm"
+              >
+                ← Back to Selector
+              </a>
+            </div>
+          </div>
 
           {/* Footer */}
           <p className="text-gray-500 text-xs mt-6 text-center">

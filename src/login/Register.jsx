@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { UserPlus, Mic } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Register() {
-  const [searchParams] = useSearchParams();
-  const defaultDriver = searchParams.get("driver") === "true";
-  const [isDriver, setIsDriver] = useState(defaultDriver);
+  const navigate = useNavigate();
   const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
 
   const [formData, setFormData] = useState({
@@ -17,10 +15,6 @@ function Register() {
     confirmPassword: "",
     guardianName: "",
     guardianNumber: "",
-    vehicleType: "Sedan",
-    plateNumber: "",
-    licenseNumber: "",
-    insurance: "",
     agree: false,
   });
 
@@ -51,7 +45,7 @@ function Register() {
       return;
     }
 
-    if (!isDriver && (!guardianName || !guardianNumber)) {
+    if (!guardianName || !guardianNumber) {
       alert("Please fill all required fields including guardian details");
       return;
     }
@@ -136,8 +130,8 @@ function Register() {
                 <h1 className="text-2xl font-extrabold text-blue-900">
                   Create Your Account
                 </h1>
-                <p className="text-gray-500 text-sm">
-                  Register as a Rider or Driver
+                <p className="text-gray-600 ">
+                  Enjoy a personalized ride experience with AccessRide. Sign up now to get started!
                 </p>
               </div>
             </div>
@@ -149,33 +143,6 @@ function Register() {
               Back to Sign In
             </Link>
           </header>
-
-          {/* Role Toggle */}
-          <div className="flex gap-2 mb-6 justify-center">
-            <button
-              type="button"
-              onClick={() => setIsDriver(false)}
-              className={`px-4 py-2 rounded-full font-semibold ${
-                !isDriver
-                  ? "bg-blue-900 text-white"
-                  : "bg-white text-blue-900 border border-gray-200"
-              }`}
-            >
-              Register as Rider
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsDriver(true)}
-              className={`px-4 py-2 rounded-full font-semibold ${
-                isDriver
-                  ? "bg-blue-900 text-white"
-                  : "bg-white text-blue-900 border border-gray-200"
-              }`}
-            >
-              Register as Driver
-            </button>
-          </div>
 
           {/* Form */}
           <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }} className="space-y-4">
@@ -233,11 +200,10 @@ function Register() {
               />
             </div>
 
-            {!isDriver && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-blue-900 font-semibold mb-1">
-                    Guardian Name
+                    Emergency Contact Name
                   </label>
                   <input
                     type="text"
@@ -249,7 +215,7 @@ function Register() {
                 </div>
                 <div>
                   <label className="block text-blue-900 font-semibold mb-1">
-                    Guardian Number
+                    Emergency Contact Number
                   </label>
                   <input
                     type="tel"
@@ -261,7 +227,6 @@ function Register() {
                   />
                 </div>
               </div>
-            )}
 
             <div>
               <label className="block text-blue-900 font-semibold mb-1">
@@ -289,72 +254,6 @@ function Register() {
               />
             </div>
 
-            {/* Driver Fields */}
-            {isDriver && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-blue-900 font-semibold mb-1">
-                    Vehicle Type
-                  </label>
-
-                  <select
-                    name="vehicleType"
-                    value={formData.vehicleType}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
-                  >
-                    <option>Auto</option>
-                    <option>Taxi</option>
-                    <option>Wheelchair Accessible</option>
-                    <option>Van</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-blue-900 font-semibold mb-1">
-                    License Plate
-                  </label>
-
-                  <input
-                    type="text"
-                    name="plateNumber"
-                    value={formData.plateNumber}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-blue-900 font-semibold mb-1">
-                    Driver License Number
-                  </label>
-
-                  <input
-                    type="text"
-                    name="licenseNumber"
-                    value={formData.licenseNumber}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-blue-900 font-semibold mb-1">
-                    Insurance Document URL
-                  </label>
-
-                  <input
-                    type="text"
-                    name="insurance"
-                    value={formData.insurance}
-                    onChange={handleChange}
-                    placeholder="https://..."
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
-                  />
-                </div>
-              </div>
-            )}
-
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
@@ -375,8 +274,6 @@ function Register() {
             >
               Create Account
             </button>
-
-            {!isDriver && (
               <div className="flex flex-col items-center mt-4">
                 <button
                   type="button"
@@ -390,7 +287,6 @@ function Register() {
                   Use voice to register
                 </span>
               </div>
-            )}
           </form>
         </div>
       </main>

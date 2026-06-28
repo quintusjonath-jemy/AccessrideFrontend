@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Lock, CarTaxiFront } from "lucide-react";
 
 const AdminLogin = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -19,10 +21,7 @@ const AdminLogin = () => {
     setEmail("");
     setPassword("");
     setRemember(false);
-  };
-
-  const handleGoogleSSO = () => {
-    alert("Redirecting to Google SSO (mock)");
+    navigate("/admin");
   };
 
   return (
@@ -122,34 +121,20 @@ const AdminLogin = () => {
               Sign In
             </button>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <div className="text-gray-500 text-sm">or</div>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-
-            {/* Google Login */}
-            <button
-              type="button"
-              onClick={handleGoogleSSO}
-              className="w-full py-3 bg-white text-gray-900 rounded-lg font-semibold shadow border border-gray-200 flex items-center justify-center gap-3 hover:bg-gray-50"
-            >
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google"
-                className="w-5 h-5"
-              />
-
-              Sign in with Google
-            </button>
-
           </form>
 
           {/* Footer */}
           <p className="text-gray-500 text-xs mt-6">
             By signing in you agree to AccessRide admin terms.
           </p>
+          <div className="text-center mt-4 border-t pt-3">
+            <a
+              href="/"
+              className="text-gray-500 hover:text-gray-700 font-semibold hover:underline text-sm"
+            >
+              ← Back to Selector
+            </a>
+          </div>
 
         </div>
       </main>

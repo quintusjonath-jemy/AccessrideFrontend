@@ -79,56 +79,56 @@ const Sidebar = () => {
 
           <ul className="space-y-2">
             <li>
-              <NavLink to="/" className={menuClass} end>
+              <NavLink to="/admin" className={menuClass} end>
                 <FaHome size={18} />
                 Dashboard
               </NavLink>
             </li>
 
             <li>
-              <NavLink to="/users" className={menuClass}>
+              <NavLink to="/admin/users" className={menuClass}>
                 <FaUsers size={18} />
                 Users
               </NavLink>
             </li>
 
             <li>
-              <NavLink to="/drivers" className={menuClass}>
+              <NavLink to="/admin/drivers" className={menuClass}>
                 <FaCar size={18} />
                 Drivers
               </NavLink>
             </li>
 
             <li>
-              <NavLink to="/rides" className={menuClass}>
+              <NavLink to="/admin/rides" className={menuClass}>
                 <FaRoad size={18} />
                 Rides
               </NavLink>
             </li>
 
             <li>
-              <NavLink to="/payments" className={menuClass}>
+              <NavLink to="/admin/payments" className={menuClass}>
                 <FaCreditCard size={18} />
                 Payments
               </NavLink>
             </li>
 
             <li>
-              <NavLink to="/earnings" className={menuClass}>
+              <NavLink to="/admin/earnings" className={menuClass}>
                 <FaCoins size={18} />
                 Earnings
               </NavLink>
             </li>
 
             <li>
-              <NavLink to="/navigation" className={menuClass}>
+              <NavLink to="/admin/navigation" className={menuClass}>
                 <FaMapMarkerAlt size={18} />
                 Navigation
               </NavLink>
             </li>
 
             <li>
-              <NavLink to="/alerts" className={menuClass}>
+              <NavLink to="/admin/alerts" className={menuClass}>
                 <FaBell size={18} />
                 <span className="flex-1 flex justify-between items-center">
                   Alerts
@@ -150,7 +150,7 @@ const Sidebar = () => {
 
           <ul>
             <li>
-              <NavLink to="/settings" className={menuClass}>
+              <NavLink to="/admin/settings" className={menuClass}>
                 <FaCog size={18} />
                 Settings
               </NavLink>
