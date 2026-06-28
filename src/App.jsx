@@ -33,6 +33,8 @@ import LoginPage from "./login/Login";
 import RegisterPage from "./login/Register";
 import AdminLogin from "./login/AdminLogin";
 import DriverLogin from "./login/DriverLogin";
+import LoginSelector from "./login/LoginSelector";
+import DriverRegister from "./login/DriverRegister";
 
 const AdminLayout = () => {
   return (
@@ -46,9 +48,10 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* admin routes at root level */}
-        <Route path="/" element={<AdminLayout />}>
+        {/* admin routes under /admin prefix */}
+        <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="navigation" element={<Navigation />} />
           <Route path="users" element={<Users />} />
           <Route path="alerts" element={<Alerts />} />
@@ -81,10 +84,12 @@ const App = () => {
         </Route>
 
         {/* login & register routes */}
+        <Route path="/" element={<LoginSelector />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/driver-login" element={<DriverLogin />} />
+        <Route path="/driver-register" element={<DriverRegister />} />
 
         {/* standalone / shared routes */}
         <Route path="/ride" element={<RidePage />} />

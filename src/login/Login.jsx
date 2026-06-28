@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Lock,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 
 const Login = () => {
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,6 +47,7 @@ const Login = () => {
       alert(result.message || "Login Successful!");
       setEmail("");
       setPassword("");
+      navigate("/user/dashboard");
     } catch (error) {
       setUserError("Unable to connect to server. Please try again.");
     }
@@ -158,6 +161,15 @@ const Login = () => {
                   className="text-blue-900 font-bold hover:underline"
                 >
                   Create Account
+                </a>
+              </div>
+              
+              <div className="text-center mt-4 border-t pt-3">
+                <a
+                  href="/"
+                  className="text-gray-500 hover:text-gray-700 font-semibold hover:underline text-sm"
+                >
+                  ← Back to Selector
                 </a>
               </div>
             </>

@@ -1,7 +1,14 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import UploadCard from "../login/UploadCard";
 
 const DriverRegister = () => {
+    const navigate = useNavigate();
+
+    const handleSubmit = () => {
+        alert("Registration submitted successfully! You will be redirected to the login page.");
+        navigate("/driver-login");
+    };
 
     const [step, setStep] = useState(1);
 

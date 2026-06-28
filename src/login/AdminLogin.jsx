@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Lock, CarTaxiFront } from "lucide-react";
 
 const AdminLogin = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -19,6 +21,7 @@ const AdminLogin = () => {
     setEmail("");
     setPassword("");
     setRemember(false);
+    navigate("/admin");
   };
 
   return (
@@ -124,6 +127,14 @@ const AdminLogin = () => {
           <p className="text-gray-500 text-xs mt-6">
             By signing in you agree to AccessRide admin terms.
           </p>
+          <div className="text-center mt-4 border-t pt-3">
+            <a
+              href="/"
+              className="text-gray-500 hover:text-gray-700 font-semibold hover:underline text-sm"
+            >
+              ← Back to Selector
+            </a>
+          </div>
 
         </div>
       </main>
