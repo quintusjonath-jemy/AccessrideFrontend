@@ -28,6 +28,7 @@ import Earnings from "./Driverdashboard/Earnings";
 import DriverLayout from "./Driverdashboard/layouts/DriverLayout";
 
 import RidePage from "./Ridepage/RidePage";
+import HistoryPage from "./history-page/HistoryPage";
 
 import LoginPage from "./login/Login";
 import RegisterPage from "./login/Register";
@@ -94,6 +95,7 @@ const App = () => {
         {/* standalone / shared routes */}
         <Route path="/ride" element={<RidePage />} />
         <Route path="/emergency" element={<EmergencySOS />} />
+        <Route path="/history" element={<HistoryPage />} />
       </Routes>
     </BrowserRouter>
   );
