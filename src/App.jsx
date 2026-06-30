@@ -29,6 +29,7 @@ import DriverLayout from "./Driverdashboard/layouts/DriverLayout";
 
 import RidePage from "./Ridepage/RidePage";
 import HistoryPage from "./history-page/HistoryPage";
+import UserProfilePage from "./userprofile-page/UserProfilePage";
 
 import LoginPage from "./login/Login";
 import RegisterPage from "./login/Register";
@@ -96,6 +97,7 @@ const App = () => {
         <Route path="/ride" element={<RidePage />} />
         <Route path="/emergency" element={<EmergencySOS />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
       </Routes>
     </BrowserRouter>
   );
