@@ -8,6 +8,7 @@ import {
   Shield,
   MapPinned,
   Save,
+  Mail,
 } from "lucide-react";
 
 function SystemSettings() {
@@ -17,6 +18,11 @@ function SystemSettings() {
     refresh_rate: 5,
     sos_enabled: 1,
     tracking_enabled: 1,
+    smtp_host: "smtp.gmail.com",
+    smtp_port: 465,
+    smtp_user: "",
+    smtp_pass: "",
+    smtp_secure: "ssl",
   });
 
   const [saving, setSaving] = useState(false);
@@ -55,6 +61,11 @@ function SystemSettings() {
       formData.append("refresh_rate", settings.refresh_rate);
       formData.append("sos_enabled", settings.sos_enabled);
       formData.append("tracking_enabled", settings.tracking_enabled);
+      formData.append("smtp_host", settings.smtp_host || "");
+      formData.append("smtp_port", settings.smtp_port || 465);
+      formData.append("smtp_user", settings.smtp_user || "");
+      formData.append("smtp_pass", settings.smtp_pass || "");
+      formData.append("smtp_secure", settings.smtp_secure || "ssl");
 
       await axios.post(
         "http://localhost/admin/api/settings.php?action=system",
@@ -264,6 +275,88 @@ function SystemSettings() {
 
               <div className="w-14 h-7 bg-gray-300 dark:bg-slate-700 rounded-full peer peer-checked:bg-blue-600 after:absolute after:top-1 after:left-1 after:w-5 after:h-5 after:bg-white after:rounded-full after:transition-all peer-checked:after:translate-x-7"></div>
             </label>
+          </div>
+        </div>
+      </div>
+
+      {/* SMTP CONFIGURATION */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 transition-colors">
+        <h2 className="font-bold text-xl mb-5 flex items-center gap-2 text-gray-800 dark:text-slate-100">
+          <Mail size={20} />
+          SMTP Mail Configurations
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+              SMTP Host
+            </label>
+            <input
+              type="text"
+              name="smtp_host"
+              value={settings.smtp_host || ""}
+              onChange={handleChange}
+              placeholder="smtp.gmail.com"
+              className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+              SMTP Port
+            </label>
+            <input
+              type="number"
+              name="smtp_port"
+              value={settings.smtp_port || 465}
+              onChange={handleChange}
+              placeholder="465"
+              className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+              SMTP Username (Email)
+            </label>
+            <input
+              type="text"
+              name="smtp_user"
+              value={settings.smtp_user || ""}
+              onChange={handleChange}
+              placeholder="username@gmail.com"
+              className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+              SMTP Password (App Password)
+            </label>
+            <input
+              type="password"
+              name="smtp_pass"
+              value={settings.smtp_pass || ""}
+              onChange={handleChange}
+              placeholder="••••••••••••••••"
+              className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+              Secure Transport
+            </label>
+            <select
+              name="smtp_secure"
+              value={settings.smtp_secure || "ssl"}
+              onChange={handleChange}
+              className="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="ssl">SSL (Port 465 - Recommended for Gmail)</option>
+              <option value="tls">TLS (Port 587)</option>
+              <option value="none">None (Insecure / Local dev)</option>
+            </select>
           </div>
         </div>
       </div>
