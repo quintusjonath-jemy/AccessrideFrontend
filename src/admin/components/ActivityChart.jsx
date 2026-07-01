@@ -38,11 +38,18 @@ const STATUS_CONFIG = {
   cancelled: { color: "#ef4444", dark: "#f87171", label: "Cancelled" },
 };
 
+const PAYMENT_STATUS_CONFIG = {
+  completed_amount: { color: "#10b981", dark: "#34d399", label: "Completed" },
+  pending_amount:   { color: "#f59e0b", dark: "#fbbf24", label: "Pending"   },
+  failed_amount:    { color: "#ef4444", dark: "#f87171", label: "Failed"    },
+  refunded_amount:  { color: "#6366f1", dark: "#818cf8", label: "Refunded"  },
+};
+
 // ─── sub-components ───────────────────────────────────────────────────────────
 const TabBtn = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 ${
       active
         ? "bg-blue-600 text-white shadow"
         : "text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
@@ -57,7 +64,7 @@ const Select = ({ value, onChange, children, className = "" }) => (
     value={value}
     onChange={(e) => onChange(e.target.value)}
     className={`bg-gray-50 dark:bg-slate-900/60 border border-gray-200 dark:border-slate-700
-      text-gray-700 dark:text-slate-200 text-sm font-semibold px-3 py-2 rounded-xl
+      text-gray-700 dark:text-slate-200 text-xs font-semibold px-2.5 py-1.5 rounded-xl
       focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${className}`}
   >
     {children}
@@ -66,6 +73,10 @@ const Select = ({ value, onChange, children, className = "" }) => (
 
 // ─── main component ───────────────────────────────────────────────────────────
 const ActivityChart = () => {
+  // "activity" | "payments"
+  const [chartType, setChartType] = useState("activity");
+
+  // State
   const [chartData, setChartData] = useState([]);
   const [loading,   setLoading]   = useState(true);
 
@@ -87,19 +98,25 @@ const ActivityChart = () => {
 
   useEffect(() => {
     setLoading(true);
+    const apiName = chartType === "activity" ? "chart_stats.php" : "payment_chart.php";
     axios
-      .get(`http://localhost/admin/api/chart_stats.php?${buildQuery()}`)
+      .get(`http://localhost/admin/api/${apiName}?${buildQuery()}`)
       .then((res) => setChartData(Array.isArray(res.data) ? res.data : []))
       .catch(() => setChartData([]))
       .finally(() => setLoading(false));
-  }, [mode, selYear, selMonth, selWeek]);
+  }, [chartType, mode, selYear, selMonth, selWeek]);
 
   const labels   = chartData.map((d) => d.label || "N/A");
-  const statuses = Object.keys(STATUS_CONFIG);
-  const totalRides = chartData.reduce((s, d) => s + (Number(d.count) || 0), 0);
+  
+  // Choose datasets based on selected type
+  const activeConfig = chartType === "activity" ? STATUS_CONFIG : PAYMENT_STATUS_CONFIG;
+  const statuses     = Object.keys(activeConfig);
+  const totalVal     = chartType === "activity" 
+    ? chartData.reduce((s, d) => s + (Number(d.count) || 0), 0)
+    : chartData.reduce((s, d) => s + (Number(d.completed_amount) || 0), 0);
 
   const datasets = statuses.map((status) => {
-    const cfg = STATUS_CONFIG[status];
+    const cfg = activeConfig[status];
     return {
       label: cfg.label,
       data:  chartData.map((d) => Number(d[status]) || 0),
@@ -139,7 +156,15 @@ const ActivityChart = () => {
         bodyColor:       isDark ? "#94a3b8" : "#6b7280",
         borderColor:     isDark ? "#334155" : "#e5e7eb",
         borderWidth: 1, padding: 12, cornerRadius: 12,
-        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y} rides` },
+        callbacks: { 
+          label: (ctx) => {
+            if (chartType === "activity") {
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y} rides`;
+            } else {
+              return ` ${ctx.dataset.label}: LKR ${ctx.parsed.y.toLocaleString("en-LK")}`;
+            }
+          }
+        },
       },
     },
     scales: {
@@ -159,7 +184,6 @@ const ActivityChart = () => {
     },
   };
 
-  // ── label for current selection ──────────────────────────────────────────
   const selectionLabel = (() => {
     if (mode === "year")  return `Year ${selYear}`;
     if (mode === "month") return `${MONTHS[selMonth - 1]} ${selYear}`;
@@ -172,7 +196,7 @@ const ActivityChart = () => {
 
       {/* ── HEADER ── */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-        {/* Title */}
+        {/* Title dropdown */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-blue-600 dark:text-blue-400" stroke="currentColor" strokeWidth="2">
@@ -180,19 +204,30 @@ const ActivityChart = () => {
             </svg>
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-slate-100 leading-tight">
-              Ride Activity
-            </h2>
-            <p className="text-xs text-gray-400 dark:text-slate-400 mt-0.5">
-              {selectionLabel} · status breakdown
+            <div className="flex items-center gap-2">
+              <select
+                value={chartType}
+                onChange={(e) => setChartType(e.target.value)}
+                className="text-lg font-bold text-gray-800 dark:text-slate-100 leading-tight bg-transparent focus:outline-none cursor-pointer border-b border-dashed border-gray-300 dark:border-slate-600 pr-1"
+              >
+                <option value="activity">Ride Activity</option>
+                <option value="payments">Payment Statistics</option>
+              </select>
+            </div>
+            <p className="text-xs text-gray-400 dark:text-slate-400 mt-1">
+              {selectionLabel} · {chartType === "activity" ? "status breakdown" : "transaction value breakdown"}
             </p>
           </div>
         </div>
 
-        {/* Total rides pill */}
+        {/* Value pill */}
         <div className="flex flex-col items-end shrink-0">
-          <span className="text-xs text-gray-400 dark:text-slate-500">Total Rides</span>
-          <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">{totalRides}</span>
+          <span className="text-xs text-gray-400 dark:text-slate-500">
+            {chartType === "activity" ? "Total Rides" : "Total Completed"}
+          </span>
+          <span className="text-xl font-extrabold text-blue-600 dark:text-blue-400">
+            {chartType === "activity" ? totalVal : `LKR ${totalVal.toLocaleString("en-LK")}`}
+          </span>
         </div>
       </div>
 
@@ -207,19 +242,19 @@ const ActivityChart = () => {
           ))}
         </div>
 
-        {/* Year selector (always visible) */}
+        {/* Year */}
         <Select value={selYear} onChange={(v) => setSelYear(Number(v))}>
           {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
         </Select>
 
-        {/* Month selector */}
+        {/* Month */}
         {mode === "month" && (
           <Select value={selMonth} onChange={(v) => setSelMonth(Number(v))}>
             {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
           </Select>
         )}
 
-        {/* Week selector */}
+        {/* Week */}
         {mode === "week" && (
           <Select value={selWeek} onChange={(v) => setSelWeek(Number(v))}>
             {WEEKS.map((w) => <option key={w} value={w}>Week {w}</option>)}
@@ -230,7 +265,7 @@ const ActivityChart = () => {
       {/* ── STATUS PILLS ── */}
       <div className="flex flex-wrap gap-2">
         {statuses.map((s) => {
-          const cfg = STATUS_CONFIG[s];
+          const cfg = activeConfig[s];
           return (
             <span
               key={s}
@@ -253,12 +288,12 @@ const ActivityChart = () => {
         {loading ? (
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-400 dark:text-slate-500 animate-pulse">Loading ride data…</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 animate-pulse">Loading data…</p>
           </div>
         ) : chartData.length === 0 ? (
           <div className="text-center">
             <p className="text-4xl mb-2">📊</p>
-            <p className="text-gray-400 dark:text-slate-500 font-medium">No ride data for {selectionLabel}</p>
+            <p className="text-gray-400 dark:text-slate-500 font-medium">No data for {selectionLabel}</p>
           </div>
         ) : (
           <Bar data={chartConfig} options={options} />
