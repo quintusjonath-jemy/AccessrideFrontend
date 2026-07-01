@@ -1,0 +1,10 @@
+/* Add custom styles here if needed. 
+   Most styles are handled by Tailwind CSS. */
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
