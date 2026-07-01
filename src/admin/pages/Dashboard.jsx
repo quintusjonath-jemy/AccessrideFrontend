@@ -5,6 +5,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import WeeklyGrowthChart from "../components/WeeklyGrowthChart";
+import { Users, Car, Route, Activity } from "lucide-react";
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -89,10 +90,10 @@ const Dashboard = () => {
 
       {/* STATS */}
       <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
-        <StatsCard title="Total Users"   value={users?.length || 0}  bg="bg-gradient-to-br from-blue-500 to-blue-700"     icon="👤" />
-        <StatsCard title="Total Drivers" value={stats.totalDrivers}   bg="bg-gradient-to-br from-amber-400 to-orange-500"  icon="🚗" />
-        <StatsCard title="Total Rides"   value={stats.totalRides}     bg="bg-gradient-to-br from-purple-500 to-purple-700" icon="🛣️" />
-        <StatsCard title="Active Rides"  value={stats.activeRides}    bg="bg-gradient-to-br from-emerald-500 to-green-600" icon="✅" />
+        <StatsCard title="Total Users"   value={users?.length || 0}  bg="bg-gradient-to-br from-blue-500 to-blue-700"     icon={<Users   size={28} strokeWidth={1.8} className="text-white" />} />
+        <StatsCard title="Total Drivers" value={stats.totalDrivers}   bg="bg-gradient-to-br from-amber-400 to-orange-500"  icon={<Car     size={28} strokeWidth={1.8} className="text-white" />} />
+        <StatsCard title="Total Rides"   value={stats.totalRides}     bg="bg-gradient-to-br from-purple-500 to-purple-700" icon={<Route   size={28} strokeWidth={1.8} className="text-white" />} />
+        <StatsCard title="Active Rides"  value={stats.activeRides}    bg="bg-gradient-to-br from-emerald-500 to-green-600" icon={<Activity size={28} strokeWidth={1.8} className="text-white" />} />
       </div>
 
       {/* MAIN CONTENT */}
