@@ -28,9 +28,9 @@ import Earnings from "./Driverdashboard/Earnings";
 import DriverLayout from "./Driverdashboard/layouts/DriverLayout";
 
 import RidePage from "./Ridepage/RidePage";
-import HistoryPage from "./history-page/HistoryPage";
-import UserProfilePage from "./userprofile-page/UserProfilePage";
-import CompleteRidePage from "./complete_ride_page/CompleteRidePage";
+import HistoryPage from "./pages/history-page/HistoryPage";
+import UserProfilePage from "./pages/user-profile-page/UserProfilePage";
+import CompleteRidePage from "./pages/complete-ride-page/CompleteRidePage";
 
 import LoginPage from "./login/Login";
 import RegisterPage from "./login/Register";
