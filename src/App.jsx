@@ -88,6 +88,7 @@ const App = () => {
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="ride" element={<RideTrackingPage />} />
           <Route path="sos" element={<EmergencySOS />} />
+          <Route path="history" element={<HistoryPage />} />
         </Route>
 
         {/* driver routes */}

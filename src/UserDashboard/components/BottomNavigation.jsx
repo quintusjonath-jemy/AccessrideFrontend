@@ -7,7 +7,7 @@ const BottomNavigation = () => {
 
   const isHome = location.pathname === "/user/dashboard" || location.pathname === "/user";
   const isSchedule = location.pathname === "/user/schedule";
-  const isHistory = location.pathname === "/history";
+  const isHistory = location.pathname === "/user/history";
   const isProfile = location.pathname === "/profile";
 
   return (
@@ -27,7 +27,7 @@ const BottomNavigation = () => {
 
       {/* My Rides */}
       <button
-        onClick={() => navigate("/history")}
+        onClick={() => navigate("/user/history")}
         className={`flex flex-col items-center justify-center rounded-2xl px-4 py-1.5 transition cursor-pointer ${
           isHistory
             ? "bg-[#FEC329] text-slate-900 font-bold shadow-sm"
