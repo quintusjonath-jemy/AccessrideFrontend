@@ -4,8 +4,9 @@ import {
   Users, Car, Route, CheckCircle2, XCircle, Clock,
   AlertTriangle, TrendingUp, DollarSign, FileText,
   Printer, ChevronDown, ShieldAlert, Battery, Navigation2,
-  Truck, Star
+  Truck, Star, Download
 } from "lucide-react";
+import { downloadReport } from "../components/ReportPDF";
 
 const THIS_YEAR  = new Date().getFullYear();
 const THIS_MONTH = new Date().getMonth() + 1;
@@ -70,7 +71,62 @@ const MonthlyReport = () => {
       .finally(() => setLoading(false));
   };
 
-  const handlePrint = () => window.print();
+  const [downloading, setDownloading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailMsg, setEmailMsg] = useState("");
+  const [emailStatus, setEmailStatus] = useState(""); // "success" | "error" | "info"
+
+  useEffect(() => {
+    axios.get("http://localhost/admin/api/admin.php")
+      .then((res) => {
+        if (res.data?.email) setEmail(res.data.email);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  const handleDownloadPDF = async () => {
+    if (!data) return;
+    setDownloading(true);
+    try {
+      await downloadReport(data);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      setError("Failed to generate PDF report.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleSendEmail = () => {
+    if (!email) {
+      setEmailMsg("Please enter a valid email address.");
+      setEmailStatus("error");
+      return;
+    }
+    setEmailSending(true);
+    setEmailMsg("");
+    setEmailStatus("");
+    axios.post("http://localhost/admin/api/send_report_email.php", {
+      email,
+      year: selYear,
+      month: selMonth
+    })
+      .then((res) => {
+        if (res.data?.success) {
+          setEmailMsg(res.data.message || "Report email sent!");
+          setEmailStatus(res.data.mail_sent ? "success" : "info");
+        } else {
+          setEmailMsg(res.data?.message || "Failed to send email.");
+          setEmailStatus("error");
+        }
+      })
+      .catch(() => {
+        setEmailMsg("Failed to reach email API.");
+        setEmailStatus("error");
+      })
+      .finally(() => setEmailSending(false));
+  };
 
   return (
     <div className="space-y-8">
@@ -121,18 +177,72 @@ const MonthlyReport = () => {
             Generate Report
           </button>
 
-          {/* Print — only if data loaded */}
+          {/* Download PDF — only if data loaded */}
           {data && (
             <button
-              onClick={handlePrint}
-              className="flex items-center gap-2 bg-gray-700 hover:bg-gray-900 text-white font-bold px-5 py-2.5 rounded-xl shadow transition"
+              onClick={handleDownloadPDF}
+              disabled={downloading}
+              className="flex items-center gap-2 bg-gray-700 hover:bg-gray-900 disabled:opacity-60 text-white font-bold px-5 py-2.5 rounded-xl shadow transition"
             >
-              <Printer size={16} />
-              Print / PDF
+              {downloading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Download size={16} />
+              )}
+              Download PDF
             </button>
           )}
         </div>
       </div>
+
+      {/* ── EMAIL REPORT BAR ── */}
+      {!loading && data && (
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <FileText size={20} />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-800 dark:text-slate-100 text-sm">Send Report to Email</h4>
+              <p className="text-xs text-gray-400 dark:text-slate-400">Mail a formatted HTML copy of this report directly to your inbox.</p>
+            </div>
+          </div>
+          <div className="flex w-full md:w-auto items-center gap-2">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@accessride.com"
+              className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64"
+            />
+            <button
+              onClick={handleSendEmail}
+              disabled={emailSending}
+              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition shrink-0 flex items-center gap-2"
+            >
+              {emailSending ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Send Email"
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── EMAIL STATUS MESSAGE ── */}
+      {emailMsg && (
+        <div className={`p-4 rounded-xl border text-sm font-medium ${
+          emailStatus === "success" 
+            ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/40 text-green-700 dark:text-green-400" 
+            : emailStatus === "info"
+            ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/40 text-blue-750 dark:text-blue-400"
+            : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400"
+        }`}>
+          {emailStatus === "success" ? "✓ " : emailStatus === "info" ? "ℹ " : "⚠ "}
+          {emailMsg}
+        </div>
+      )}
 
       {/* ── ERROR ── */}
       {error && (
