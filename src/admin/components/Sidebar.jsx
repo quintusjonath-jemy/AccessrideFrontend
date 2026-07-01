@@ -9,6 +9,7 @@ import {
   FaRoad,
   FaCreditCard,
   FaCoins,
+  FaFileAlt,
 } from "react-icons/fa";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -117,6 +118,13 @@ const Sidebar = () => {
               <NavLink to="/admin/earnings" className={menuClass}>
                 <FaCoins size={18} />
                 Earnings
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/admin/monthly-report" className={menuClass}>
+                <FaFileAlt size={18} />
+                Monthly Report
               </NavLink>
             </li>
 
