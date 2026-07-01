@@ -14,6 +14,7 @@ import {
 import { Line, Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { TrendingUp, DollarSign } from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -271,11 +272,14 @@ const WeeklyGrowthChart = () => {
       {/* ── HEADER ── */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600/10 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-indigo-600 dark:text-indigo-400" stroke="currentColor" strokeWidth="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="9" cy="7" r="4" />
-            </svg>
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+            chartType === "growth" ? "bg-indigo-600/10 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" : "bg-emerald-600/10 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          }`}>
+            {chartType === "growth" ? (
+              <TrendingUp size={20} strokeWidth={2} />
+            ) : (
+              <DollarSign size={20} strokeWidth={2} />
+            )}
           </div>
           <div>
             <div className="flex items-center gap-2">
