@@ -4,17 +4,28 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
   Filler,
 } from "chart.js";
 
-import { Line } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 const THIS_YEAR  = new Date().getFullYear();
@@ -36,7 +47,7 @@ const WEEKS = Array.from({ length: 52 }, (_, i) => i + 1);
 const TabBtn = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 ${
       active
         ? "bg-indigo-600 text-white shadow"
         : "text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
@@ -51,7 +62,7 @@ const Select = ({ value, onChange, children }) => (
     value={value}
     onChange={(e) => onChange(e.target.value)}
     className="bg-gray-50 dark:bg-slate-900/60 border border-gray-200 dark:border-slate-700
-      text-gray-700 dark:text-slate-200 text-sm font-semibold px-3 py-2 rounded-xl
+      text-gray-700 dark:text-slate-200 text-xs font-semibold px-2.5 py-1.5 rounded-xl
       focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
   >
     {children}
@@ -60,8 +71,16 @@ const Select = ({ value, onChange, children }) => (
 
 // ─── main component ───────────────────────────────────────────────────────────
 const WeeklyGrowthChart = () => {
+  // "growth" | "earnings"
+  const [chartType, setChartType] = useState("growth");
+  
+  // Growth State
   const [users,   setUsers]   = useState([]);
   const [drivers, setDrivers] = useState([]);
+
+  // Earnings State
+  const [earnings, setEarnings] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
   // period mode
@@ -81,36 +100,45 @@ const WeeklyGrowthChart = () => {
 
   useEffect(() => {
     setLoading(true);
-    axios
-      .get(`http://localhost/admin/api/weekly_growth.php?${buildQuery()}`)
-      .then((res) => {
-        setUsers(Array.isArray(res.data?.users)    ? res.data.users    : []);
-        setDrivers(Array.isArray(res.data?.drivers)? res.data.drivers  : []);
-      })
-      .catch(() => { setUsers([]); setDrivers([]); })
-      .finally(() => setLoading(false));
-  }, [mode, selYear, selMonth, selWeek]);
+    const query = buildQuery();
 
-  // Merge labels from both arrays so neither dataset silences the other
-  const allLabels = [...new Set([
+    if (chartType === "growth") {
+      axios
+        .get(`http://localhost/admin/api/weekly_growth.php?${query}`)
+        .then((res) => {
+          setUsers(Array.isArray(res.data?.users)    ? res.data.users    : []);
+          setDrivers(Array.isArray(res.data?.drivers)? res.data.drivers  : []);
+        })
+        .catch(() => { setUsers([]); setDrivers([]); })
+        .finally(() => setLoading(false));
+    } else {
+      axios
+        .get(`http://localhost/admin/api/earnings_chart.php?${query}`)
+        .then((res) => {
+          setEarnings(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => setEarnings([]))
+        .finally(() => setLoading(false));
+    }
+  }, [chartType, mode, selYear, selMonth, selWeek]);
+
+  // ── Growth Chart Configuration ──
+  const allGrowthLabels = [...new Set([
     ...users.map((d) => d.label),
     ...drivers.map((d) => d.label),
   ])];
-
-  // Build lookup maps for O(1) access
   const userMap   = Object.fromEntries(users.map((d)   => [d.label, d.total_users   || 0]));
   const driverMap = Object.fromEntries(drivers.map((d) => [d.label, d.total_drivers || 0]));
 
-  const labels       = allLabels;
   const totalUsers   = users.reduce((s, d)   => s + (Number(d.total_users)   || 0), 0);
   const totalDrivers = drivers.reduce((s, d) => s + (Number(d.total_drivers) || 0), 0);
 
-  const data = {
-    labels,
+  const growthData = {
+    labels: allGrowthLabels,
     datasets: [
       {
         label: "New Riders",
-        data: labels.map((lbl) => userMap[lbl] ?? 0),
+        data: allGrowthLabels.map((lbl) => userMap[lbl] ?? 0),
         borderColor: isDark ? "#60a5fa" : "#2563eb",
         backgroundColor: isDark ? "rgba(96,165,250,0.12)" : "rgba(37,99,235,0.10)",
         borderWidth: 2.5,
@@ -124,7 +152,7 @@ const WeeklyGrowthChart = () => {
       },
       {
         label: "New Drivers",
-        data: labels.map((lbl) => driverMap[lbl] ?? 0),
+        data: allGrowthLabels.map((lbl) => driverMap[lbl] ?? 0),
         borderColor: isDark ? "#34d399" : "#059669",
         backgroundColor: isDark ? "rgba(52,211,153,0.10)" : "rgba(5,150,105,0.08)",
         borderWidth: 2.5,
@@ -138,6 +166,45 @@ const WeeklyGrowthChart = () => {
         borderDash: [6, 3],
       },
     ],
+  };
+
+  // ── Earnings Chart Configuration ──
+  const earningsLabels = earnings.map((e) => e.label || "N/A");
+  const totalSubRevenue = earnings.reduce((s, e) => s + (Number(e.subscriptions) || 0), 0);
+  const totalRideRevenue = earnings.reduce((s, e) => s + (Number(e.rides) || 0), 0);
+
+  const earningsData = {
+    labels: earningsLabels,
+    datasets: [
+      {
+        label: "Subscription Rev",
+        data: earnings.map((e) => e.subscriptions || 0),
+        borderColor: isDark ? "#818cf8" : "#4f46e5",
+        backgroundColor: isDark ? "rgba(129,140,248,0.12)" : "rgba(79,70,229,0.10)",
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointBackgroundColor: isDark ? "#818cf8" : "#4f46e5",
+        pointBorderColor: isDark ? "#1e293b" : "#fff",
+        pointBorderWidth: 2,
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: "Completed Ride Fares",
+        data: earnings.map((e) => e.rides || 0),
+        borderColor: isDark ? "#10b981" : "#059669",
+        backgroundColor: isDark ? "rgba(16,185,129,0.12)" : "rgba(5,150,105,0.08)",
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointBackgroundColor: isDark ? "#10b981" : "#059669",
+        pointBorderColor: isDark ? "#1e293b" : "#fff",
+        pointBorderWidth: 2,
+        tension: 0.4,
+        fill: true,
+      }
+    ]
   };
 
   const options = {
@@ -163,7 +230,15 @@ const WeeklyGrowthChart = () => {
         bodyColor:       isDark ? "#94a3b8" : "#6b7280",
         borderColor:     isDark ? "#334155" : "#e5e7eb",
         borderWidth: 1, padding: 12, cornerRadius: 12,
-        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y} new` },
+        callbacks: {
+          label: (ctx) => {
+            if (chartType === "growth") {
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y} new`;
+            } else {
+              return ` ${ctx.dataset.label}: LKR ${ctx.parsed.y.toLocaleString("en-LK")}`;
+            }
+          }
+        },
       },
     },
     scales: {
@@ -188,6 +263,8 @@ const WeeklyGrowthChart = () => {
     return "";
   })();
 
+  const hasData = chartType === "growth" ? allGrowthLabels.length > 0 : earningsLabels.length > 0;
+
   return (
     <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700 transition-all duration-300 hover:shadow-2xl flex flex-col gap-5">
 
@@ -198,30 +275,56 @@ const WeeklyGrowthChart = () => {
             <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-indigo-600 dark:text-indigo-400" stroke="currentColor" strokeWidth="2">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-slate-100 leading-tight">
-              Platform Growth
-            </h2>
-            <p className="text-xs text-gray-400 dark:text-slate-400 mt-0.5">
-              {selectionLabel} · registrations
+            <div className="flex items-center gap-2">
+              <select
+                value={chartType}
+                onChange={(e) => setChartType(e.target.value)}
+                className="text-lg font-bold text-gray-800 dark:text-slate-100 leading-tight bg-transparent focus:outline-none cursor-pointer border-b border-dashed border-gray-300 dark:border-slate-600 pr-1"
+              >
+                <option value="growth">Platform Growth</option>
+                <option value="earnings">Earnings Statistics</option>
+              </select>
+            </div>
+            <p className="text-xs text-gray-400 dark:text-slate-400 mt-1">
+              {selectionLabel} · {chartType === "growth" ? "registrations" : "revenue overview"}
             </p>
           </div>
         </div>
 
         {/* Stat pills */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex flex-col items-end">
-            <span className="text-xs text-gray-400 dark:text-slate-500">Riders</span>
-            <span className="text-xl font-extrabold text-blue-600 dark:text-blue-400">{totalUsers}</span>
-          </div>
-          <div className="w-px h-8 bg-gray-200 dark:bg-slate-700" />
-          <div className="flex flex-col items-end">
-            <span className="text-xs text-gray-400 dark:text-slate-500">Drivers</span>
-            <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{totalDrivers}</span>
-          </div>
+          {chartType === "growth" ? (
+            <>
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-400 dark:text-slate-500">Riders</span>
+                <span className="text-base font-extrabold text-blue-600 dark:text-blue-400">{totalUsers}</span>
+              </div>
+              <div className="w-px h-8 bg-gray-200 dark:bg-slate-700" />
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-400 dark:text-slate-500">Drivers</span>
+                <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">{totalDrivers}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-400 dark:text-slate-500">Subs</span>
+                <span className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">
+                  LKR {totalSubRevenue.toLocaleString("en-LK")}
+                </span>
+              </div>
+              <div className="w-px h-8 bg-gray-200 dark:bg-slate-700" />
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-400 dark:text-slate-500">Ride Fares</span>
+                <span className="text-base font-extrabold text-emerald-650 dark:text-emerald-400">
+                  LKR {totalRideRevenue.toLocaleString("en-LK")}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -258,12 +361,25 @@ const WeeklyGrowthChart = () => {
 
       {/* ── LEGEND PILLS ── */}
       <div className="flex gap-3">
-        <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-600 dark:text-blue-400">
-          <span className="w-2 h-2 rounded-full bg-blue-500" /> Riders
-        </span>
-        <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" /> Drivers
-        </span>
+        {chartType === "growth" ? (
+          <>
+            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-600 dark:text-blue-400">
+              <span className="w-2 h-2 rounded-full bg-blue-500" /> Riders
+            </span>
+            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Drivers
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-600 dark:text-indigo-400">
+              <span className="w-2 h-2 rounded-full bg-indigo-500" /> Subscription Rev
+            </span>
+            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Ride Fares
+            </span>
+          </>
+        )}
       </div>
 
       {/* ── CHART ── */}
@@ -271,15 +387,15 @@ const WeeklyGrowthChart = () => {
         {loading ? (
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-400 dark:text-slate-500 animate-pulse">Loading growth data…</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 animate-pulse">Loading data…</p>
           </div>
-        ) : allLabels.length === 0 ? (
+        ) : !hasData ? (
           <div className="text-center">
             <p className="text-4xl mb-2">📈</p>
-            <p className="text-gray-400 dark:text-slate-500 font-medium">No growth data for {selectionLabel}</p>
+            <p className="text-gray-400 dark:text-slate-500 font-medium">No statistics for {selectionLabel}</p>
           </div>
         ) : (
-          <Line data={data} options={options} />
+          <Line data={chartType === "growth" ? growthData : earningsData} options={options} />
         )}
       </div>
     </div>
