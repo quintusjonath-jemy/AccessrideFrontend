@@ -245,7 +245,7 @@ const Alerts = () => {
                       {/* ACTION */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          {alert.driver_id && (
+                          {alert.driver_id && alert.status !== "resolved" ? (
                             <button
                               onClick={() =>
                                 navigate("/admin/navigation", {
@@ -257,6 +257,13 @@ const Alerts = () => {
                               className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg text-xs font-semibold transition animate-pulse"
                             >
                               Track
+                            </button>
+                          ) : alert.driver_id && (
+                            <button
+                              disabled
+                              className="inline-flex items-center gap-2 bg-gray-100 dark:bg-slate-700/50 text-gray-400 dark:text-slate-500 px-3 py-2 rounded-lg text-xs font-semibold cursor-not-allowed border border-gray-200 dark:border-slate-650"
+                            >
+                              Track Cancelled
                             </button>
                           )}
                           {alert.status !== "resolved" && (
