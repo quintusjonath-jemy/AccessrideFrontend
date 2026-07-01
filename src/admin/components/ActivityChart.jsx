@@ -12,6 +12,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Activity, CreditCard } from "lucide-react";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler);
 
@@ -198,10 +199,14 @@ const ActivityChart = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
         {/* Title dropdown */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600/10 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-blue-600 dark:text-blue-400" stroke="currentColor" strokeWidth="2">
-              <path d="M3 17l4-8 4 4 4-6 4 4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+            chartType === "activity" ? "bg-blue-600/10 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400" : "bg-indigo-600/10 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+          }`}>
+            {chartType === "activity" ? (
+              <Activity size={20} strokeWidth={2} />
+            ) : (
+              <CreditCard size={20} strokeWidth={2} />
+            )}
           </div>
           <div>
             <div className="flex items-center gap-2">
