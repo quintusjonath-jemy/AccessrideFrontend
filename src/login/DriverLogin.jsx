@@ -1,13 +1,16 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Car, Phone, Lock } from "lucide-react";
 
 const DriverLogin = () => {
+  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [otpPhone, setOtpPhone] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!phone || !password) {
@@ -15,11 +18,40 @@ const DriverLogin = () => {
       return;
     }
 
-    alert(`Driver signed in: ${phone}`);
+    const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
 
-    setPhone("");
-    setPassword("");
-    setRememberMe(false);
+    try {
+      const response = await fetch(`${backendBase}/api/login.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone,
+          password,
+          isDriver: true,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || "Login failed");
+        return;
+      }
+
+      setError("");
+      alert(result.message || `Driver signed in: ${phone}`);
+
+      setPhone("");
+      setPassword("");
+      setRememberMe(false);
+      navigate("/driver-dashboard");
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+      setError(error.message);
+    }
   };
 
   const sendOtp = () => {
@@ -66,7 +98,7 @@ const DriverLogin = () => {
 
                 <input
                   type="tel"
-                  placeholder="e.g. +1 555 555 5555"
+                  placeholder="e.g. +94 123456789"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full ml-3 outline-none text-gray-700"
@@ -121,6 +153,8 @@ const DriverLogin = () => {
               Sign In
             </button>
 
+              {error && <p className="text-red-500 mt-2">{error}</p>}
+
             {/* OTP Section */}
             <div className="text-center text-sm text-gray-500">
               or sign in with OTP
@@ -145,6 +179,25 @@ const DriverLogin = () => {
             </div>
 
           </form>
+          <div className="text-center mt-4">
+            <p className="text-gray-600 text-sm">
+              Don’t have an account?{" "}
+              <a
+                href="/driver-register"
+                className="text-blue-900 font-semibold hover:underline"
+              >
+                Create Account
+              </a>
+            </p>
+            <div className="text-center mt-3 border-t pt-3">
+              <a
+                href="/"
+                className="text-gray-500 hover:text-gray-700 font-semibold hover:underline text-sm"
+              >
+                ← Back to Selector
+              </a>
+            </div>
+          </div>
 
           {/* Footer */}
           <p className="text-gray-500 text-xs mt-6 text-center">

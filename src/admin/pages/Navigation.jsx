@@ -12,6 +12,8 @@ const NavigationPage = () => {
   const [mapCenter, setMapCenter] = useState([79.8612, 6.9271]);
   const [isPanelExpanded, setIsPanelExpanded] = useState(true);
   const [showDriversOnly, setShowDriversOnly] = useState(false);
+  const [deviations, setDeviations] = useState({});
+  const [lastDeviationCount, setLastDeviationCount] = useState(0);
 
   const location = useLocation();
   const trackedRide = location.state?.rideId;
@@ -19,24 +21,42 @@ const NavigationPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchRides = () => {
-      axios
-        .get("http://localhost/admin/api/rides.php")
-        .then((res) => {
-          setRides(Array.isArray(res.data) ? res.data : []);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.log(err);
-          setLoading(false);
-        });
+    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=rides");
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setRides(Array.isArray(data) ? data : []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to parse rides stream data:", err);
+        setLoading(false);
+      }
     };
 
-    fetchRides();
+    eventSource.onerror = (err) => {
+      console.error("Navigation SSE connection error:", err);
+      setLoading(false);
+    };
 
-    const interval = setInterval(fetchRides, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      eventSource.close();
+    };
   }, []);
+
+  // Play alarm sound when a new deviation is detected
+  const playDeviationSound = () => {
+    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
+    audio.play().catch((e) => console.log("Sound play error:", e));
+  };
+
+  useEffect(() => {
+    const deviationCount = Object.keys(deviations).length;
+    if (deviationCount > lastDeviationCount) {
+      playDeviationSound();
+    }
+    setLastDeviationCount(deviationCount);
+  }, [deviations, lastDeviationCount]);
 
   // Centering on tracked driver ride if available on initial fetch
   useEffect(() => {
@@ -116,7 +136,12 @@ const NavigationPage = () => {
       <div className="relative h-[85vh] rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-slate-800">
 
         {/* MAP */}
-        <LiveMap rides={filteredRides} center={mapCenter} driversOnly={showDriversOnly} />
+        <LiveMap 
+          rides={filteredRides} 
+          center={mapCenter} 
+          driversOnly={showDriversOnly} 
+          onDeviationsChange={setDeviations}
+        />
 
         {/* LEFT FLOAT PANEL */}
         {isPanelExpanded ? (
@@ -136,6 +161,22 @@ const NavigationPage = () => {
               </button>
             </div>
 
+            {/* DEVIATION WARNING BANNER */}
+            {Object.keys(deviations).length > 0 && (
+              <div className="mb-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 p-3.5 rounded-xl text-xs space-y-1.5 animate-pulse">
+                <div className="font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                  <span>🚨</span> ROUTE DEVIATION DETECTED
+                </div>
+                <div className="text-gray-650 dark:text-slate-350 text-[11px] leading-relaxed">
+                  {Object.entries(deviations).map(([id, info]) => (
+                    <div key={id} className="border-t border-red-100 dark:border-red-955/40 pt-1 mt-1 font-medium">
+                      Ride #{id} (Driver {info.driver_name}) is <strong>{info.distance.toFixed(2)} km</strong> off course!
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* DRIVER TRACKING BADGE */}
             {trackedDriver && (
               <div className="mb-4 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/40 p-3 rounded-xl flex items-center justify-between">
@@ -144,7 +185,7 @@ const NavigationPage = () => {
                   <p className="text-sm font-bold text-yellow-750 dark:text-yellow-450">#{trackedDriver}</p>
                 </div>
                 <button
-                  onClick={() => navigate("/navigation", { replace: true, state: {} })}
+                  onClick={() => navigate("/admin/navigation", { replace: true, state: {} })}
                   className="text-xs bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/40 dark:hover:bg-yellow-900/60 text-yellow-800 dark:text-yellow-400 px-2.5 py-1.5 rounded-lg transition font-medium"
                 >
                   Show All
@@ -230,8 +271,13 @@ const NavigationPage = () => {
                         }`}
                       >
                         <div className="truncate flex-1 pr-2">
-                          <p className="font-semibold text-gray-800 dark:text-slate-200">
+                          <p className="font-semibold text-gray-800 dark:text-slate-200 flex items-center gap-1.5">
                             Ride #{ride.id}
+                            {!!deviations[ride.id] && (
+                              <span className="text-[10px] bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider animate-pulse">
+                                Off-Route
+                              </span>
+                            )}
                           </p>
                           <p className="text-gray-500 dark:text-slate-400 truncate mt-0.5 text-[11px]">
                             👤 {ride.user_name || "Unknown"}

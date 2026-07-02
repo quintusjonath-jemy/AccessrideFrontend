@@ -5,6 +5,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import WeeklyGrowthChart from "../components/WeeklyGrowthChart";
+import { Users, Car, Route, Activity } from "lucide-react";
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -31,16 +32,41 @@ const Dashboard = () => {
         setLoading(false);
       });
 
-    axios.get("http://localhost/admin/api/rides.php")
-      .then((res) => {
-        setRides(Array.isArray(res.data) ? res.data : []);
-      });
-
     axios.get("http://localhost/admin/api/dashboard_stats.php")
       .then((res) => setStats(res.data));
 
-    axios.get("http://localhost/admin/api/alerts.php")
-      .then((res) => setAlerts(Array.isArray(res.data) ? res.data : []));
+    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=all");
+
+    const handleAlerts = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setAlerts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error parsing dashboard alerts stream:", err);
+      }
+    };
+
+    const handleRides = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setRides(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error parsing dashboard rides stream:", err);
+      }
+    };
+
+    eventSource.addEventListener("alerts", handleAlerts);
+    eventSource.addEventListener("rides", handleRides);
+
+    eventSource.onerror = (err) => {
+      console.error("Dashboard SSE stream error:", err);
+    };
+
+    return () => {
+      eventSource.removeEventListener("alerts", handleAlerts);
+      eventSource.removeEventListener("rides", handleRides);
+      eventSource.close();
+    };
   }, []);
 
   return (
@@ -64,10 +90,10 @@ const Dashboard = () => {
 
       {/* STATS */}
       <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
-        <StatsCard title="Total Users" value={users?.length || 0} color="text-blue-600 dark:text-blue-400" />
-        <StatsCard title="Total Drivers" value={stats.totalDrivers} color="text-yellow-600 dark:text-yellow-400" />
-        <StatsCard title="Total Rides" value={stats.totalRides} color="text-purple-600 dark:text-purple-400" />
-        <StatsCard title="Active Rides" value={stats.activeRides} color="text-green-600 dark:text-green-400" />
+        <StatsCard title="Total Users"   value={users?.length || 0}  bg="bg-gradient-to-br from-blue-500 to-blue-700"     icon={<Users   size={28} strokeWidth={1.8} className="text-white" />} />
+        <StatsCard title="Total Drivers" value={stats.totalDrivers}   bg="bg-gradient-to-br from-amber-400 to-orange-500"  icon={<Car     size={28} strokeWidth={1.8} className="text-white" />} />
+        <StatsCard title="Total Rides"   value={stats.totalRides}     bg="bg-gradient-to-br from-purple-500 to-purple-700" icon={<Route   size={28} strokeWidth={1.8} className="text-white" />} />
+        <StatsCard title="Active Rides"  value={stats.activeRides}    bg="bg-gradient-to-br from-emerald-500 to-green-600" icon={<Activity size={28} strokeWidth={1.8} className="text-white" />} />
       </div>
 
       {/* MAIN CONTENT */}
@@ -86,7 +112,7 @@ const Dashboard = () => {
               </p>
             </div>
 
-            <Link to="/rides">
+            <Link to="/admin/rides">
               <button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-5 py-2 rounded-xl shadow-md hover:scale-105 transition">
                 View All
               </button>
@@ -162,7 +188,7 @@ const Dashboard = () => {
                           <td>
                             <button
                               onClick={() =>
-                                navigate("/navigation", {
+                                navigate("/admin/navigation", {
                                   state: {
                                     rideId: ride.id,
                                     driverId: ride.driver_id,
@@ -218,9 +244,34 @@ const Dashboard = () => {
                     {alert.message}
                   </p>
 
-                  <p className="text-xs mt-2 text-gray-400 dark:text-slate-500">
-                    User: {alert.user_name || "Unknown"}
-                  </p>
+                  <div className="text-xs mt-2 text-gray-500 dark:text-slate-400 space-y-1 border-t border-gray-100 dark:border-slate-700/40 pt-1.5">
+                    <div>
+                      <span className="font-semibold">User:</span> {alert.user_name || "Unknown"}
+                      {alert.user_phone && <span className="text-gray-400 ml-1">(📞 {alert.user_phone})</span>}
+                    </div>
+                    {alert.user_location && (
+                      <div>
+                        <span className="font-semibold">📍 Location:</span> {alert.user_location}
+                      </div>
+                    )}
+                    {alert.latitude && alert.longitude && (
+                      <div className="text-blue-600 dark:text-blue-400 font-medium">
+                        <span>🗺️ GPS:</span> {parseFloat(alert.latitude).toFixed(5)}, {parseFloat(alert.longitude).toFixed(5)}
+                      </div>
+                    )}
+                    {alert.driver_name && (
+                      <div className="mt-1 pt-1 border-t border-gray-50 dark:border-slate-700/20">
+                        <span className="font-semibold">Driver:</span> {alert.driver_name}
+                        {alert.driver_phone && <span className="text-gray-400 ml-1">(📞 {alert.driver_phone})</span>}
+                      </div>
+                    )}
+                    {alert.emergency_contact_name && (
+                      <div className="mt-1 pt-1 border-t border-gray-50 dark:border-slate-700/20 text-red-650 dark:text-red-400 font-medium">
+                        <span className="font-semibold">SOS Contact:</span> {alert.emergency_contact_name}
+                        {alert.emergency_contact_phone && ` (${alert.emergency_contact_phone})`}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}

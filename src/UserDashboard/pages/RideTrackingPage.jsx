@@ -270,14 +270,17 @@ const RideTrackingPage = () => {
         
         const getVehicleEmoji = (pickupLocation, driverType, vehicleType) => {
           let type = null;
-          if (pickupLocation) {
+          if (vehicleType) {
+            type = vehicleType.trim().toLowerCase();
+          }
+          if (!type && pickupLocation) {
             const match = pickupLocation.match(/\(Vehicle:\s*([^\)]+)\)/i);
             if (match) {
               type = match[1].trim().toLowerCase();
             }
           }
           if (!type) {
-            type = (driverType || vehicleType || "car").toLowerCase().trim();
+            type = (driverType || "car").toLowerCase().trim();
           }
           if (type.includes("bike") || type.includes("motorcycle")) return "🏍️";
           if (type.includes("van") || type.includes("suv")) return "🚐";
@@ -397,6 +400,48 @@ const RideTrackingPage = () => {
       {/* Map Layout */}
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0" />
 
+      {/* Searching Overlay */}
+      {ride.driver_status === "pending" && (
+        <div className="absolute inset-0 z-30 bg-slate-900/90 backdrop-blur-md flex flex-col justify-center items-center p-6 text-center">
+          <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-blue-500/10 border border-blue-500/20 animate-ping" />
+            <div className="absolute inset-4 rounded-full bg-blue-500/20 border border-blue-500/35 animate-pulse" />
+            <div className="absolute inset-10 rounded-full bg-blue-500/30 border border-blue-500/50 animate-ping [animation-delay:0.5s]" />
+            <div className="relative w-20 h-20 bg-gradient-to-tr from-[#0B2F89] to-blue-600 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/20">
+              <Car size={32} className="text-white animate-bounce" />
+            </div>
+            <div className="absolute inset-0 border-2 border-dashed border-blue-500/20 rounded-full animate-[spin_4s_linear_infinite]" />
+          </div>
+
+          <h2 className="text-2xl font-black text-white tracking-tight animate-pulse">
+            Finding Your Driver
+          </h2>
+          <p className="text-slate-350 text-sm max-w-[280px] mt-2 leading-relaxed">
+            Searching for a nearby <span className="text-[#FEC329] font-bold capitalize">{ride.vehicle_type || "driver"}</span>...
+          </p>
+
+          <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-4 w-full max-w-xs space-y-2 text-left">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Ride Details</div>
+            <div className="text-xs text-slate-200 truncate">
+              <span className="font-bold text-[#FEC329]">📍 Pickup:</span> {ride.pickup_location}
+            </div>
+            <div className="text-xs text-slate-200 truncate">
+              <span className="font-bold text-blue-400">🏁 Dropoff:</span> {ride.dropoff_location}
+            </div>
+            <div className="text-xs text-slate-200">
+              <span className="font-bold text-emerald-400">💰 Est. Fare:</span> Rs. {parseFloat(ride.fare).toFixed(2)}
+            </div>
+          </div>
+
+          <button
+            onClick={handleCancelRide}
+            className="mt-10 px-8 py-3 bg-red-600/25 hover:bg-red-650 border border-red-500/30 hover:border-red-500 text-red-500 hover:text-white font-bold text-xs rounded-2xl shadow transition duration-200 cursor-pointer flex items-center gap-1.5"
+          >
+            Cancel Request
+          </button>
+        </div>
+      )}
+
       {/* Header Back Link */}
       <div className="absolute top-4 left-4 z-10">
         <button
@@ -500,16 +545,22 @@ const RideTrackingPage = () => {
                   {ride.pickup_location ? ride.pickup_location.replace(/\s*\(Vehicle:\s*[^\)]+\)/i, "") : ""}
                 </strong>
                 {(() => {
-                  const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
-                  if (match) {
-                    const type = match[1].trim().toLowerCase();
+                  let vehicleType = ride.vehicle_type;
+                  if (!vehicleType) {
+                    const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
+                    if (match) {
+                      vehicleType = match[1];
+                    }
+                  }
+                  if (vehicleType) {
+                    const type = vehicleType.trim().toLowerCase();
                     let emoji = "🚗";
                     if (type.includes("bike") || type.includes("motorcycle")) emoji = "🏍️";
                     else if (type.includes("van") || type.includes("suv")) emoji = "🚐";
                     else if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) emoji = "🛺";
                     return (
                       <span className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold gap-1 border border-blue-100">
-                        {emoji} {match[1]}
+                        {emoji} {vehicleType}
                       </span>
                     );
                   }
@@ -529,7 +580,20 @@ const RideTrackingPage = () => {
           </div>
 
           {/* Action Row: SOS trigger, Cancel & Back */}
-          <div className="flex flex-col gap-2 border-t border-slate-50 pt-4">
+          <div className="flex flex-col gap-3 border-t border-slate-50 pt-4">
+            {ride && (ride.status === "pending" || ride.status === "accepted") && (
+              <div className="bg-[#0B2F89]/5 border border-[#0B2F89]/10 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Share OTP with Driver</span>
+                  <p className="text-slate-600 text-xs mt-0.5 font-medium">Verify your ride before boarding</p>
+                </div>
+                <div className="bg-white border border-[#0B2F89]/10 px-4 py-2 rounded-2xl shadow-sm text-center shrink-0">
+                  <span className="text-base font-black text-[#0B2F89] tracking-widest font-mono">
+                    {((ride.id * 127 + 3571) % 9000 + 1000)}
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={() => navigate("/user/sos")}

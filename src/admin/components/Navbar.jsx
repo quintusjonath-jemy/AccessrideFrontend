@@ -255,7 +255,7 @@ const Navbar = () => {
                       {results.users.map((u) => (
                         <Link
                           key={u.id}
-                          to="/users"
+                          to="/admin/users"
                           state={{ searchQuery: u.name }}
                           onClick={() => {
                             setSearch("");
@@ -282,7 +282,7 @@ const Navbar = () => {
                       {results.drivers.map((d) => (
                         <Link
                           key={d.id}
-                          to="/drivers"
+                          to="/admin/drivers"
                           state={{ searchQuery: d.name }}
                           onClick={() => {
                             setSearch("");
@@ -309,7 +309,7 @@ const Navbar = () => {
                       {results.rides.map((r) => (
                         <Link
                           key={r.id}
-                          to="/rides"
+                          to="/admin/rides"
                           state={{ searchQuery: String(r.id), searchType: "id" }}
                           onClick={() => {
                             setSearch("");
@@ -486,7 +486,7 @@ const Navbar = () => {
               {/* Footer */}
               <div className="p-3 text-center bg-gray-50 dark:bg-slate-850 border-t border-gray-100 dark:border-slate-700">
                 <Link
-                  to="/alerts"
+                  to="/admin/alerts"
                   onClick={() => setShowNotifications(false)}
                   className="text-yellow-600 dark:text-yellow-500 font-semibold text-sm hover:text-yellow-700 dark:hover:text-yellow-400 transition"
                 >
@@ -533,7 +533,7 @@ const Navbar = () => {
             <div className="absolute right-0 mt-3 w-60 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden z-50">
               {/* Profile */}
               <Link
-                to="/settings/profile"
+                to="/admin/settings/profile"
                 onClick={() => setOpenMenu(false)}
                 className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
               >
@@ -548,7 +548,7 @@ const Navbar = () => {
 
               {/* Settings */}
               <Link
-                to="/settings"
+                to="/admin/settings"
                 onClick={() => setOpenMenu(false)}
                 className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition border-t border-gray-100 dark:border-slate-700"
               >

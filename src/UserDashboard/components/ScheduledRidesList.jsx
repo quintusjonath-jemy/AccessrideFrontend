@@ -48,22 +48,35 @@ const ScheduledRidesList = ({ rides = [], onCancel, onEdit }) => {
                 <p className="font-bold text-sm text-[#0B2F89]">
                   {formatDateTime(ride.ride_date)}
                 </p>
-                {(ride.vehicle_type || (ride.wheelchair_type && ride.wheelchair_type !== "none")) && (
-                  <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold bg-amber-50 px-2.5 py-0.5 rounded-full w-max mt-1.5 capitalize">
-                    <span>
-                      {(() => {
-                        const type = (ride.vehicle_type || "").toLowerCase();
-                        if (type.includes("bike") || type.includes("motorcycle")) return "🏍️";
-                        if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) return "🛺";
-                        if (type.includes("van") || type.includes("suv")) return "🚐";
-                        return "🚗";
-                      })()}
-                    </span>
-                    <span>
-                      {ride.vehicle_type || ride.wheelchair_type}
-                    </span>
-                  </div>
-                )}
+                {(() => {
+                  let vehicleType = ride.vehicle_type;
+                  if (!vehicleType) {
+                    const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
+                    if (match) {
+                      vehicleType = match[1];
+                    }
+                  }
+                  const hasWheelchair = ride.wheelchair_type && ride.wheelchair_type !== "none";
+                  if (vehicleType || hasWheelchair) {
+                    return (
+                      <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold bg-amber-50 px-2.5 py-0.5 rounded-full w-max mt-1.5 capitalize">
+                        <span>
+                          {(() => {
+                            const type = (vehicleType || "").toLowerCase();
+                            if (type.includes("bike") || type.includes("motorcycle")) return "🏍️";
+                            if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) return "🛺";
+                            if (type.includes("van") || type.includes("suv")) return "🚐";
+                            return "🚗";
+                          })()}
+                        </span>
+                        <span>
+                          {vehicleType || ride.wheelchair_type}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
             
@@ -96,16 +109,22 @@ const ScheduledRidesList = ({ rides = [], onCancel, onEdit }) => {
                   {ride.pickup_location ? ride.pickup_location.replace(/\s*\(Vehicle:\s*[^\)]+\)/i, "") : ""}
                 </span>
                 {(() => {
-                  const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
-                  if (match) {
-                    const type = match[1].trim().toLowerCase();
+                  let vehicleType = ride.vehicle_type;
+                  if (!vehicleType) {
+                    const match = ride.pickup_location?.match(/\(Vehicle:\s*([^\)]+)\)/i);
+                    if (match) {
+                      vehicleType = match[1];
+                    }
+                  }
+                  if (vehicleType) {
+                    const type = vehicleType.trim().toLowerCase();
                     let emoji = "🚗";
                     if (type.includes("bike") || type.includes("motorcycle")) emoji = "🏍️";
                     else if (type.includes("van") || type.includes("suv")) emoji = "🚐";
                     else if (type.includes("three") || type.includes("rickshaw") || type.includes("auto") || type.includes("tuk")) emoji = "🛺";
                     return (
                       <span className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold gap-1 border border-blue-100 shrink-0">
-                        {emoji} {match[1]}
+                        {emoji} {vehicleType}
                       </span>
                     );
                   }

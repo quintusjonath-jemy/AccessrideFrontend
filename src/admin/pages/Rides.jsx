@@ -363,10 +363,9 @@ const Rides = () => {
 
                     <td className="px-6 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          statusStyles[rideStatus] ||
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[rideStatus] ||
                           "bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300"
-                        }`}
+                          }`}
                       >
                         {ride.status}
                       </span>
@@ -404,7 +403,7 @@ const Rides = () => {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() =>
-                            navigate("/navigation", {
+                            navigate("/admin/navigation", {
                               state: {
                                 rideId: ride.id,
                                 driverId: ride.driver_id,

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Lock,
@@ -6,49 +7,50 @@ import {
   Shield,
   Headphones,
   Accessibility,
-  Car,
 } from "lucide-react";
 
 const Login = () => {
-  const [isDriver, setIsDriver] = useState(false);
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userError, setUserError] = useState("");
 
-  const [dphone, setDphone] = useState("");
-  const [dpassword, setDpassword] = useState("");
-  const [otpPhone, setOtpPhone] = useState("");
-
-  const loginUser = () => {
+  const loginUser = async () => {
     if (!email || !password) {
       alert("Please enter email and password");
       return;
     }
 
-    alert("Login Successful!");
-    setEmail("");
-    setPassword("");
-  };
+    const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
 
-  const driverLogin = () => {
-    if (!dphone || !dpassword) {
-      alert("Please enter phone and password");
-      return;
+    try {
+      const response = await fetch(`${backendBase}/api/login.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setUserError(result.error || "Login failed");
+        return;
+      }
+
+      setUserError("");
+      alert(result.message || "Login Successful!");
+      setEmail("");
+      setPassword("");
+      navigate("/user/dashboard");
+    } catch (error) {
+      setUserError("Unable to connect to server. Please try again.");
     }
-
-    alert(`Driver Login Successful: ${dphone}`);
-    setDphone("");
-    setDpassword("");
-  };
-
-  const sendOtp = () => {
-    if (!otpPhone) {
-      alert("Enter phone number for OTP");
-      return;
-    }
-
-    alert(`OTP sent to ${otpPhone}`);
-    setOtpPhone("");
   };
 
   const voiceLogin = () => {
@@ -59,33 +61,8 @@ const Login = () => {
     <div className="bg-linear-to-br from-blue-100 to-gray-200 min-h-screen flex items-center justify-center p-5">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-2xl p-8">
-          {/* Toggle Buttons */}
-          <div className="flex gap-2 mb-6 justify-center">
-            <button
-              onClick={() => setIsDriver(false)}
-              className={`px-4 py-2 rounded-full font-semibold ${
-                !isDriver
-                  ? "bg-blue-900 text-white"
-                  : "bg-white text-blue-900 border border-gray-200"
-              }`}
-            >
-              Login as User
-            </button>
-
-            <button
-              onClick={() => setIsDriver(true)}
-              className={`px-4 py-2 rounded-full font-semibold ${
-                isDriver
-                  ? "bg-blue-900 text-white"
-                  : "bg-white text-blue-900 border border-gray-200"
-              }`}
-            >
-              Login as Driver
-            </button>
-          </div>
 
           {/* USER LOGIN */}
-          {!isDriver && (
             <>
               <div className="text-center mb-8">
                 <div className="w-20 h-20 bg-blue-900 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
@@ -155,6 +132,8 @@ const Login = () => {
                 Login
               </button>
 
+              {userError && <p className="text-red-500 mt-2">{userError}</p>}
+
               {/* Voice Login */}
               <div className="text-center mt-10">
                 <button
@@ -176,7 +155,7 @@ const Login = () => {
               </div>
 
               <div className="text-center text-gray-500">
-                Don't have an account?{" "}
+                Don't have an account?{' '}
                 <a
                   href="/register"
                   className="text-blue-900 font-bold hover:underline"
@@ -184,119 +163,17 @@ const Login = () => {
                   Create Account
                 </a>
               </div>
-            </>
-          )}
-
-          {/* DRIVER LOGIN */}
-          {isDriver && (
-            <>
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-blue-900 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
-                  <Car size={35} className="text-white" />
-                </div>
-
-                <h2 className="text-2xl font-bold text-blue-900 mt-4">
-                  Driver Login
-                </h2>
-
-                <p className="text-gray-500">
-                  Sign in to manage your rides and availability
-                </p>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-blue-900 font-semibold mb-2">
-                  Phone Number
-                </label>
-
-                <input
-                  type="tel"
-                  placeholder="Enter phone number"
-                  value={dphone}
-                  onChange={(e) => setDphone(e.target.value)}
-                  className="w-full px-4 py-3 border rounded-lg"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-blue-900 font-semibold mb-2">
-                  Password
-                </label>
-
-                <input
-                  type="password"
-                  placeholder="Enter password"
-                  value={dpassword}
-                  onChange={(e) => setDpassword(e.target.value)}
-                  className="w-full px-4 py-3 border rounded-lg"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                  Remember me
-                </label>
+              
+              <div className="text-center mt-4 border-t pt-3">
                 <a
-                  href="#"
-                  className="text-blue-900 hover:underline"
+                  href="/"
+                  className="text-gray-500 hover:text-gray-700 font-semibold hover:underline text-sm"
                 >
-                  Forgot Password?
+                  ← Back to Selector
                 </a>
               </div>
-
-              <button
-                onClick={driverLogin}
-                className="w-full bg-blue-900 hover:bg-blue-800 text-white py-4 rounded-2xl text-xl font-bold"
-              >
-                Sign In
-              </button>
-
-              <div className="text-center text-gray-500 mt-4">
-                or sign in with OTP
-              </div>
-
-              <div className="flex gap-3 mt-3">
-                <input
-                  type="tel"
-                  placeholder="Phone for OTP"
-                  value={otpPhone}
-                  onChange={(e) => setOtpPhone(e.target.value)}
-                  className="flex-1 px-4 py-3 border rounded-lg"
-                />
-
-                <button
-                  onClick={sendOtp}
-                  className="px-4 py-3 border border-blue-900 text-blue-900 rounded-lg"
-                >
-                  Send OTP
-                </button>
-              </div>
-
-              <div className="flex items-center my-8">
-                <div className="flex-1 h-px bg-gray-300"></div>
-                <span className="px-4 text-gray-400 text-sm">OR</span>
-                <div className="flex-1 h-px bg-gray-300"></div>
-              </div>
-
-              <div className="text-center text-gray-500 text-base">
-                Don't have an account?{' '}
-                <a
-                  href="/register?driver=true"
-                  className="text-blue-900 font-bold hover:underline"
-                >
-                  Create Account
-                </a>
-              </div>
-
-              <p className="text-gray-500 text-xs mt-5 text-center">
-                Drivers must be approved before accessing the dashboard.
-              </p>
             </>
-          )}
+
         </div>
 
         {/* Bottom Cards */}
