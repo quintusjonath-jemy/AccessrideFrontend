@@ -10,8 +10,6 @@ const DriverLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
-
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -128,7 +126,7 @@ const DriverLogin = () => {
             </div>
 
             {/* Remember Me */}
-            <div className="flex items-center justify-between text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm text-gray-600">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -162,7 +160,7 @@ const DriverLogin = () => {
               or sign in with OTP
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="tel"
                 placeholder="Phone for OTP"

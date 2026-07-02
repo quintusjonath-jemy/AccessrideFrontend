@@ -60,7 +60,7 @@ const Login = () => {
   return (
     <div className="bg-linear-to-br from-blue-100 to-gray-200 min-h-screen flex items-center justify-center p-5">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
+        <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
 
           {/* USER LOGIN */}
             <>
@@ -177,7 +177,7 @@ const Login = () => {
         </div>
 
         {/* Bottom Cards */}
-        <div className="grid grid-cols-2 gap-4 mt-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
           <div className="bg-white rounded-2xl p-4 shadow-lg flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <Shield className="text-blue-900" />

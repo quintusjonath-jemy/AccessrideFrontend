@@ -514,7 +514,7 @@ const DriverRegister = () => {
                 National Identity Card.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
 
@@ -633,12 +633,12 @@ const DriverRegister = () => {
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button
                     type="button"
                     onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg"
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto"
                 >
                     Back
                 </button>
@@ -646,7 +646,7 @@ const DriverRegister = () => {
                 <button
                     type="button"
                     onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg"
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto"
                 >
                     Next
                 </button>
@@ -668,7 +668,7 @@ const DriverRegister = () => {
                 Enter your current residential address.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
                     <label>Street Address</label>
@@ -762,14 +762,14 @@ const DriverRegister = () => {
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
                 <button type="button" onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button type="button" onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
             </div>
@@ -917,12 +917,12 @@ const DriverRegister = () => {
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button
                     type="button"
                     onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg"
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto"
                 >
                     Back
                 </button>
@@ -930,7 +930,7 @@ const DriverRegister = () => {
                 <button
                     type="button"
                     onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg"
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto"
                 >
                     Next
                 </button>
@@ -963,7 +963,7 @@ const DriverRegister = () => {
                 className="w-full border p-3 rounded-lg mb-6"
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <UploadCard
                     title="License Front"
@@ -987,14 +987,14 @@ const DriverRegister = () => {
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
             </div>
@@ -1064,14 +1064,14 @@ const DriverRegister = () => {
                 </p>
             )}
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
             </div>
@@ -1088,7 +1088,7 @@ const DriverRegister = () => {
                 NIC Verification
             </h2>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <UploadCard
                     title="NIC Front Image"
@@ -1111,15 +1111,15 @@ const DriverRegister = () => {
                 />
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
 
@@ -1143,7 +1143,7 @@ const DriverRegister = () => {
 
             </p>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <UploadCard
                     title="Vehicle Front"
@@ -1187,15 +1187,15 @@ const DriverRegister = () => {
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
 
@@ -1238,15 +1238,15 @@ const DriverRegister = () => {
                 </p>
             )}
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
 
@@ -1279,12 +1279,12 @@ const DriverRegister = () => {
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button
                     type="button"
                     onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg"
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto"
                 >
                     Back
                 </button>
@@ -1292,7 +1292,7 @@ const DriverRegister = () => {
                 <button
                     type="button"
                     onClick={handleSubmit}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg"
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg w-full sm:w-auto"
                 >
                     Submit Registration
                 </button>
@@ -1306,7 +1306,7 @@ const DriverRegister = () => {
 
     return (
 
-        <div className="min-h-screen bg-gray-100 py-10">
+        <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6">
 
             <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
 
