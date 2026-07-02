@@ -19,7 +19,7 @@ const EmergencySOS = () => {
 
   const activateSOS = () => {
     setLoading(true);
-    
+
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by this browser.");
       setLoading(false);
@@ -108,16 +108,16 @@ const EmergencySOS = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex justify-center">
-      <div className="w-full max-w-sm bg-white shadow-lg p-6 ring-1 ring-slate-200 min-h-screen flex flex-col">
+    <div className="min-h-screen bg-slate-100 flex justify-center items-start md:items-center p-0 md:p-6">
+      <div className="w-full max-w-md md:max-w-2xl lg:max-w-4xl bg-white shadow-2xl p-6 md:p-10 md:rounded-3xl ring-1 ring-slate-200 min-h-screen md:min-h-fit flex flex-col">
         <header className="flex items-center justify-between mb-6">
-          <button 
+          <button
             onClick={() => navigate("/user/dashboard")}
             className="text-slate-600 hover:text-slate-900 text-xl cursor-pointer"
           >
             <FiArrowLeft className="h-6 w-6" />
           </button>
-          <h2 className="font-bold text-lg text-slate-900">Emergency Help</h2>
+          <h2 className="font-bold text-lg md:text-2xl text-slate-900">Emergency Help</h2>
           <div className="text-xl">👤</div>
         </header>
 
@@ -125,16 +125,15 @@ const EmergencySOS = () => {
           <button
             onClick={activateSOS}
             disabled={sosActivated || loading}
-            className={`w-40 h-40 mx-auto relative rounded-full flex items-center justify-center text-5xl font-bold border-8 shadow-2xl transition transform hover:scale-105 active:scale-95 ${
-              sosActivated
+            className={`w-40 h-40 md:w-56 md:h-56 mx-auto relative rounded-full flex items-center justify-center text-5xl md:text-6xl font-bold border-8 md:border-[12px] shadow-2xl transition transform hover:scale-105 active:scale-95 ${sosActivated
                 ? "bg-red-700 text-white border-yellow-400 cursor-not-allowed"
                 : "bg-red-600 text-white border-yellow-400 hover:bg-red-700"
-            }`}
+              }`}
           >
             {loading ? "..." : "SOS"}
-            <div className="absolute text-xs font-semibold mt-14">PRESS</div>
+            <div className="absolute text-xs md:text-sm font-semibold mt-14 md:mt-20">PRESS</div>
           </button>
-          <p className="mt-6 text-sm text-slate-600 font-medium">Press the SOS button to activate emergency</p>
+          <p className="mt-6 text-sm md:text-lg text-slate-600 font-medium">Press the SOS button to activate emergency</p>
         </div>
 
         {sosActivated && (
@@ -149,21 +148,21 @@ const EmergencySOS = () => {
           </div>
         )}
 
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-4 lg:gap-6">
           <button
             onClick={callDriver}
-            className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2"
+            className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2 md:text-lg"
           >
-            <FiPhoneCall className="h-5 w-5" /> Call Driver
+            <FiPhoneCall className="h-5 w-5 md:h-6 md:w-6" /> Call Driver
           </button>
-          <button className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2">
-            <FiUsers className="h-5 w-5" /> Call Emergency Contact
+          <button className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2 md:text-lg">
+            <FiUsers className="h-5 w-5 md:h-6 md:w-6" /> Call Emergency Contact
           </button>
           <button
             onClick={handleShareLiveLocation}
-            className="w-full bg-slate-900 text-white py-3 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2"
+            className="w-full md:col-span-2 bg-slate-900 text-white py-3 md:py-4 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2 md:text-lg"
           >
-            <FiMapPin className="h-5 w-5" /> Share Live Location
+            <FiMapPin className="h-5 w-5 md:h-6 md:w-6" /> Share Live Location
           </button>
         </div>
 
@@ -176,9 +175,9 @@ const EmergencySOS = () => {
 
         <button
           onClick={cancelSOS}
-          className="mt-6 w-full border-2 border-red-500 text-red-600 py-3 rounded-3xl font-medium transition hover:bg-red-50 inline-flex items-center justify-center gap-2"
+          className="mt-6 md:mt-8 w-full border-2 border-red-500 text-red-600 py-3 md:py-4 rounded-3xl font-medium transition hover:bg-red-50 inline-flex items-center justify-center gap-2 md:text-lg"
         >
-          <FiX className="h-5 w-5" /> Cancel SOS
+          <FiX className="h-5 w-5 md:h-6 md:w-6" /> Cancel SOS
         </button>
       </div>
     </div>
