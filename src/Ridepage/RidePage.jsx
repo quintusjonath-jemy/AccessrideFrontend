@@ -126,7 +126,7 @@ const RidePage = () => {
     <div className="bg-slate-50 flex justify-center pb-24 md:py-10 min-h-[100dvh]">
       <div className="w-full max-w-[430px] md:max-w-2xl lg:max-w-[430px] bg-white md:shadow-2xl md:rounded-[2.5rem] md:border border-slate-200 flex flex-col min-h-[100dvh] md:min-h-fit overflow-hidden relative transition-all duration-300">
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-100">
-          <button className="text-xl md:text-2xl text-slate-700 hover:text-slate-900 transition">←</button>
+          <button onClick={() => navigate('/driver-dashboard')} className="text-xl md:text-2xl text-slate-700 hover:text-slate-900 transition">←</button>
           <h1 className="font-bold text-lg md:text-xl text-[#00236F]">Ride in Progress</h1>
           <div className="w-6" />
         </div>
