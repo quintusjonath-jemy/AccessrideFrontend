@@ -8,6 +8,7 @@ const DriverDashboard = () => {
     const stored = localStorage.getItem("driverOnlineStatus");
     return stored ? JSON.parse(stored) : true;
   });
+  const [activeRide, setActiveRide] = useState(null);
   const [rideRequest, setRideRequest] = useState({
     pickup: "Colombo Public Library",
     dropoff: "National Hospital, Colombo",
@@ -17,7 +18,7 @@ const DriverDashboard = () => {
   });
 
   useEffect(() => {
-    fetch("http://localhost/AccessrideBackend/DriverdashboardgetRide.php")
+    fetch("http://localhost/AccessrideBackend/Driverdashboard/getride.php")
       .then((res) => res.json())
       .then((data) => {
         if (data.pickup && data.dropoff) {
@@ -25,6 +26,8 @@ const DriverDashboard = () => {
             ...current,
             pickup: data.pickup,
             dropoff: data.dropoff,
+            distance: data.distance || current.distance,
+            fare: data.fare || current.fare,
           }));
         }
       })
@@ -41,7 +44,7 @@ const DriverDashboard = () => {
 
   const acceptRide = () => {
     fetch("http://localhost/AccessrideBackend/accept.php", { method: "POST" });
-    navigate("/user/ride");
+    navigate("/ride");
   };
 
   const rejectRide = () => {
@@ -125,6 +128,28 @@ const DriverDashboard = () => {
         <div className="mt-5 rounded-[2rem] overflow-hidden bg-slate-200">
           <img src="/src/Driverdashboard/map.jpg" alt="Map preview" className="h-56 w-full object-cover opacity-85" />
         </div>
+
+        {activeRide && (
+          <div className="mt-5 rounded-[2rem] bg-blue-50 p-5 shadow-sm ring-1 ring-blue-200 cursor-pointer hover:bg-blue-100 transition" onClick={() => navigate("/ride")}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-blue-900">ONGOING RIDE</p>
+              <p className="text-lg font-bold text-blue-900">{activeRide.fare}</p>
+            </div>
+            <div className="mt-4 space-y-4 text-sm text-blue-800">
+              <div>
+                <p className="text-blue-500 font-medium text-xs tracking-wider uppercase mb-1">Pickup</p>
+                <p className="font-semibold text-blue-900">{activeRide.pickup}</p>
+              </div>
+              <div>
+                <p className="text-blue-500 font-medium text-xs tracking-wider uppercase mb-1">Dropoff</p>
+                <p className="font-semibold text-blue-900">{activeRide.dropoff}</p>
+              </div>
+            </div>
+            <div className="mt-4 text-center text-sm font-bold text-blue-600 bg-blue-100/50 py-2 rounded-xl">
+              Tap to view details &rarr;
+            </div>
+          </div>
+        )}
 
         <div className="mt-5 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <div className="flex items-center justify-between">
