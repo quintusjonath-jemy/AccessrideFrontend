@@ -11,9 +11,7 @@ const UserLayout = () => {
       <Outlet />
 
       {!isSOSPage && !isHistoryPage && (
-        <div className="fixed bottom-0 left-0 w-full">
-          <BottomNavigation />
-        </div>
+        <BottomNavigation />
       )}
     </div>
   );

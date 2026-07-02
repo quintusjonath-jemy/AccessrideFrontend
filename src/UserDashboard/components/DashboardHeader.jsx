@@ -1,18 +1,88 @@
-import { UserCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { UserCircle, LogOut, Settings, ChevronDown } from "lucide-react";
 
-const DashboardHeader = () => {
+const DashboardHeader = ({ user }) => {
+  const [openMenu, setOpenMenu] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user_id");
+    sessionStorage.removeItem("user_id");
+    navigate("/login");
+  };
+
   return (
-    <div className="flex items-center justify-between px-5 py-4 bg-white shadow-sm">
+    <div className="flex items-center justify-between px-5 py-4 bg-white shadow-sm relative">
       <h1 className="text-xl font-bold text-[#0B2F89]">
         AccessRide
       </h1>
 
-      <button>
-        <UserCircle
-          size={32}
-          className="text-[#0B2F89]"
-        />
-      </button>
+      <div ref={dropdownRef} className="relative">
+        <button
+          onClick={() => setOpenMenu(!openMenu)}
+          className="flex items-center gap-1 focus:outline-none"
+        >
+          <UserCircle
+            size={32}
+            className="text-[#0B2F89] hover:scale-105 transition"
+          />
+          <ChevronDown size={14} className="text-[#0B2F89]" />
+        </button>
+
+        {openMenu && (
+          <div className="absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+            {/* Header info */}
+            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rider Account</p>
+              <p className="text-sm font-bold text-gray-800 truncate mt-0.5">{user?.name || "Rider"}</p>
+              {user?.email && <p className="text-xs text-gray-400 truncate mt-0.5">{user.email}</p>}
+            </div>
+
+            {/* Profile Settings */}
+            <Link
+              to="/profile"
+              onClick={() => setOpenMenu(false)}
+              className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition"
+            >
+              <Settings size={18} className="text-gray-500" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Profile Settings</span>
+                <span className="text-xs text-gray-400">
+                  Manage app preferences
+                </span>
+              </div>
+            </Link>
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition border-t border-gray-100"
+            >
+              <LogOut size={18} />
+              <div className="flex flex-col text-left">
+                <span className="text-sm font-medium">Logout</span>
+                <span className="text-xs text-red-400">
+                  Sign out of your account
+                </span>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
