@@ -3,11 +3,9 @@ import { Mic, AudioLines, LocateFixed, Bell, LogOut, ChevronRight } from 'lucide
 import { useNavigate } from 'react-router-dom';
 import './UserProfilePage.css';
 
-import ProfileHeader from './components/ProfileHeader';
 import ProfileCard from './components/ProfileCard';
 import AccessibilityCard from './components/AccessibilityCard';
 import VoiceSettingsCard from './components/VoiceSettingsCard';
-import BottomNavigation from './components/BottomNavigation';
 
 import { userData } from './data/userData';
 
@@ -46,9 +44,6 @@ const UserProfilePage = () => {
   return (
     <div className="bg-slate-50 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-50 min-h-screen pb-[90px] relative flex flex-col">
-        {/* Header */}
-        <ProfileHeader handleActionClick={handleActionClick} />
-        
         {/* Main Content */}
         <main className="flex-1 px-5 pb-5 flex flex-col gap-4">
           
@@ -127,8 +122,6 @@ const UserProfilePage = () => {
 
         </main>
 
-        {/* Bottom Navigation */}
-        <BottomNavigation />
       </div>
     </div>
   );
