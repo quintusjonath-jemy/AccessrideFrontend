@@ -104,16 +104,16 @@ const RidePage = () => {
   };
 
   return (
-    <div className="bg-gray-200 flex justify-center items-center min-h-screen sm:p-4">
-      <div className="w-full max-w-[390px] h-[100vh] sm:h-[calc(100vh-2rem)] sm:max-h-[844px] bg-white sm:rounded-3xl shadow-xl overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
-          <button className="text-xl">←</button>
-          <h1 className="font-bold text-lg text-blue-900">Ride in Progress</h1>
+    <div className="bg-slate-50 flex justify-center pb-24 md:py-10 min-h-[100dvh]">
+      <div className="w-full max-w-[430px] md:max-w-2xl lg:max-w-[430px] bg-white md:shadow-2xl md:rounded-[2.5rem] md:border border-slate-200 flex flex-col min-h-[100dvh] md:min-h-fit overflow-hidden relative transition-all duration-300">
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-100">
+          <button className="text-xl md:text-2xl text-slate-700 hover:text-slate-900 transition">←</button>
+          <h1 className="font-bold text-lg md:text-xl text-[#00236F]">Ride in Progress</h1>
           <div className="w-6" />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-          <div className="relative bg-gray-300 rounded-2xl h-52 overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-4 space-y-5 md:space-y-6 lg:space-y-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] pb-10">
+          <div className="relative bg-gray-300 rounded-2xl h-52 md:h-72 lg:h-52 overflow-hidden shadow-inner">
             <div ref={mapContainer} className="w-full h-full rounded-2xl" />
 
             <button className="absolute top-3 right-3 bg-white p-2 rounded-full shadow hover:bg-gray-100">
