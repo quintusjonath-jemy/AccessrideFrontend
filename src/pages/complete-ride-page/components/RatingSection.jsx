@@ -9,13 +9,13 @@ const RatingSection = ({ isRated, rating, handleRating, driverName }) => {
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-5 mt-2 flex flex-col items-center justify-center text-center shadow-sm">
-      <h3 className="text-[#0d1b2a] font-extrabold mb-4">Rate your driver</h3>
+      <h3 className="text-[#0B2F89] font-extrabold mb-4">Rate your driver</h3>
       <div className="flex gap-2 text-3xl">
         {[1, 2, 3, 4, 5].map((star) => (
           <button key={star} onClick={() => handleRating(star)} className="focus:outline-none">
             <Star
               className={`w-8 h-8 cursor-pointer transition-colors ${
-                rating >= star ? 'fill-[#ffb703] text-[#ffb703]' : 'text-slate-300'
+                rating >= star ? 'fill-[#FEC329] text-[#FEC329]' : 'text-slate-300'
               }`}
             />
           </button>
@@ -26,3 +26,4 @@ const RatingSection = ({ isRated, rating, handleRating, driverName }) => {
 };
 
 export default RatingSection;
+
