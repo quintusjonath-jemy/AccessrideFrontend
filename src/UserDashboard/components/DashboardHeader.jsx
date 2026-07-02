@@ -27,8 +27,9 @@ const DashboardHeader = ({ user }) => {
 
   return (
     <div className="flex items-center justify-between px-5 py-4 bg-white shadow-sm relative">
-      <h1 className="text-xl font-bold text-[#0B2F89]">
-        AccessRide
+      <h1 className="text-xl font-extrabold">
+        <span className="text-[#FEC329]">Access</span>
+        <span className="text-[#0B2F89]">Ride</span>
       </h1>
 
       <div ref={dropdownRef} className="relative">
