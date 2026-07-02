@@ -2,16 +2,13 @@ import React, { useState } from 'react';
 import { Mic } from 'lucide-react';
 import './HistoryPage.css';
 
-import HistoryHeader from './components/HistoryHeader';
 import HistoryFilters from './components/HistoryFilters';
 import RideCard from './components/RideCard';
-import BottomNavigation from './components/BottomNavigation';
 
 import { rideData } from './data/rideData';
 
 const HistoryPage = () => {
   const [activeFilter, setActiveFilter] = useState('Completed');
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // Group rides by date section for rendering
   const groupedRides = rideData.reduce((acc, ride) => {
@@ -26,9 +23,6 @@ const HistoryPage = () => {
     <div className="bg-slate-50 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-50 min-h-screen pb-[90px] relative flex flex-col shadow-2xl overflow-hidden">
         
-        {/* Header */}
-        <HistoryHeader menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-
         {/* Filters */}
         <HistoryFilters activeFilter={activeFilter} handleFilterClick={setActiveFilter} />
 
@@ -58,8 +52,6 @@ const HistoryPage = () => {
           ))}
         </main>
 
-        {/* Bottom Navigation */}
-        <BottomNavigation />
       </div>
     </div>
   );
