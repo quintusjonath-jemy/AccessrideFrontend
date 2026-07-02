@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const RidePage = () => {
+  const navigate = useNavigate();
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   const [rideInfo] = useState({
@@ -100,14 +102,31 @@ const RidePage = () => {
   };
 
   const cancelRide = () => {
-    window.alert("Ride canceled.");
+    fetch("http://localhost/AccessrideBackend/Driverdashboard/cancel.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "cancel" })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          window.alert("Ride canceled successfully.");
+          navigate("/driver-dashboard");
+        } else {
+          window.alert("Failed to cancel the ride.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        window.alert("Error canceling the ride.");
+      });
   };
 
   return (
     <div className="bg-slate-50 flex justify-center pb-24 md:py-10 min-h-[100dvh]">
       <div className="w-full max-w-[430px] md:max-w-2xl lg:max-w-[430px] bg-white md:shadow-2xl md:rounded-[2.5rem] md:border border-slate-200 flex flex-col min-h-[100dvh] md:min-h-fit overflow-hidden relative transition-all duration-300">
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-100">
-          <button className="text-xl md:text-2xl text-slate-700 hover:text-slate-900 transition">←</button>
+          <button onClick={() => navigate('/driver-dashboard')} className="text-xl md:text-2xl text-slate-700 hover:text-slate-900 transition">←</button>
           <h1 className="font-bold text-lg md:text-xl text-[#00236F]">Ride in Progress</h1>
           <div className="w-6" />
         </div>
