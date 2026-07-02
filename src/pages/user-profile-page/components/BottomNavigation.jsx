@@ -13,7 +13,7 @@ const BottomNavigation = () => {
         <CalendarDays className="w-6 h-6" />
         <span>History</span>
       </Link>
-      <Link to="/profile" className="flex flex-col items-center gap-1 py-2 px-[30px] rounded-xl font-bold text-[0.8rem] bg-[#ffb703] text-[#0d1b2a] transition-colors no-underline">
+      <Link to="/profile" className="flex flex-col items-center gap-1 py-2 px-[30px] rounded-xl font-bold text-[0.8rem] bg-[#FEC329] text-[#0B2F89] transition-colors no-underline">
         <User className="w-6 h-6" />
         <span>Profile</span>
       </Link>
@@ -22,3 +22,4 @@ const BottomNavigation = () => {
 };
 
 export default BottomNavigation;
+
