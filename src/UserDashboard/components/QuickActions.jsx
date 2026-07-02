@@ -19,7 +19,7 @@ const QuickActions = () => {
 
       {/* My Rides */}
       <button
-        onClick={() => navigate("/user/dashboard")}
+        onClick={() => navigate("/user/history")}
         className="w-full bg-white hover:bg-slate-50 text-[#0B2F89] border border-slate-100 rounded-2xl p-5 shadow-sm transition flex items-center gap-4 text-left cursor-pointer"
       >
         <div className="p-2.5 bg-slate-50 rounded-xl">
