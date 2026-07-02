@@ -8,23 +8,25 @@ const DriverBottomNavigation = () => {
   const isTrips = location.pathname === "/driver-trips";
   const isEarnings = location.pathname === "/driver-earnings";
 
+  const isProfile = location.pathname === "/driver-profile";
+
   return (
-    <div className="flex justify-around py-3 border-t mt-auto bg-white">
-      <button onClick={() => navigate("/driver-dashboard")} className={`flex flex-col items-center ${isHome ? "text-[#00236F]" : "text-gray-500 hover:text-[#00236F]"}`}>
+    <div className="fixed bottom-0 md:bottom-6 lg:bottom-0 left-1/2 -translate-x-1/2 w-full md:max-w-2xl lg:max-w-[430px] bg-white border-t md:border lg:border-x lg:border-b-0 lg:border-t border-slate-200 flex justify-around items-center py-2 md:py-3 lg:py-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-2xl z-50 md:rounded-[2rem] lg:rounded-none lg:rounded-t-[2.5rem]">
+      <button onClick={() => navigate("/driver-dashboard")} className={`flex flex-col items-center justify-center rounded-2xl px-4 py-1.5 transition ${isHome ? "text-[#00236F] font-bold" : "text-slate-500 hover:text-[#00236F]"}`}>
         <span className="text-xl">🏠</span>
-        <p className="text-xs">Home</p>
+        <p className="text-xs mt-0.5">Home</p>
       </button>
-      <button onClick={() => navigate("/driver-trips")} className={`flex flex-col items-center ${isTrips ? "text-yellow-500" : "text-gray-500 hover:text-[#00236F]"}`}>
+      <button onClick={() => navigate("/driver-trips")} className={`flex flex-col items-center justify-center rounded-2xl px-4 py-1.5 transition ${isTrips ? "text-yellow-500 font-bold" : "text-slate-500 hover:text-yellow-500"}`}>
         <span className="text-xl">🚗</span>
-        <p className="text-xs">Trips</p>
+        <p className="text-xs mt-0.5">Trips</p>
       </button>
-      <button onClick={() => navigate("/driver-earnings")} className={`flex flex-col items-center ${isEarnings ? "text-yellow-500 font-bold" : "text-gray-500 hover:text-[#00236F]"}`}>
+      <button onClick={() => navigate("/driver-earnings")} className={`flex flex-col items-center justify-center rounded-2xl px-4 py-1.5 transition ${isEarnings ? "text-yellow-500 font-bold" : "text-slate-500 hover:text-yellow-500"}`}>
         <span className="text-xl">💰</span>
-        <p className="text-xs">Earnings</p>
+        <p className="text-xs mt-0.5">Earnings</p>
       </button>
-      <button onClick={() => navigate("/driver-dashboard")} className="flex flex-col items-center text-gray-500 hover:text-[#00236F]">
+      <button onClick={() => navigate("/driver-profile")} className={`flex flex-col items-center justify-center rounded-2xl px-4 py-1.5 transition ${isProfile ? "text-[#00236F] font-bold" : "text-slate-500 hover:text-[#00236F]"}`}>
         <span className="text-xl">👤</span>
-        <p className="text-xs">Profile</p>
+        <p className="text-xs mt-0.5">Profile</p>
       </button>
     </div>
   );

@@ -11,8 +11,8 @@ const BottomNavigation = () => {
   const isProfile = location.pathname === "/profile";
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center py-2 shadow-lg z-50">
-      {/* Home */}
+    <div className="fixed bottom-0 md:bottom-6 left-1/2 -translate-x-1/2 w-full md:max-w-md lg:max-w-lg bg-white border-t md:border border-slate-200 flex justify-around items-center py-2 md:py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-2xl z-50 md:rounded-[2rem] transition-all duration-300">
+      {/* Home (Highlighted capsule) */}
       <button
         onClick={() => navigate("/user/dashboard")}
         className={`flex flex-col items-center justify-center rounded-2xl px-4 py-1.5 transition cursor-pointer ${
