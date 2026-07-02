@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const RidePage = () => {
+  const navigate = useNavigate();
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   const [rideInfo] = useState({
@@ -100,7 +102,24 @@ const RidePage = () => {
   };
 
   const cancelRide = () => {
-    window.alert("Ride canceled.");
+    fetch("http://localhost/AccessrideBackend/Driverdashboard/cancel.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "cancel" })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          window.alert("Ride canceled successfully.");
+          navigate("/driver-dashboard");
+        } else {
+          window.alert("Failed to cancel the ride.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        window.alert("Error canceling the ride.");
+      });
   };
 
   return (
