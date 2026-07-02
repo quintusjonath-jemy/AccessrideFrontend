@@ -47,7 +47,7 @@ const CompleteRidePage = () => {
     <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-100 min-h-screen relative flex flex-col shadow-2xl">
         {/* Top Navigation */}
-        <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-10">
+        <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
       <h1 className="text-xl font-extrabold">
         <span className="text-[#FEC329]">Access</span>
         <span className="text-[#0B2F89]">Ride</span>
