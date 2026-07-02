@@ -22,6 +22,21 @@ const UserDashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
+    // Request user location in the background
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          sessionStorage.setItem("user_latitude", latitude);
+          sessionStorage.setItem("user_longitude", longitude);
+        },
+        (err) => {
+          console.warn("Could not retrieve geolocation in dashboard:", err);
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+      );
+    }
+
     const fetchDashboard = async () => {
       try {
         const res = await axios.get(

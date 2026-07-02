@@ -20,7 +20,14 @@ const geocodeLocation = async (query) => {
   const lowerQuery = query.toLowerCase();
   
   // High quality default coordinates for common sample locations
-  if (lowerQuery.includes("my current location") || lowerQuery.includes("central library")) {
+  if (lowerQuery.includes("my current location")) {
+    const lat = sessionStorage.getItem("user_latitude");
+    const lng = sessionStorage.getItem("user_longitude");
+    if (lat && lng) {
+      return [parseFloat(lng), parseFloat(lat)];
+    }
+    return [79.8612, 6.9271]; // Central Library Colombo/Sri Lanka coords fallback
+  } else if (lowerQuery.includes("central library")) {
     return [79.8612, 6.9271]; // Central Library Colombo/Sri Lanka coords
   } else if (lowerQuery.includes("hospital") || lowerQuery.includes("medical")) {
     return [79.8732, 6.9012];
@@ -104,6 +111,56 @@ const BookingPage = () => {
   const [pickupCoords, setPickupCoords] = useState(null);
   const [dropoffCoords, setDropoffCoords] = useState(null);
   const [routeGeoJSON, setRouteGeoJSON] = useState(null);
+
+  // Fetch actual current location address on mount for the pickup field
+  useEffect(() => {
+    const fetchCurrentLocationAddress = async () => {
+      const lat = sessionStorage.getItem("user_latitude");
+      const lng = sessionStorage.getItem("user_longitude");
+      if (lat && lng) {
+        try {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+          const res = await axios.get(url);
+          if (res.data?.features && res.data.features.length > 0) {
+            const address = res.data.features[0].place_name;
+            const text = res.data.features[0].text || address;
+            setPickup(`My Current Location (${text})`);
+          } else {
+            setPickup("My Current Location");
+          }
+        } catch (err) {
+          console.error("Error reverse geocoding current location:", err);
+          setPickup("My Current Location");
+        }
+      } else {
+        // Fallback: request geolocation if not in sessionStorage
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              sessionStorage.setItem("user_latitude", latitude);
+              sessionStorage.setItem("user_longitude", longitude);
+              try {
+                const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+                const res = await axios.get(url);
+                if (res.data?.features && res.data.features.length > 0) {
+                  setPickup(`My Current Location (${res.data.features[0].text})`);
+                } else {
+                  setPickup("My Current Location");
+                }
+              } catch (err) {
+                setPickup("My Current Location");
+              }
+            },
+            () => {
+              setPickup("My Current Location (Central Library)");
+            }
+          );
+        }
+      }
+    };
+    fetchCurrentLocationAddress();
+  }, []);
 
   // Fetch coordinates, route, and calculate distance (finding the shortest alternative route)
   useEffect(() => {
