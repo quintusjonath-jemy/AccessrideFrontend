@@ -284,21 +284,28 @@ const Earnings = () => {
 
                     {/* Membership status */}
                     <td className="py-4 px-6 text-right">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full border text-xs font-semibold flex items-center w-max ml-auto gap-1 capitalize ${
-                          driver.subscription_status === "active"
-                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                            : driver.subscription_status === "expired"
-                            ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse"
-                            : "bg-slate-50 text-slate-600 border-slate-100"
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          driver.subscription_status === "active" ? "bg-emerald-500" :
-                          driver.subscription_status === "expired" ? "bg-rose-500" : "bg-slate-400"
-                        }`} />
-                        {driver.subscription_status === "active" ? "Active" : driver.subscription_status === "expired" ? "Expired" : "No Plan"}
-                      </span>
+                      {driver.subscription_status === "expired" && driver.warning_sent === 1 ? (
+                        <span className="px-2.5 py-0.5 rounded-full border text-xs font-semibold flex items-center w-max ml-auto gap-1 bg-amber-50 text-amber-700 border-amber-200 animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          Expired (Warning Sent)
+                        </span>
+                      ) : (
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full border text-xs font-semibold flex items-center w-max ml-auto gap-1 capitalize ${
+                            driver.subscription_status === "active"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              : driver.subscription_status === "expired"
+                              ? "bg-rose-50 text-rose-600 border-rose-100"
+                              : "bg-slate-50 text-slate-600 border-slate-100"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            driver.subscription_status === "active" ? "bg-emerald-500" :
+                            driver.subscription_status === "expired" ? "bg-rose-500" : "bg-slate-400"
+                          }`} />
+                          {driver.subscription_status === "active" ? "Active" : driver.subscription_status === "expired" ? "Expired" : "No Plan"}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
