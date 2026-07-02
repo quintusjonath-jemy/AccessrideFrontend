@@ -7,7 +7,7 @@ export const rideDetails = {
   accessible: true,
   vehicle: "Honda Odyssey",
   licensePlate: "ABC-123",
-  totalFare: "$34.50",
+  totalFare: "Rs 340.00",
   route: [
     {
       time: "10:15 AM",
