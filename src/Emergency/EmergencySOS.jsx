@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiPhoneCall, FiMapPin, FiUsers, FiX, FiArrowLeft, FiUser } from "react-icons/fi";
 import LiveMap from "../admin/components/LiveMap";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ const EmergencySOS = () => {
   const navigate = useNavigate();
   const [sosActivated, setSOSActivated] = useState(false);
   const [showLiveMap, setShowLiveMap] = useState(false);
+  const sosTriggeredRef = useRef(false);
   const [userLocation, setUserLocation] = useState([79.8612, 6.9271]);
   const [driverInfo, setDriverInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,7 @@ const EmergencySOS = () => {
         setUserLocation([longitude, latitude]);
 
         // Send SOS alert to backend
-        fetch("http://localhost/AccessrideBackend/Emergency/sos.php", {
+        fetch("http://localhost/Emergency/sos.php", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -71,6 +72,12 @@ const EmergencySOS = () => {
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   };
+
+  useEffect(() => {
+    if (sosTriggeredRef.current) return;
+    sosTriggeredRef.current = true;
+    activateSOS();
+  }, []);
 
   const callDriver = () => {
     if (driverInfo && driverInfo.phone) {
