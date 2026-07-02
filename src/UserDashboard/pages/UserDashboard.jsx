@@ -55,7 +55,7 @@ const UserDashboard = () => {
 
   return (
     <>
-      <DashboardHeader />
+      <DashboardHeader user={dashboard?.user} />
 
       {/* 3. Pass user object instead of name */}
       <WelcomeSection user={dashboard?.user} />
