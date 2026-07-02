@@ -9,7 +9,7 @@ const EmergencyBottomNavigation = () => {
   const isSchedule = location.pathname === "/user/schedule";
 
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-slate-100 flex justify-around items-center py-2 shadow-lg z-50 md:rounded-b-[2.5rem] md:border-b md:border-x">
+    <div className="fixed bottom-0 md:bottom-6 left-1/2 -translate-x-1/2 w-full md:max-w-md lg:max-w-lg bg-white border-t md:border border-slate-200 flex justify-around items-center py-2 md:py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-2xl z-50 md:rounded-[2rem]">
       {/* Home */}
       <button
         onClick={() => navigate("/user/dashboard")}
