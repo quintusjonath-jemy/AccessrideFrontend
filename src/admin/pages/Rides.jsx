@@ -145,7 +145,7 @@ const Rides = () => {
     }
 
     return true;
-  });
+  }).sort((a, b) => Number(b.id) - Number(a.id));
 
   return (
     <div className="space-y-8">
