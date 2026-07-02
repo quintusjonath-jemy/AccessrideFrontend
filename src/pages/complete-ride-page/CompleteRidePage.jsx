@@ -43,13 +43,13 @@ const CompleteRidePage = () => {
   };
 
   return (
-    <div className="bg-slate-50 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
-      <div className="w-full max-w-md bg-slate-50 min-h-screen relative flex flex-col shadow-2xl">
+    <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
+      <div className="w-full max-w-md bg-slate-100 min-h-screen relative flex flex-col shadow-2xl">
         {/* Top Navigation */}
-        <header className="flex justify-between items-center p-4 bg-slate-50 sticky top-0 z-10">
-          <Menu className="w-6 h-6 text-[#0d1b2a] cursor-pointer" />
-          <h1 className="text-xl font-extrabold text-[#0d1b2a] m-0">AccessRide</h1>
-          <Bell className="w-6 h-6 text-[#0d1b2a] cursor-pointer" />
+        <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-10">
+          <Menu className="w-6 h-6 text-[#0B2F89] cursor-pointer" />
+          <h1 className="text-xl font-extrabold text-[#0B2F89] m-0">AccessRide</h1>
+          <Bell className="w-6 h-6 text-[#0B2F89] cursor-pointer" />
         </header>
 
         {/* Tabs */}
@@ -60,7 +60,7 @@ const CompleteRidePage = () => {
               onClick={() => setActiveTab(tab)}
               className={`flex-1 min-w-max mx-1 py-2 rounded-full text-sm font-bold transition-colors ${
                 activeTab === tab
-                  ? 'bg-[#0d1b2a] text-white'
+                  ? 'bg-[#0B2F89] text-white'
                   : 'bg-white text-slate-500 border border-slate-200'
               }`}
             >
@@ -73,15 +73,15 @@ const CompleteRidePage = () => {
         <div className="flex flex-col items-center justify-center my-6">
           <div className="relative mb-3 flex items-center justify-center">
             {isListening && (
-              <div className="absolute w-[90px] h-[90px] bg-[#ffb703] rounded-full opacity-40 animate-ping"></div>
+              <div className="absolute w-[90px] h-[90px] bg-[#FEC329] rounded-full opacity-40 animate-ping"></div>
             )}
             <button
               onClick={handleMicClick}
-              className={`w-[70px] h-[70px] bg-[#ffb703] rounded-full flex justify-center items-center relative z-10 shadow-lg transition-transform ${
+              className={`w-[70px] h-[70px] bg-[#FEC329] rounded-full flex justify-center items-center relative z-10 shadow-lg transition-transform ${
                 isListening ? 'scale-105' : 'active:scale-95'
               }`}
             >
-              <Mic className="w-8 h-8 text-[#0d1b2a]" />
+              <Mic className="w-8 h-8 text-[#0B2F89]" />
             </button>
           </div>
           <h3 className="text-slate-800 font-extrabold text-lg">Book new ride by voice</h3>
@@ -89,7 +89,7 @@ const CompleteRidePage = () => {
 
         {/* Main Content */}
         <main className="flex-1 px-4 pb-6 flex flex-col gap-4 bg-white rounded-t-3xl pt-6 shadow-[0_-4px_15px_rgba(0,0,0,0.03)] border-t border-slate-200 mt-2">
-          <h2 className="text-[#0d1b2a] font-extrabold text-xl m-0">Today, {rideDetails.date}</h2>
+          <h2 className="text-[#0B2F89] font-extrabold text-xl m-0">Today, {rideDetails.date}</h2>
 
           {/* Main Card */}
           <RideSummary rideDetails={rideDetails} />
@@ -107,7 +107,7 @@ const CompleteRidePage = () => {
             <button 
               onClick={handleDone}
               disabled={isProcessing}
-              className={`w-full bg-[#0d1b2a] text-white font-bold text-base py-4 rounded-xl shadow-md transition-opacity ${
+              className={`w-full bg-[#0B2F89] text-white font-bold text-base py-4 rounded-xl shadow-md transition-opacity ${
                 isProcessing ? 'opacity-70' : 'active:opacity-90'
               }`}
             >
@@ -121,3 +121,5 @@ const CompleteRidePage = () => {
 };
 
 export default CompleteRidePage;
+
+
