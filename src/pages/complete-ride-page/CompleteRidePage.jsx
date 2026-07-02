@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Menu, Bell, Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './CompleteRidePage.css';
+import { UserCircle, LogOut, Settings, ChevronDown } from "lucide-react";
 
 import RideSummary from './components/RideSummary';
 import RatingSection from './components/RatingSection';
@@ -51,7 +52,19 @@ const CompleteRidePage = () => {
         <span className="text-[#FEC329]">Access</span>
         <span className="text-[#0B2F89]">Ride</span>
       </h1>
-          <Bell className="w-6 h-6 text-[#0B2F89] cursor-pointer" />
+
+      {/* <div ref={dropdownRef} className="relative"> */}
+        <button
+          onClick={() => setOpenMenu(!openMenu)}
+          className="flex items-center gap-1 focus:outline-none"
+        >
+          <UserCircle
+            size={32}
+            className="text-[#0B2F89] hover:scale-105 transition"
+          />
+          <ChevronDown size={14} className="text-[#0B2F89]" />
+        </button>
+          
         </header>
 
         {/* Tabs */}
