@@ -108,77 +108,92 @@ const EmergencySOS = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex justify-center items-start md:items-center p-0 md:p-6">
-      <div className="w-full max-w-md md:max-w-2xl lg:max-w-4xl bg-white shadow-2xl p-6 md:p-10 md:rounded-3xl ring-1 ring-slate-200 min-h-screen md:min-h-fit flex flex-col">
-        <header className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => navigate("/user/dashboard")}
-            className="text-slate-600 hover:text-slate-900 text-xl cursor-pointer"
-          >
-            <FiArrowLeft className="h-6 w-6" />
-          </button>
-          <h2 className="font-bold text-lg md:text-2xl text-slate-900">Emergency Help</h2>
-          <div className="text-xl">👤</div>
-        </header>
+    <div className="min-h-screen bg-slate-50 flex justify-center pb-24 md:py-10">
+      <div className="w-full max-w-[430px] md:max-w-2xl lg:max-w-[430px] bg-white md:shadow-2xl md:rounded-[2.5rem] md:border border-slate-200 flex flex-col min-h-[100dvh] md:min-h-fit overflow-hidden relative transition-all duration-300">
+        <div className="px-6 py-6 md:p-8 lg:px-6 lg:py-6 flex flex-col h-full flex-grow">
+          <header className="flex items-center justify-between mb-8 md:mb-12 lg:mb-10">
+            <button
+              onClick={() => navigate("/user/dashboard")}
+              className="text-slate-600 hover:text-slate-900 cursor-pointer p-1 md:p-2 lg:p-1 rounded-full hover:bg-slate-100 transition-colors"
+            >
+              <FiArrowLeft className="h-6 w-6 md:h-7 md:w-7 lg:h-6 lg:w-6" />
+            </button>
+            <h2 className="font-bold text-[1.35rem] md:text-2xl lg:text-[1.35rem] text-[#0f172a] tracking-tight">Emergency Help</h2>
+            <div className="bg-slate-100 p-2.5 md:p-3 lg:p-2.5 rounded-full flex items-center justify-center">
+              <FiUser className="text-slate-500 h-[22px] w-[22px] md:h-6 md:w-6 lg:h-[22px] lg:w-[22px]" />
+            </div>
+          </header>
 
-        <div className="text-center mt-8">
-          <button
-            onClick={activateSOS}
-            disabled={sosActivated || loading}
-            className={`w-40 h-40 md:w-56 md:h-56 mx-auto relative rounded-full flex items-center justify-center text-5xl md:text-6xl font-bold border-8 md:border-[12px] shadow-2xl transition transform hover:scale-105 active:scale-95 ${sosActivated
-                ? "bg-red-700 text-white border-yellow-400 cursor-not-allowed"
-                : "bg-red-600 text-white border-yellow-400 hover:bg-red-700"
-              }`}
-          >
-            {loading ? "..." : "SOS"}
-            <div className="absolute text-xs md:text-sm font-semibold mt-14 md:mt-20">PRESS</div>
-          </button>
-          <p className="mt-6 text-sm md:text-lg text-slate-600 font-medium">Press the SOS button to activate emergency</p>
-        </div>
+          <div className="flex-grow flex flex-col md:grid md:grid-cols-2 lg:flex lg:flex-col md:gap-12 lg:gap-0 md:items-center lg:items-stretch">
+            {/* Left Side: SOS Button & Status */}
+            <div className="flex flex-col items-center justify-center w-full md:border-r md:border-slate-100 lg:border-r-0 md:pr-12 lg:pr-0">
+              <div className="text-center w-full mt-2 md:mt-0 lg:mt-2 flex flex-col items-center">
+                <button
+                  onClick={activateSOS}
+                  disabled={sosActivated || loading}
+                  className={`w-[220px] h-[220px] md:w-64 md:h-64 lg:w-[220px] lg:h-[220px] mx-auto relative rounded-full flex items-center justify-center shadow-[0_10px_25px_-5px_rgba(229,0,0,0.4)] transition transform hover:scale-105 active:scale-95 border-[12px] md:border-[14px] lg:border-[12px] ${sosActivated
+                      ? "bg-[#e50000] text-white border-[#facc15] cursor-not-allowed"
+                      : "bg-[#e50000] text-white border-[#facc15] hover:bg-red-700"
+                    }`}
+                >
+                  <div className="flex flex-col items-center justify-center mt-[-5px]">
+                    <span className="text-[4.5rem] md:text-7xl lg:text-[4.5rem] font-bold leading-none tracking-tight">{loading ? "..." : "SOS"}</span>
+                    <span className="text-[13px] md:text-base lg:text-[13px] font-bold tracking-widest mt-1">PRESS</span>
+                  </div>
+                </button>
+                <p className="mt-8 md:mt-10 lg:mt-8 text-[15px] md:text-lg lg:text-[15px] text-slate-600 font-medium">Press the SOS button to activate emergency</p>
+              </div>
 
-        {sosActivated && (
-          <div className="mt-6 bg-red-50 p-4 rounded-3xl border-2 border-red-300 text-center ring-1 ring-red-200">
-            <p className="font-semibold text-red-900">🚨 {alertMessage || "Contacting help..."}</p>
-            <p className="text-sm text-red-700 mt-1">Location shared successfully</p>
-            {driverInfo && (
-              <p className="text-sm text-red-700 mt-2 font-medium">
-                Driver: {driverInfo.name}
-              </p>
-            )}
+              {sosActivated && (
+                <div className="mt-6 md:mt-10 lg:mt-6 bg-red-50 p-4 md:p-6 lg:p-4 rounded-2xl border border-red-300 text-center w-full max-w-sm mx-auto animate-pulse">
+                  <p className="font-semibold text-red-900 md:text-lg lg:text-base">🚨 {alertMessage || "Contacting help..."}</p>
+                  <p className="text-sm md:text-base lg:text-sm text-red-700 mt-1">Location shared successfully</p>
+                  {driverInfo && (
+                    <p className="text-sm md:text-base lg:text-sm text-red-700 mt-2 font-medium">
+                      Driver: {driverInfo.name}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right Side: Map and Action Buttons */}
+            <div className="mt-12 md:mt-0 lg:mt-12 flex flex-col justify-center w-full">
+              <div className="flex flex-col space-y-4 w-full">
+                <button
+                  onClick={callDriver}
+                  className="w-full bg-[#0f172a] text-white py-[18px] md:py-4 lg:py-[18px] rounded-[2rem] font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-3 text-[16px] md:text-lg lg:text-[16px] shadow-lg"
+                >
+                  <FiPhoneCall className="h-[22px] w-[22px] md:h-6 md:w-6 lg:h-[22px] lg:w-[22px]" /> Call Driver
+                </button>
+                <button className="w-full bg-[#0f172a] text-white py-[18px] md:py-4 lg:py-[18px] rounded-[2rem] font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-3 text-[16px] md:text-lg lg:text-[16px] shadow-lg">
+                  <FiUsers className="h-[22px] w-[22px] md:h-6 md:w-6 lg:h-[22px] lg:w-[22px]" /> Call Emergency Contact
+                </button>
+                <button
+                  onClick={handleShareLiveLocation}
+                  className="w-full bg-[#0f172a] text-white py-[18px] md:py-4 lg:py-[18px] rounded-[2rem] font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-3 text-[16px] md:text-lg lg:text-[16px] shadow-lg"
+                >
+                  <FiMapPin className="h-[22px] w-[22px] md:h-6 md:w-6 lg:h-[22px] lg:w-[22px]" /> Share Live Location
+                </button>
+
+                {showLiveMap && (
+                  <div className="mt-4 md:mt-8 lg:mt-4 w-full animate-fade-in">
+                    <div className="h-48 md:h-64 lg:h-48 rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-inner border border-slate-200">
+                      <LiveMap rides={[]} center={userLocation} />
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={cancelSOS}
+                  className="mt-4 md:mt-8 lg:mt-4 w-full border-[2px] border-[#e50000] text-[#e50000] py-[18px] md:py-4 lg:py-[18px] rounded-[2rem] font-semibold transition hover:bg-red-50 inline-flex items-center justify-center gap-2 text-[16px] md:text-lg lg:text-[16px]"
+                >
+                  <FiX className="h-[22px] w-[22px] md:h-6 md:w-6 lg:h-[22px] lg:w-[22px] stroke-[3px]" /> Cancel SOS
+                </button>
+              </div>
+            </div>
           </div>
-        )}
-
-        <div className="mt-8 space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-4 lg:gap-6">
-          <button
-            onClick={callDriver}
-            className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2 md:text-lg"
-          >
-            <FiPhoneCall className="h-5 w-5 md:h-6 md:w-6" /> Call Driver
-          </button>
-          <button className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2 md:text-lg">
-            <FiUsers className="h-5 w-5 md:h-6 md:w-6" /> Call Emergency Contact
-          </button>
-          <button
-            onClick={handleShareLiveLocation}
-            className="w-full md:col-span-2 bg-slate-900 text-white py-3 md:py-4 rounded-3xl font-medium transition hover:bg-slate-800 inline-flex items-center justify-center gap-2 md:text-lg"
-          >
-            <FiMapPin className="h-5 w-5 md:h-6 md:w-6" /> Share Live Location
-          </button>
         </div>
-
-        {showLiveMap && (
-          <div className="mt-6">
-            <h3 className="mb-3 text-sm font-semibold text-slate-700">Live Location Map</h3>
-            <LiveMap rides={[]} center={userLocation} />
-          </div>
-        )}
-
-        <button
-          onClick={cancelSOS}
-          className="mt-6 md:mt-8 w-full border-2 border-red-500 text-red-600 py-3 md:py-4 rounded-3xl font-medium transition hover:bg-red-50 inline-flex items-center justify-center gap-2 md:text-lg"
-        >
-          <FiX className="h-5 w-5 md:h-6 md:w-6" /> Cancel SOS
-        </button>
       </div>
     </div>
   );
