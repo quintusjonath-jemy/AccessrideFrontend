@@ -22,13 +22,43 @@ const UserDashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
-    // Request user location in the background
+    // Request user location in the background and update database
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
           sessionStorage.setItem("user_latitude", latitude);
           sessionStorage.setItem("user_longitude", longitude);
+
+          try {
+            // Reverse geocode to get a readable address using Mapbox
+            const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&limit=1`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            let resolvedLocation = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            if (data.features && data.features.length > 0) {
+              resolvedLocation = data.features[0].place_name;
+            }
+
+            // Update user location in the database
+            await axios.post("http://localhost/UserDashboard/api/update_location.php", {
+              user_id: userId,
+              location: resolvedLocation
+            });
+
+            // Update dashboard user state with the fresh location
+            setDashboard(prev => ({
+              ...prev,
+              user: {
+                ...prev.user,
+                location: resolvedLocation
+              }
+            }));
+          } catch (err) {
+            console.error("Failed to update user location in database:", err);
+          }
         },
         (err) => {
           console.warn("Could not retrieve geolocation in dashboard:", err);
