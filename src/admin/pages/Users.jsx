@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import { Eye, EyeClosed, Pencil, Trash2, UserPlus } from "lucide-react";
+import { Eye, EyeClosed, Pencil, Trash2, UserPlus, User } from "lucide-react";
 
 const Users = () => {
   const location = useLocation();
@@ -265,10 +265,6 @@ const Users = () => {
               </th>
 
               <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
-                Email
-              </th>
-
-              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 status
               </th>
 
@@ -285,7 +281,7 @@ const Users = () => {
           <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {loading ? (
               <tr>
-                <td colSpan="6" className="text-center py-10 text-gray-400 dark:text-slate-500">
+                <td colSpan="5" className="text-center py-10 text-gray-400 dark:text-slate-500">
                   Loading users...
                 </td>
               </tr>
@@ -295,21 +291,39 @@ const Users = () => {
                   key={user.id}
                   className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-850 dark:text-slate-100">
-                    <span 
-                      className="cursor-pointer hover:text-yellow-600 hover:underline flex items-center gap-2 w-fit"
-                      onClick={() => handleShowUserDetails(user.id)}
-                    >
-                      {user.name}
-                      {fetchingUserId === user.id && (
-                        <span className="w-3.5 h-3.5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin inline-block"></span>
-                      )}
-                    </span>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-950/40 flex items-center justify-center flex-shrink-0">
+                        {user.profile_image ? (
+                          <img 
+                            src={user.profile_image} 
+                            alt={user.name} 
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-5 h-5 text-yellow-600 dark:text-yellow-450" />
+                        )}
+                      </div>
+
+                      <div>
+                        <p 
+                          className="font-semibold text-gray-800 dark:text-slate-100 hover:text-yellow-600 hover:underline cursor-pointer flex items-center gap-2"
+                          onClick={() => handleShowUserDetails(user.id)}
+                        >
+                          {user.name}
+                          {fetchingUserId === user.id && (
+                            <span className="w-3.5 h-3.5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin inline-block"></span>
+                          )}
+                        </p>
+
+                        <p className="text-sm text-gray-400 dark:text-slate-450">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
                   </td>
 
                   <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-medium">{user.phone || "N/A"}</td>
-
-                  <td className="px-6 py-4 text-gray-500 dark:text-slate-400">{user.email}</td>
 
                   <td className="px-6 py-4">
                     <span
