@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, AudioLines, LocateFixed, Bell, LogOut, ChevronRight } from 'lucide-react';
+import { Menu, Mic, AudioLines, LocateFixed, Bell, LogOut, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './UserProfilePage.css';
+import { UserCircle, Settings, ChevronDown } from "lucide-react";
 
 import ProfileCard from './components/ProfileCard';
 import AccessibilityCard from './components/AccessibilityCard';
@@ -44,6 +45,27 @@ const UserProfilePage = () => {
   return (
     <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col">
+         {/* Top Navigation */}
+        <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
+      <h1 className="text-xl font-extrabold">
+        <span className="text-[#FEC329]">Access</span>
+        <span className="text-[#0B2F89]">Ride</span>
+      </h1>
+      
+      {/* <div ref={dropdownRef} className="relative"> */}
+        <button
+          onClick={() => setOpenMenu(!openMenu)}
+          className="flex items-center gap-1 focus:outline-none"
+        >
+          <UserCircle
+            size={32}
+            className="text-[#0B2F89] hover:scale-105 transition"
+          />
+          <ChevronDown size={14} className="text-[#0B2F89]" />
+        </button>
+          
+        </header>
+
         {/* Main Content */}
         <main className="flex-1 px-5 pb-5 flex flex-col gap-4">
           
