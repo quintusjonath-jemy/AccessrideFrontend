@@ -245,12 +245,14 @@ const Alerts = () => {
                       {/* ACTION */}
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          {alert.driver_id && alert.status !== "resolved" ? (
+                          {alert.status !== "resolved" && (alert.driver_id || (alert.latitude && alert.longitude)) ? (
                             <button
                               onClick={() =>
                                 navigate("/admin/navigation", {
                                   state: {
-                                    driverId: alert.driver_id,
+                                    driverId: alert.driver_id || null,
+                                    latitude: alert.latitude || null,
+                                    longitude: alert.longitude || null,
                                   },
                                 })
                               }
