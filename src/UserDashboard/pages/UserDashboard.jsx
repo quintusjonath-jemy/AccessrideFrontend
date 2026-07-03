@@ -69,28 +69,30 @@ const UserDashboard = () => {
   }
 
   return (
-    <>
-      <DashboardHeader user={dashboard?.user} />
+    <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans w-full">
+      <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col shadow-2xl overflow-x-hidden">
+        <DashboardHeader user={dashboard?.user} />
 
-      {/* 3. Pass user object instead of name */}
-      <WelcomeSection user={dashboard?.user} />
+        <div className="flex-1 overflow-y-auto">
+          {/* 3. Pass user object instead of name */}
+          <WelcomeSection user={dashboard?.user} />
 
-      <VoiceBookingCard />
+          <VoiceBookingCard />
 
-      {/* 4. Pass statistics to QuickActions */}
-      <QuickActions statistics={dashboard?.statistics} />
+          {/* 4. Pass statistics to QuickActions */}
+          <QuickActions statistics={dashboard?.statistics} />
 
-      {dashboard?.upcoming_ride && (
-        <UpcomingRideCard ride={dashboard.upcoming_ride} />
-      )}
+          {dashboard?.upcoming_ride && (
+            <UpcomingRideCard ride={dashboard.upcoming_ride} />
+          )}
 
-      {/* 5. Render RecentRides list */}
-      {dashboard?.recent_rides && dashboard.recent_rides.length > 0 && (
-        <RecentRides rides={dashboard.recent_rides} />
-      )}
-
-      <div className="h-24"></div>
-    </>
+          {/* 5. Render RecentRides list */}
+          {dashboard?.recent_rides && dashboard.recent_rides.length > 0 && (
+            <RecentRides rides={dashboard.recent_rides} />
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
