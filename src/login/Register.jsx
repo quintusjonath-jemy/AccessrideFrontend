@@ -66,7 +66,7 @@ function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...formData, isDriver }),
+        body: JSON.stringify( formData),
       });
 
       const result = await response.json();
@@ -75,7 +75,7 @@ function Register() {
       }
 
       alert(result.message || `Registration successful for ${firstName} ${lastName}.`);
-      window.location.reload();
+      navigate("/login");
     } catch (error) {
       alert(error.message);
     }
@@ -117,11 +117,11 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-100 to-gray-200 flex items-center justify-center p-6">
-      <main className="w-full max-w-2xl mx-auto">
+      <main className="w-full max-w-2xl mx-auto px-4 sm:px-6">
         <div className="bg-white rounded-3xl shadow-2xl p-8 border border-slate-100">
           {/* Header */}
-          <header className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
+          <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="w-14 h-14 bg-blue-900 rounded-2xl flex items-center justify-center">
                 <UserPlus className="text-white" size={28} />
               </div>
@@ -146,7 +146,7 @@ function Register() {
 
           {/* Form */}
           <form onSubmit={(e) => { e.preventDefault(); handleRegister(); }} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-blue-900 font-semibold mb-1">
                   First Name
@@ -200,7 +200,7 @@ function Register() {
               />
             </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-blue-900 font-semibold mb-1">
                     Emergency Contact Name
