@@ -66,7 +66,7 @@ function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...formData, isDriver: false }),
+        body: JSON.stringify( formData),
       });
 
       const result = await response.json();
@@ -75,7 +75,7 @@ function Register() {
       }
 
       alert(result.message || `Registration successful for ${firstName} ${lastName}.`);
-      window.location.reload();
+      navigate("/login");
     } catch (error) {
       alert(error.message);
     }

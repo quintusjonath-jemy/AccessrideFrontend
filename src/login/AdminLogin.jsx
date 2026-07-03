@@ -7,9 +7,17 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
-
+  const [error, setError] = useState("");
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      setError("Please enter email and password");
+      return;
+    }
+
+    const backendBase = "http://localhost/login";
 
     try {
 
@@ -30,31 +38,32 @@ const AdminLogin = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error);
+        setError(result.error);
         return;
       }
+      setError("");
 
-      alert(result.message);
+      // Store admin details
+      sessionStorage.setItem("admin_id", result.admin.id);
+      sessionStorage.setItem("admin_email", result.admin.email);
+      sessionStorage.setItem("admin_name", result.admin.name);
 
-    } catch (error) {
-      alert("Unable to connect to server");
+      setEmail("");
+      setPassword("");
+      setRemember(false);
+      navigate("/admin");
+    } catch (err) {
+      setError("Unable to connect to server. Please try again.");
     }
-
-    alert(`Signed in as ${email}`);
-
-    setEmail("");
-    setPassword("");
-    setRemember(false);
-    navigate("/admin");
   };
 
   return (
-   <div className="min-h-screen bg-linear-to-br from-blue-100 to-gray-200 flex items-center justify-center px-4 py-6">
+    <div className="min-h-screen bg-linear-to-br from-blue-100 to-gray-200 flex items-center justify-center px-4 py-6">
       <main className="w-full max-w-md mx-auto">
         <div className="bg-white rounded-3xl shadow-2xl p-5 sm:p-8">
 
           {/* Header */}
-         <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 mb-6">
             <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-900 rounded-3xl flex items-center justify-center shadow-lg">
               <CarTaxiFront className="text-white w-6 h-6 sm:w-7 sm:h-7" />
             </div>
@@ -91,8 +100,8 @@ const AdminLogin = () => {
                   required
                   placeholder="admin@accessride.com"
                   value={email}
-             onChange={(e) => setEmail(e.target.value)}
-                 className="w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 text-gray-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-900"   
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-12 pr-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 text-gray-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
               </div>
             </div>
@@ -144,11 +153,13 @@ const AdminLogin = () => {
             {/* Sign In Button */}
             <button
               type="submit"
-             className="w-full py-2.5 sm:py-3 bg-blue-900 hover:bg-blue-800 hover:scale-105 transition-all duration-300 text-white rounded-lg font-semibold shadow"
+              className="w-full py-2.5 sm:py-3 bg-blue-900 hover:bg-blue-800 hover:scale-105 transition-all duration-300 text-white rounded-lg font-semibold shadow"
             >
               Sign In
             </button>
-
+            {error && (
+              <p className="text-red-500 text-sm font-semibold mt-3 text-center">{error}</p>
+            )}
           </form>
 
           {/* Footer */}
