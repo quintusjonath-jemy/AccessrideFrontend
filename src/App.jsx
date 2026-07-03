@@ -90,6 +90,7 @@ const App = () => {
           <Route path="/user/profile" element={<UserProfilePage />} />
           <Route path="sos" element={<EmergencySOS />} />
           <Route path="history" element={<HistoryPage />} />
+          <Route path="profile" element={<UserProfilePage />} />
         </Route>
 
         {/* driver routes */}
@@ -109,7 +110,6 @@ const App = () => {
 
         {/* standalone / shared routes */}
         <Route path="/ride" element={<RidePage />} />
-        <Route path="/emergency" element={<EmergencySOS />} />
         <Route path="/complete-ride" element={<CompleteRidePage />} />
       </Routes>
     </BrowserRouter>
