@@ -10,6 +10,25 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailedUser, setDetailedUser] = useState(null);
+  const [fetchingUserId, setFetchingUserId] = useState(null);
+
+  const handleShowUserDetails = async (userId) => {
+    setFetchingUserId(userId);
+    try {
+      const res = await axios.get(`http://localhost/admin/api/users.php?id=${userId}`);
+      if (res.data) {
+        setDetailedUser(res.data);
+        setShowDetailsModal(true);
+      }
+    } catch (err) {
+      console.error("Failed to load user details:", err);
+      alert("Failed to fetch user details");
+    } finally {
+      setFetchingUserId(null);
+    }
+  };
   const [search, setSearch] = useState(location.state?.searchQuery || "");
 
   useEffect(() => {
@@ -276,7 +295,17 @@ const Users = () => {
                   key={user.id}
                   className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-850 dark:text-slate-100">{user.name}</td>
+                  <td className="px-6 py-4 font-medium text-gray-850 dark:text-slate-100">
+                    <span 
+                      className="cursor-pointer hover:text-yellow-600 hover:underline flex items-center gap-2 w-fit"
+                      onClick={() => handleShowUserDetails(user.id)}
+                    >
+                      {user.name}
+                      {fetchingUserId === user.id && (
+                        <span className="w-3.5 h-3.5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin inline-block"></span>
+                      )}
+                    </span>
+                  </td>
 
                   <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-medium">{user.phone || "N/A"}</td>
 
@@ -487,6 +516,121 @@ const Users = () => {
                 className="px-5 py-2 rounded-xl bg-yellow-500 text-white font-semibold hover:bg-yellow-600 transition shadow-sm"
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* USER DETAILS MODAL */}
+      {showDetailsModal && detailedUser && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 p-6 transition-colors">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-gray-100 dark:border-slate-700 pb-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
+                  {detailedUser.name}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                  User profile metrics & settings
+                </p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor(detailedUser.status)}`}>
+                {detailedUser.status}
+              </span>
+            </div>
+
+            {/* Profile Content */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column: Core Info */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                  Contact & Location
+                </h3>
+
+                <div className="bg-gray-50 dark:bg-slate-900/50 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Email:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-350 truncate">{detailedUser.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Phone:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-350">{detailedUser.phone || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Location:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300 truncate">📍 {detailedUser.location || "Unknown"}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Joined:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300">{detailedUser.created_at || "N/A"}</span>
+                  </div>
+                </div>
+
+                {/* Emergency Contact */}
+                <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider pt-2">
+                  Emergency Guardian
+                </h3>
+                <div className="bg-red-50/50 dark:bg-red-950/10 p-4 rounded-xl space-y-3 border border-red-100/30 dark:border-red-950/20">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-red-500/70 w-24">Name:</span>
+                    <span className="text-sm font-bold text-gray-800 dark:text-slate-200">{detailedUser.contact_name || "None Registered"}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-red-500/70 w-24">Phone:</span>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">{detailedUser.contact_phone || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Usage & Payments */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                  Usage & Payments
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl text-white shadow-sm">
+                    <p className="text-xs text-blue-100 font-medium">Completed Rides</p>
+                    <p className="text-3xl font-extrabold mt-1">{detailedUser.completed_rides_count || 0}</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-4 rounded-xl text-white shadow-sm">
+                    <p className="text-xs text-yellow-100 font-medium">Total Paid</p>
+                    <p className="text-3xl font-extrabold mt-1">${Number(detailedUser.total_amount_paid || 0).toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-slate-900/50 p-5 rounded-xl space-y-2 mt-4 text-center">
+                  <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                    Accessibility Status
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-slate-305 leading-relaxed font-medium">
+                    This user receives assistance protocols, including automatic SOS alerts and guardian notification alerts during their rides.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
+              <button
+                onClick={() => {
+                  setSelectedUser(detailedUser);
+                  setShowDetailsModal(false);
+                  setShowEditModal(true);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-yellow-500 text-white hover:bg-yellow-600 transition font-bold text-sm shadow-sm"
+              >
+                Edit Profile
+              </button>
+
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-750 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition font-medium text-sm"
+              >
+                Close
               </button>
             </div>
           </div>
