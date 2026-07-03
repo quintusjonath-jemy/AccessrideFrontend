@@ -4,15 +4,15 @@ const HistoryFilters = ({ activeFilter, handleFilterClick }) => {
   const filters = ['All', 'Upcoming', 'Completed', 'Cancelled'];
 
   return (
-    <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 py-3 sticky top-[68px] bg-white/90 backdrop-blur-md z-10 border-b border-slate-200 shadow-sm mb-4">
+    <div className="flex justify-between px-2 my-2 overflow-x-auto hide-scrollbar">
       {filters.map(filter => (
         <button 
           key={filter}
           onClick={() => handleFilterClick(filter)}
-          className={`whitespace-nowrap px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ${
+          className={`flex-1 min-w-max mx-1 py-2 rounded-full text-sm font-bold transition-colors ${
             activeFilter === filter 
-              ? 'bg-gradient-to-r from-[#0B2F89] to-[#082366] text-white shadow-lg shadow-blue-900/20 scale-105' 
-              : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
+              ? 'bg-[#0B2F89] text-white' 
+              : 'bg-white text-slate-500 border border-slate-200'
           }`}
         >
           {filter}
