@@ -10,6 +10,7 @@ import { rideData } from './data/rideData';
 
 const HistoryPage = () => {
   const [activeFilter, setActiveFilter] = useState('Completed');
+  const [openMenu, setOpenMenu] = useState(false);
 
   // Group rides by date section for rendering
   const groupedRides = rideData.reduce((acc, ride) => {
@@ -22,10 +23,10 @@ const HistoryPage = () => {
 
   return (
     <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
-      <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col shadow-2xl">
 
         {/* Top Navigation */}
-        <header className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-md h-16 bg-slate-100 shadow-md z-50 flex justify-between items-center px-4">
+        <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
       <h1 className="text-xl font-extrabold">
         <span className="text-[#FEC329]">Access</span>
         <span className="text-[#0B2F89]">Ride</span>
