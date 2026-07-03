@@ -16,6 +16,25 @@ const Drivers = () => {
   }, [location.state]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailedDriver, setDetailedDriver] = useState(null);
+  const [fetchingDriverId, setFetchingDriverId] = useState(null);
+
+  const handleShowDriverDetails = async (driverId) => {
+    setFetchingDriverId(driverId);
+    try {
+      const res = await axios.get(`http://localhost/admin/api/drivers.php?id=${driverId}`);
+      if (res.data) {
+        setDetailedDriver(res.data);
+        setShowDetailsModal(true);
+      }
+    } catch (err) {
+      console.error("Failed to load driver details:", err);
+      alert("Failed to fetch driver details");
+    } finally {
+      setFetchingDriverId(null);
+    }
+  };
 
   const [newDriver, setNewDriver] = useState({
     name: "",
@@ -340,8 +359,14 @@ const Drivers = () => {
                         </div>
 
                         <div>
-                          <p className="font-semibold text-gray-800 dark:text-slate-100">
+                          <p 
+                            className="font-semibold text-gray-800 dark:text-slate-100 hover:text-yellow-600 hover:underline cursor-pointer flex items-center gap-2"
+                            onClick={() => handleShowDriverDetails(driver.id)}
+                          >
                             {driver.name}
+                            {fetchingDriverId === driver.id && (
+                              <span className="w-3.5 h-3.5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin inline-block"></span>
+                            )}
                           </p>
 
                           <p className="text-sm text-gray-400 dark:text-slate-450">
@@ -861,6 +886,121 @@ const Drivers = () => {
                 className="px-5 py-2.5 rounded-xl bg-yellow-500 text-white hover:bg-yellow-600 shadow-md transition font-semibold"
               >
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DRIVER DETAILS MODAL */}
+      {showDetailsModal && detailedDriver && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 p-6 transition-colors">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-gray-100 dark:border-slate-700 pb-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">
+                  {detailedDriver.name}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+                  Driver profile metrics & settings
+                </p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[detailedDriver.status?.toLowerCase()] || "bg-gray-100 dark:bg-slate-750 text-gray-700 dark:text-slate-350"}`}>
+                {detailedDriver.status}
+              </span>
+            </div>
+
+            {/* Profile Content */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column: Core Info */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                  Contact & Vehicle
+                </h3>
+
+                <div className="bg-gray-50 dark:bg-slate-900/50 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Email:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-350 truncate">{detailedDriver.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Phone:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-350">{detailedDriver.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3 border-t border-gray-100 dark:border-slate-700/60 pt-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Vehicle No:</span>
+                    <span className="text-sm font-bold text-gray-800 dark:text-slate-200">{detailedDriver.vehicle_number || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Vehicle Type:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300">{detailedDriver.vehicle_type || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 w-24">Location:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300">📍 {detailedDriver.current_location || "Unknown"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Earnings & Stats */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                  Performance & Earnings
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl text-white shadow-sm">
+                    <p className="text-xs text-blue-100 font-medium">Completed Rides</p>
+                    <p className="text-3xl font-extrabold mt-1">{detailedDriver.completed_rides_count || 0}</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl text-white shadow-sm">
+                    <p className="text-xs text-green-100 font-medium">Gross Earnings</p>
+                    <p className="text-3xl font-extrabold mt-1">${Number(detailedDriver.gross_earnings || 0).toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-slate-900/50 p-4 rounded-xl space-y-3 mt-2">
+                  <h4 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                    Subscription Details
+                  </h4>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 dark:text-slate-400">Status:</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${detailedDriver.subscription_status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400'}`}>
+                      {detailedDriver.subscription_status?.toUpperCase() || 'NONE'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 dark:text-slate-400">Monthly Cost:</span>
+                    <span className="font-semibold text-gray-700 dark:text-slate-350">${Number(detailedDriver.subscription_amount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 dark:text-slate-400">Expiry Date:</span>
+                    <span className="font-medium text-gray-750 dark:text-slate-350">{detailedDriver.subscription_expires_at || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
+              <button
+                onClick={() => {
+                  setSelectedDriver(detailedDriver);
+                  setShowDetailsModal(false);
+                  setShowEditModal(true);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-yellow-500 text-white hover:bg-yellow-600 transition font-bold text-sm shadow-sm"
+              >
+                Edit Profile
+              </button>
+
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-750 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition font-medium text-sm"
+              >
+                Close
               </button>
             </div>
           </div>
