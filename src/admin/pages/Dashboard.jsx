@@ -55,8 +55,29 @@ const Dashboard = () => {
       }
     };
 
+    const handleUsers = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setUsers(Array.isArray(data) ? data : []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error parsing dashboard users stream:", err);
+      }
+    };
+
+    const handleStats = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setStats(data);
+      } catch (err) {
+        console.error("Error parsing dashboard stats stream:", err);
+      }
+    };
+
     eventSource.addEventListener("alerts", handleAlerts);
     eventSource.addEventListener("rides", handleRides);
+    eventSource.addEventListener("users", handleUsers);
+    eventSource.addEventListener("stats", handleStats);
 
     eventSource.onerror = (err) => {
       console.error("Dashboard SSE stream error:", err);
@@ -65,6 +86,8 @@ const Dashboard = () => {
     return () => {
       eventSource.removeEventListener("alerts", handleAlerts);
       eventSource.removeEventListener("rides", handleRides);
+      eventSource.removeEventListener("users", handleUsers);
+      eventSource.removeEventListener("stats", handleStats);
       eventSource.close();
     };
   }, []);
