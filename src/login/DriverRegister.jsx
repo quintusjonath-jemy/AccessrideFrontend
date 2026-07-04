@@ -5,10 +5,6 @@ import UploadCard from "../login/UploadCard";
 const DriverRegister = () => {
     const navigate = useNavigate();
 
-    const handleSubmit = () => {
-        alert("Registration submitted successfully! You will be redirected to the login page.");
-        navigate("/driver-login");
-    };
 
     const [step, setStep] = useState(1);
 
@@ -386,7 +382,7 @@ const DriverRegister = () => {
         try {
 
             const response = await fetch(
-                "http://localhost/ACCESSRIDE/AccessrideBackend/login/api/driver_register.php",
+                "http://localhost/login/api/driver_register.php",
                 {
                     method: "POST",
                     body: form
@@ -399,7 +395,8 @@ const DriverRegister = () => {
                 throw new Error(result.error || "Registration Failed");
             }
 
-            alert(result.message);
+            alert(result.message || "Registration Successful!");
+            navigate("/driver-login");
 
         } catch (error) {
 

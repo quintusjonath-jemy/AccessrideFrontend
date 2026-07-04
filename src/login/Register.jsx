@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 function Register() {
   const navigate = useNavigate();
-  const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
+  const backendBase = "http://localhost/login";
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -66,7 +66,7 @@ function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify( formData),
+        body: JSON.stringify(formData),
       });
 
       const result = await response.json();
