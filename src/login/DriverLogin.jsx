@@ -43,6 +43,10 @@ const DriverLogin = () => {
       setError("");
       alert(result.message || `Driver signed in: ${phone}`);
 
+      if (result.driver && result.driver.id) {
+        sessionStorage.setItem("driver_id", result.driver.id);
+      }
+
       setPhone("");
       setPassword("");
       setRememberMe(false);
