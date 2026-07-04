@@ -343,7 +343,9 @@ const BookingPage = () => {
       dropoff_location: dropoff,
       vehicle_type: vehicleType,
       distance_km: distance,
-      payment_method: paymentMethod
+      payment_method: paymentMethod,
+      pickup_lat: pickupCoords ? pickupCoords[1] : null,
+      pickup_lng: pickupCoords ? pickupCoords[0] : null
     };
 
     axios.post("http://localhost/UserDashboard/api/book_ride.php", payload)
