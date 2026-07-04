@@ -22,7 +22,7 @@ const Login = () => {
       return;
     }
 
-    const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
+    const backendBase = "http://localhost/login";
 
     try {
       const response = await fetch(`${backendBase}/api/login.php`, {

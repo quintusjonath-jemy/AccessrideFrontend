@@ -7,8 +7,9 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
+
   const [error, setError] = useState("");
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -17,12 +18,9 @@ const AdminLogin = () => {
       return;
     }
 
-    const backendBase = "http://localhost/login";
-
     try {
-
       const response = await fetch(
-        "http://localhost/AccessRide/AccessrideBackend/login/api/admin_login.php",
+        "http://localhost/login/api/admin_login.php",
         {
           method: "POST",
           headers: {
@@ -38,9 +36,10 @@ const AdminLogin = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error);
+        setError(result.error || "Login failed");
         return;
       }
+
       setError("");
 
       // Store admin details
@@ -157,9 +156,11 @@ const AdminLogin = () => {
             >
               Sign In
             </button>
+
             {error && (
               <p className="text-red-500 text-sm font-semibold mt-3 text-center">{error}</p>
             )}
+
           </form>
 
           {/* Footer */}
