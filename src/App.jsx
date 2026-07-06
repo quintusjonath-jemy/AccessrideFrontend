@@ -108,7 +108,6 @@ const App = () => {
 
         {/* standalone / shared routes */}
         <Route path="/ride" element={<RidePage />} />
-        <Route path="/emergency" element={<EmergencySOS />} />
         <Route path="/profile" element={<UserProfilePage />} />
         <Route path="/complete-ride" element={<CompleteRidePage />} />
       </Routes>
