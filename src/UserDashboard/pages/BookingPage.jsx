@@ -13,33 +13,33 @@ import PaymentSelection from "../components/PaymentSelection";
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
 
-// Geocode a location text to [longitude, latitude]
-const geocodeLocation = async (query) => {
+// Sri Lanka geocoding constants
+const COLOMBO_LNG = 79.8612;
+const COLOMBO_LAT = 6.9271;
+
+// Geocode a location text to [longitude, latitude] — restricted to Sri Lanka.
+// Pass optional proximity [lng, lat] to bias results toward a specific area so
+// ambiguous place names (e.g. "Udawela" near Colombo vs near Badulla) resolve
+// to the correct local place rather than a distant match.
+const geocodeLocation = async (query, proximity = null) => {
   if (!query) return null;
-  
+
   const lowerQuery = query.toLowerCase();
-  
-  // High quality default coordinates for common sample locations
-  if (lowerQuery.includes("my current location")) {
-    const lat = sessionStorage.getItem("user_latitude");
-    const lng = sessionStorage.getItem("user_longitude");
-    if (lat && lng) {
-      return [parseFloat(lng), parseFloat(lat)];
-    }
-    return [79.8612, 6.9271]; // Central Library Colombo/Sri Lanka coords fallback
-  } else if (lowerQuery.includes("central library")) {
-    return [79.8612, 6.9271]; // Central Library Colombo/Sri Lanka coords
-  } else if (lowerQuery.includes("hospital") || lowerQuery.includes("medical")) {
-    return [79.8732, 6.9012];
-  } else if (lowerQuery.includes("plaza") || lowerQuery.includes("market")) {
-    return [79.8501, 6.9321];
+
+  // If the string literally carries GPS coords, extract them directly
+  if (lowerQuery.startsWith("gps:")) {
+    const [, lat, lng] = lowerQuery.split(":");
+    if (lat && lng) return [parseFloat(lng), parseFloat(lat)];
   }
 
+  // Use provided proximity, or fall back to Colombo as a general Sri Lanka center
+  const [proxLng, proxLat] = proximity || [COLOMBO_LNG, COLOMBO_LAT];
+
   try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&proximity=${proxLng},${proxLat}&limit=1`;
     const res = await axios.get(url);
     if (res.data?.features && res.data.features.length > 0) {
-      return res.data.features[0].center; // [lng, lat]
+      return res.data.features[0].geometry.coordinates; // [lng, lat]
     }
   } catch (err) {
     console.error("Geocoding error for: " + query, err);
@@ -93,11 +93,13 @@ const BookingPage = () => {
 
   // Booking details states
   const [vehicleType, setVehicleType] = useState("");
-  const [pickup, setPickup] = useState("My Current Location (Central Library)");
-  const [dropoff, setDropoff] = useState("Central Medical Plaza");
+  const [pickup, setPickup] = useState("");        // filled by GPS on mount
+  const [dropoff, setDropoff] = useState("");       // user enters manually
+  const [isLocating, setIsLocating] = useState(true); // true while GPS resolves
+  const [pickupCoords, setPickupCoords] = useState(null);
   const [rideClass, setRideClass] = useState("eco");
   const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [distance, setDistance] = useState(5.0); // Default 5 km
+  const [distance, setDistance] = useState(0);
   const [isBookingInProgress, setIsBookingInProgress] = useState(false);
 
   // Mapbox Refs & State
@@ -107,79 +109,110 @@ const BookingPage = () => {
   const dropoffMarkerRef = useRef(null);
   const mapInitRef = useRef(false);
 
-  // Coordinates and Route State
-  const [pickupCoords, setPickupCoords] = useState(null);
+  // Route State (pickupCoords is now tracked above with GPS)
   const [dropoffCoords, setDropoffCoords] = useState(null);
   const [routeGeoJSON, setRouteGeoJSON] = useState(null);
 
-  // Fetch actual current location address on mount for the pickup field
+  // Refs that mirror coord state so the route effect can read the latest value
+  // without being in its dependency array (which would cause an infinite loop).
+  const pickupCoordsRef = useRef(null);
+  const dropoffCoordsRef = useRef(null);
+
+  // Counter incremented on every swap so the route effect re-runs after a swap
+  const [swapTrigger, setSwapTrigger] = useState(0);
+
+  // Keep refs in sync with state
+  useEffect(() => { pickupCoordsRef.current = pickupCoords; }, [pickupCoords]);
+  useEffect(() => { dropoffCoordsRef.current = dropoffCoords; }, [dropoffCoords]);
+
+  // Detect user's current GPS location and reverse-geocode it as the pickup address
   useEffect(() => {
-    const fetchCurrentLocationAddress = async () => {
-      const lat = sessionStorage.getItem("user_latitude");
-      const lng = sessionStorage.getItem("user_longitude");
-      if (lat && lng) {
-        try {
-          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
-          const res = await axios.get(url);
-          if (res.data?.features && res.data.features.length > 0) {
-            const address = res.data.features[0].place_name;
-            const text = res.data.features[0].text || address;
-            setPickup(`My Current Location (${text})`);
-          } else {
-            setPickup("My Current Location");
-          }
-        } catch (err) {
-          console.error("Error reverse geocoding current location:", err);
+    const resolveCurrentLocation = async (latitude, longitude) => {
+      sessionStorage.setItem("user_latitude", latitude);
+      sessionStorage.setItem("user_longitude", longitude);
+      const coords = [longitude, latitude];
+      pickupCoordsRef.current = coords;    // sync ref immediately
+      setPickupCoords(coords);
+      try {
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
+        const res = await axios.get(url);
+        if (res.data?.features && res.data.features.length > 0) {
+          // Use the human-readable place name (text = short name, place_name = full address)
+          const feature = res.data.features[0];
+          const placeName = feature.text || feature.place_name;
+          setPickup(placeName);
+        } else {
           setPickup("My Current Location");
         }
-      } else {
-        // Fallback: request geolocation if not in sessionStorage
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const { latitude, longitude } = position.coords;
-              sessionStorage.setItem("user_latitude", latitude);
-              sessionStorage.setItem("user_longitude", longitude);
-              try {
-                const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
-                const res = await axios.get(url);
-                if (res.data?.features && res.data.features.length > 0) {
-                  setPickup(`My Current Location (${res.data.features[0].text})`);
-                } else {
-                  setPickup("My Current Location");
-                }
-              } catch (err) {
-                setPickup("My Current Location");
-              }
-            },
-            () => {
-              setPickup("My Current Location (Central Library)");
-            }
-          );
-        }
+      } catch {
+        setPickup("My Current Location");
+      } finally {
+        setIsLocating(false);
       }
     };
-    fetchCurrentLocationAddress();
+
+    // Check if GPS coords already stored from a prior page load
+    const cachedLat = sessionStorage.getItem("user_latitude");
+    const cachedLng = sessionStorage.getItem("user_longitude");
+    if (cachedLat && cachedLng) {
+      resolveCurrentLocation(parseFloat(cachedLat), parseFloat(cachedLng));
+      return;
+    }
+
+    // Request live GPS from browser
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolveCurrentLocation(pos.coords.latitude, pos.coords.longitude),
+        () => {
+          // Permission denied or unavailable — leave field empty for manual entry
+          setPickup("");
+          setIsLocating(false);
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    } else {
+      setPickup("");
+      setIsLocating(false);
+    }
   }, []);
 
-  // Fetch coordinates, route, and calculate distance (finding the shortest alternative route)
+  // Fetch coordinates, route, and calculate distance.
+  // Runs when pickup/dropoff text changes OR after a swap (swapTrigger bumps).
+  // Uses refs for cached coords so we avoid an infinite loop while still reading
+  // the latest swapped values.
   useEffect(() => {
     if (pickup && dropoff) {
       const fetchRoute = async () => {
         try {
-          const pCoords = await geocodeLocation(pickup);
-          const dCoords = await geocodeLocation(dropoff);
-          
+          // Strategy: use each side's cached coords as the proximity anchor for
+          // geocoding the OTHER side. This ensures that if the user's GPS says
+          // they are in Badulla, the dropoff "Udawela" is also resolved near
+          // Badulla — not the other "Udawela" 175 km away near Avissawella.
+
+          // Step 1: resolve pickup coords (GPS cache or geocode biased toward dropoff side)
+          let pCoords = pickupCoordsRef.current;
+          if (!pCoords) {
+            // Use cached dropoff coords as proximity hint (if available)
+            pCoords = await geocodeLocation(pickup, dropoffCoordsRef.current);
+          }
+
+          // Step 2: resolve dropoff coords (biased toward pickup position)
+          let dCoords = dropoffCoordsRef.current;
+          if (!dCoords) {
+            // Use pickup GPS as proximity hint — critical for local disambiguation
+            dCoords = await geocodeLocation(dropoff, pCoords);
+          }
+
           if (pCoords && dCoords) {
             setPickupCoords(pCoords);
             setDropoffCoords(dCoords);
-            
+
             const [startLng, startLat] = pCoords;
             const [endLng, endLat] = dCoords;
-            
+
             const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLng},${startLat};${endLng},${endLat}.json?access_token=${MAPBOX_TOKEN}&geometries=geojson&alternatives=true`;
             const res = await axios.get(url);
-            
+
             if (res.data?.routes && res.data.routes.length > 0) {
               let shortestRoute = res.data.routes[0];
               for (let i = 1; i < res.data.routes.length; i++) {
@@ -187,34 +220,32 @@ const BookingPage = () => {
                   shortestRoute = res.data.routes[i];
                 }
               }
-              const distanceMeters = shortestRoute.distance;
-              const distanceKm = parseFloat((distanceMeters / 1000).toFixed(1));
-              setDistance(distanceKm > 0 ? distanceKm : parseFloat(((pickup.length + dropoff.length) % 12 + 3.4).toFixed(1)));
+              const distanceKm = parseFloat((shortestRoute.distance / 1000).toFixed(1));
+              setDistance(distanceKm > 0 ? distanceKm : 1);
               setRouteGeoJSON(shortestRoute.geometry);
             } else {
-              setDistance(parseFloat(((pickup.length + dropoff.length) % 12 + 3.4).toFixed(1)));
+              setDistance(1);
               setRouteGeoJSON(null);
             }
           } else {
-            setDistance(parseFloat(((pickup.length + dropoff.length) % 12 + 3.4).toFixed(1)));
-            setPickupCoords(null);
-            setDropoffCoords(null);
+            setDistance(0);
+            if (!pCoords) setPickupCoords(null);
+            if (!dCoords) setDropoffCoords(null);
             setRouteGeoJSON(null);
           }
         } catch (err) {
           console.error("Error calculating distance:", err);
-          setDistance(parseFloat(((pickup.length + dropoff.length) % 12 + 3.4).toFixed(1)));
+          setDistance(0);
         }
       };
-      
+
       fetchRoute();
     } else {
       setDistance(0);
-      setPickupCoords(null);
       setDropoffCoords(null);
       setRouteGeoJSON(null);
     }
-  }, [pickup, dropoff]);
+  }, [pickup, dropoff, swapTrigger]);
 
   // Initialize Map
   useEffect(() => {
@@ -328,9 +359,27 @@ const BookingPage = () => {
   };
 
   const handleSwapLocations = () => {
-    const temp = pickup;
+    // 1. Swap display text
+    const tempText = pickup;
     setPickup(dropoff);
-    setDropoff(temp);
+    setDropoff(tempText);
+
+    // 2. Swap cached coordinates so the GPS-accurate position follows the text.
+    //    Without this, the geocoder re-resolves the place name from text and may
+    //    find a completely different place (e.g., wrong "Udawela" → 175 km route).
+    const tempCoords = pickupCoordsRef.current;
+    const newPickupCoords = dropoffCoordsRef.current;
+    const newDropoffCoords = tempCoords;
+
+    // Update refs immediately (before React re-renders) so the route effect
+    // triggered by swapTrigger reads the already-swapped values.
+    pickupCoordsRef.current = newPickupCoords;
+    dropoffCoordsRef.current = newDropoffCoords;
+    setPickupCoords(newPickupCoords);
+    setDropoffCoords(newDropoffCoords);
+
+    // 3. Bump the swap counter to force the route useEffect to re-run
+    setSwapTrigger((n) => n + 1);
   };
 
   const handleConfirmBooking = () => {
@@ -343,7 +392,9 @@ const BookingPage = () => {
       dropoff_location: dropoff,
       vehicle_type: vehicleType,
       distance_km: distance,
-      payment_method: paymentMethod
+      payment_method: paymentMethod,
+      pickup_lat: pickupCoords ? pickupCoords[1] : null,
+      pickup_lng: pickupCoords ? pickupCoords[0] : null
     };
 
     axios.post("http://localhost/UserDashboard/api/book_ride.php", payload)
@@ -432,6 +483,8 @@ const BookingPage = () => {
                 onChangePickup={setPickup}
                 onChangeDropoff={setDropoff}
                 onSwap={handleSwapLocations}
+                isLocating={isLocating}
+                userCoords={pickupCoords}
               />
 
               {/* Step 3: Ride Class Selection */}

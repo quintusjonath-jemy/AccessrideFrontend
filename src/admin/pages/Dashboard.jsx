@@ -55,8 +55,29 @@ const Dashboard = () => {
       }
     };
 
+    const handleUsers = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setUsers(Array.isArray(data) ? data : []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error parsing dashboard users stream:", err);
+      }
+    };
+
+    const handleStats = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setStats(data);
+      } catch (err) {
+        console.error("Error parsing dashboard stats stream:", err);
+      }
+    };
+
     eventSource.addEventListener("alerts", handleAlerts);
     eventSource.addEventListener("rides", handleRides);
+    eventSource.addEventListener("users", handleUsers);
+    eventSource.addEventListener("stats", handleStats);
 
     eventSource.onerror = (err) => {
       console.error("Dashboard SSE stream error:", err);
@@ -65,9 +86,13 @@ const Dashboard = () => {
     return () => {
       eventSource.removeEventListener("alerts", handleAlerts);
       eventSource.removeEventListener("rides", handleRides);
+      eventSource.removeEventListener("users", handleUsers);
+      eventSource.removeEventListener("stats", handleStats);
       eventSource.close();
     };
   }, []);
+
+  const adminName = sessionStorage.getItem("admin_name") || "Admin";
 
   return (
     <div className="space-y-10">
@@ -76,7 +101,7 @@ const Dashboard = () => {
       <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl p-6 shadow-sm flex justify-between items-center transition-colors">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100 tracking-tight">
-            Admin Dashboard
+            Welcome, {adminName}
           </h1>
           <p className="text-gray-500 dark:text-slate-400 mt-1">
             Monitor users, alerts and navigation activity

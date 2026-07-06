@@ -12,12 +12,12 @@ const NavigationPage = () => {
   const [mapCenter, setMapCenter] = useState([79.8612, 6.9271]);
   const [isPanelExpanded, setIsPanelExpanded] = useState(true);
   const [showDriversOnly, setShowDriversOnly] = useState(false);
-  const [deviations, setDeviations] = useState({});
-  const [lastDeviationCount, setLastDeviationCount] = useState(0);
 
   const location = useLocation();
   const trackedRide = location.state?.rideId;
   const trackedDriver = location.state?.driverId;
+  const trackedLat = location.state?.latitude;
+  const trackedLng = location.state?.longitude;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,29 +44,19 @@ const NavigationPage = () => {
     };
   }, []);
 
-  // Play alarm sound when a new deviation is detected
-  const playDeviationSound = () => {
-    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
-    audio.play().catch((e) => console.log("Sound play error:", e));
-  };
 
-  useEffect(() => {
-    const deviationCount = Object.keys(deviations).length;
-    if (deviationCount > lastDeviationCount) {
-      playDeviationSound();
-    }
-    setLastDeviationCount(deviationCount);
-  }, [deviations, lastDeviationCount]);
 
-  // Centering on tracked driver ride if available on initial fetch
+  // Centering on tracked driver, coordinates, or alert if available on initial fetch
   useEffect(() => {
-    if (trackedDriver && rides.length > 0) {
+    if (trackedLng && trackedLat) {
+      setMapCenter([parseFloat(trackedLng), parseFloat(trackedLat)]);
+    } else if (trackedDriver && rides.length > 0) {
       const activeRide = rides.find((r) => r.driver_id == trackedDriver);
       if (activeRide && activeRide.longitude && activeRide.latitude) {
         setMapCenter([parseFloat(activeRide.longitude), parseFloat(activeRide.latitude)]);
       }
     }
-  }, [rides, trackedDriver]);
+  }, [rides, trackedDriver, trackedLat, trackedLng]);
 
   const filteredRides = rides.filter((ride) => {
     const matchesDriver = !trackedDriver || ride.driver_id == trackedDriver;
@@ -140,7 +130,6 @@ const NavigationPage = () => {
           rides={filteredRides} 
           center={mapCenter} 
           driversOnly={showDriversOnly} 
-          onDeviationsChange={setDeviations}
         />
 
         {/* LEFT FLOAT PANEL */}
@@ -160,22 +149,6 @@ const NavigationPage = () => {
                 <ChevronLeft className="w-5 h-5" />
               </button>
             </div>
-
-            {/* DEVIATION WARNING BANNER */}
-            {Object.keys(deviations).length > 0 && (
-              <div className="mb-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 p-3.5 rounded-xl text-xs space-y-1.5 animate-pulse">
-                <div className="font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
-                  <span>🚨</span> ROUTE DEVIATION DETECTED
-                </div>
-                <div className="text-gray-650 dark:text-slate-350 text-[11px] leading-relaxed">
-                  {Object.entries(deviations).map(([id, info]) => (
-                    <div key={id} className="border-t border-red-100 dark:border-red-955/40 pt-1 mt-1 font-medium">
-                      Ride #{id} (Driver {info.driver_name}) is <strong>{info.distance.toFixed(2)} km</strong> off course!
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* DRIVER TRACKING BADGE */}
             {trackedDriver && (
@@ -273,11 +246,6 @@ const NavigationPage = () => {
                         <div className="truncate flex-1 pr-2">
                           <p className="font-semibold text-gray-800 dark:text-slate-200 flex items-center gap-1.5">
                             Ride #{ride.id}
-                            {!!deviations[ride.id] && (
-                              <span className="text-[10px] bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider animate-pulse">
-                                Off-Route
-                              </span>
-                            )}
                           </p>
                           <p className="text-gray-500 dark:text-slate-400 truncate mt-0.5 text-[11px]">
                             👤 {ride.user_name || "Unknown"}

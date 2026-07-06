@@ -64,13 +64,12 @@ const geocodeLocation = async (query) => {
   return null;
 };
 
-const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, onDeviationsChange }) => {
+const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersRef = useRef([]);
   const routeLayersRef = useRef([]);
   const userMarkerRef = useRef(null);
-  const lastDeviationsRef = useRef({});
   const [routesData, setRoutesData] = useState({});
 
   // CREATE MAP
@@ -88,7 +87,12 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, 
   useEffect(() => {
     if (!map.current || !center || center.length !== 2) return;
 
-    map.current.setCenter(center);
+    map.current.flyTo({
+      center,
+      zoom: 14,
+      speed: 1.2,
+      essential: true
+    });
 
     if (userMarkerRef.current) {
       userMarkerRef.current.remove();
@@ -201,58 +205,7 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, 
       });
       routeLayersRef.current = [];
 
-      // 1. Calculate active ride deviations using Haversine formula
-      const currentDeviations = {};
-      rides.forEach((ride) => {
-        const status = ride.status?.toLowerCase().trim();
-        if (status === "active") {
-          const driverLng = parseFloat(ride.longitude);
-          const driverLat = parseFloat(ride.latitude);
-          let driverCoords = driverLng && driverLat ? [driverLng, driverLat] : null;
 
-          const cacheKey = `${ride.id}-${driverLng}-${driverLat}-${ride.driver_current_location || ""}-${status}`;
-          const rData = routesData[cacheKey];
-
-          if (!driverCoords && rData && rData.resolvedDriverCoords) {
-            driverCoords = rData.resolvedDriverCoords;
-          }
-
-          if (driverCoords && rData && rData.geometry) {
-            const dist = getMinDistanceToRoute(driverCoords, rData.geometry);
-            // Threshold: 0.5 km (500 meters)
-            if (dist > 0.5) {
-              currentDeviations[ride.id] = {
-                distance: dist,
-                user_name: ride.user_name,
-                driver_name: ride.driver_name,
-              };
-            }
-          }
-        }
-      });
-
-      // Emit deviations changes if changed (defer to next tick to avoid React warning)
-      const keys1 = Object.keys(currentDeviations);
-      const keys2 = Object.keys(lastDeviationsRef.current);
-      let hasChanged = keys1.length !== keys2.length;
-      if (!hasChanged) {
-        for (const key of keys1) {
-          if (
-            !lastDeviationsRef.current[key] ||
-            Math.abs(lastDeviationsRef.current[key].distance - currentDeviations[key].distance) > 0.05
-          ) {
-            hasChanged = true;
-            break;
-          }
-        }
-      }
-
-      if (hasChanged) {
-        lastDeviationsRef.current = currentDeviations;
-        if (onDeviationsChange) {
-          setTimeout(() => onDeviationsChange(currentDeviations), 0);
-        }
-      }
 
       rides.forEach((ride) => {
         const status = ride.status?.toLowerCase().trim();

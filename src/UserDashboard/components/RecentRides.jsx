@@ -9,7 +9,7 @@ function RecentRides({ rides }) {
         <h3 className="font-bold text-lg text-[#0B2F89]">Recent Rides</h3>
         {rides && rides.length > 0 && (
           <button
-            onClick={() => navigate("/my-rides")}
+            onClick={() => navigate("/user/history")}
             className="text-xs font-bold text-[#0B2F89] hover:bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl transition cursor-pointer"
           >
             View More

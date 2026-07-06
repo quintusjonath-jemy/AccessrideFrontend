@@ -11,13 +11,13 @@ export const rideDetails = {
   route: [
     {
       time: "10:15 AM",
-      address: "123 Startup Blvd",
+      address: "Hospital road Jaffna",
       colorClass: "bg-white",
       isPickup: true
     },
     {
       time: "10:42 AM",
-      address: "880 Innovation Ave",
+      address: "45 Kandy road Jaffna",
       colorClass: "bg-[#ffb703]",
       isPickup: false
     }

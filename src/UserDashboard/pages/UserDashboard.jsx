@@ -22,13 +22,43 @@ const UserDashboard = () => {
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
-    // Request user location in the background
+    // Request user location in the background and update database
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
           sessionStorage.setItem("user_latitude", latitude);
           sessionStorage.setItem("user_longitude", longitude);
+
+          try {
+            // Reverse geocode to get a readable address using Mapbox
+            const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&limit=1`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            let resolvedLocation = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            if (data.features && data.features.length > 0) {
+              resolvedLocation = data.features[0].place_name;
+            }
+
+            // Update user location in the database
+            await axios.post("http://localhost/UserDashboard/api/update_location.php", {
+              user_id: userId,
+              location: resolvedLocation
+            });
+
+            // Update dashboard user state with the fresh location
+            setDashboard(prev => ({
+              ...prev,
+              user: {
+                ...prev.user,
+                location: resolvedLocation
+              }
+            }));
+          } catch (err) {
+            console.error("Failed to update user location in database:", err);
+          }
         },
         (err) => {
           console.warn("Could not retrieve geolocation in dashboard:", err);
@@ -69,28 +99,30 @@ const UserDashboard = () => {
   }
 
   return (
-    <>
-      <DashboardHeader user={dashboard?.user} />
+    <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans w-full">
+      <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col shadow-2xl overflow-x-hidden">
+        <DashboardHeader user={dashboard?.user} />
 
-      {/* 3. Pass user object instead of name */}
-      <WelcomeSection user={dashboard?.user} />
+        <div className="flex-1 overflow-y-auto">
+          {/* 3. Pass user object instead of name */}
+          <WelcomeSection user={dashboard?.user} />
 
-      <VoiceBookingCard />
+          <VoiceBookingCard />
 
-      {/* 4. Pass statistics to QuickActions */}
-      <QuickActions statistics={dashboard?.statistics} />
+          {/* 4. Pass statistics to QuickActions */}
+          <QuickActions statistics={dashboard?.statistics} />
 
-      {dashboard?.upcoming_ride && (
-        <UpcomingRideCard ride={dashboard.upcoming_ride} />
-      )}
+          {dashboard?.upcoming_ride && (
+            <UpcomingRideCard ride={dashboard.upcoming_ride} />
+          )}
 
-      {/* 5. Render RecentRides list */}
-      {dashboard?.recent_rides && dashboard.recent_rides.length > 0 && (
-        <RecentRides rides={dashboard.recent_rides} />
-      )}
-
-      <div className="h-24"></div>
-    </>
+          {/* 5. Render RecentRides list */}
+          {dashboard?.recent_rides && dashboard.recent_rides.length > 0 && (
+            <RecentRides rides={dashboard.recent_rides} />
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

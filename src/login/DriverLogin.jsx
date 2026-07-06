@@ -18,10 +18,10 @@ const DriverLogin = () => {
       return;
     }
 
-    const backendBase =  "http://localhost/AccessRide/AccessrideBackend/login";
+    const backendBase = "http://localhost/login";
 
     try {
-      const response = await fetch(`${backendBase}/api/login.php`, {
+      const response = await fetch(`${backendBase}/api/driver_login.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,6 +42,10 @@ const DriverLogin = () => {
 
       setError("");
       alert(result.message || `Driver signed in: ${phone}`);
+
+      if (result.driver && result.driver.id) {
+        sessionStorage.setItem("driver_id", result.driver.id);
+      }
 
       setPhone("");
       setPassword("");
@@ -126,7 +130,7 @@ const DriverLogin = () => {
             </div>
 
             {/* Remember Me */}
-            <div className="flex items-center justify-between text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm text-gray-600">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -160,7 +164,7 @@ const DriverLogin = () => {
               or sign in with OTP
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="tel"
                 placeholder="Phone for OTP"

@@ -5,10 +5,6 @@ import UploadCard from "../login/UploadCard";
 const DriverRegister = () => {
     const navigate = useNavigate();
 
-    const handleSubmit = () => {
-        alert("Registration submitted successfully! You will be redirected to the login page.");
-        navigate("/driver-login");
-    };
 
     const [step, setStep] = useState(1);
 
@@ -23,18 +19,66 @@ const DriverRegister = () => {
         nic: "",
         dob: "",
         gender: "",
+        street: "",
+        town: "",
+        district: "",
+        province: "",
+        postalCode: "",
+
+        vehicleType: "",
+        vehicleBrand: "",
+        vehicleModel: "",
+        vehicleColor: "",
+        yearManufacture: "",
+
+        vehicleRegistrationNumber: "",
+
+        licenseNumber: "",
+        licenseExpiry: "",
+
+        registrationExpiry: "",
+        insuranceExpiry: "",
+
+        password: "",
+        confirmPassword: ""
 
     });
 
     const [files, setFiles] = useState({
 
         driverPhoto: null,
+        licenseFront: null,
+        licenseBack: null,
+
+        registrationImage: null,
+        insuranceImage: null,
+
+        nicFront: null,
+        nicBack: null,
+
+        vehicleFront: null,
+        vehicleRear: null,
+        vehicleInterior: null,
+        dashboardPhoto: null
 
     });
 
     const [preview, setPreview] = useState({
 
         driverPhoto: null,
+        licenseFront: null,
+        licenseBack: null,
+
+        registrationImage: null,
+        insuranceImage: null,
+
+        nicFront: null,
+        nicBack: null,
+
+        vehicleFront: null,
+        vehicleRear: null,
+        vehicleInterior: null,
+        dashboardPhoto: null
 
     });
 
@@ -70,20 +114,28 @@ const DriverRegister = () => {
         });
 
     };
-
     const sendOTP = () => {
 
-        if (!formData.phone) {
 
-            alert("Please enter phone number");
+        const phone = formData.phone.trim();
 
+        const phoneRegex = /^(?:\+94|0)7[01245678]\d{7}$/;
+
+        if (!phone) {
+            alert("Please enter your phone number.");
             return;
         }
 
-        alert("Demo OTP Sent : 1234");
+        // Check phone number format
+        if (!phoneRegex.test(phone)) {
+            alert("Please enter a valid Sri Lankan mobile number.");
+            return;
+        }
+
+        // Demo OTP
+        alert(" OTP Sent: 1234");
 
         setOtpSent(true);
-
     };
 
     const verifyOTP = () => {
@@ -131,17 +183,157 @@ const DriverRegister = () => {
         return Object.keys(newErrors).length === 0;
 
     };
+    const validateStep3 = () => {
+        const newErrors = {};
+
+        if (!formData.street.trim())
+            newErrors.street = "Street Address is required";
+
+        if (!formData.town.trim())
+            newErrors.town = "Town / City is required";
+
+        if (!formData.district.trim())
+            newErrors.district = "District is required";
+
+        if (!formData.province)
+            newErrors.province = "Province is required";
+
+        if (!formData.postalCode.trim())
+            newErrors.postalCode = "Postal Code is required";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const validateStep4 = () => {
+        const newErrors = {};
+
+        if (!formData.vehicleType)
+            newErrors.vehicleType = "Vehicle Type is required";
+
+        if (!formData.vehicleBrand.trim())
+            newErrors.vehicleBrand = "Vehicle Brand is required";
+
+        if (!formData.vehicleModel.trim())
+            newErrors.vehicleModel = "Vehicle Model is required";
+
+        if (!formData.vehicleColor.trim())
+            newErrors.vehicleColor = "Vehicle Color is required";
+
+        if (!formData.yearManufacture)
+            newErrors.yearManufacture = "Year of Manufacture is required";
+
+        if (!formData.vehicleRegistrationNumber.trim())
+            newErrors.vehicleRegistrationNumber = "Registration Number is required";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const validateStep5 = () => {
+        const newErrors = {};
+
+        if (!formData.licenseNumber.trim())
+            newErrors.licenseNumber = "License Number is required";
+
+        if (!formData.licenseExpiry)
+            newErrors.licenseExpiry = "License Expiry Date is required";
+
+        if (!files.licenseFront)
+            newErrors.licenseFront = "Upload License Front Image";
+
+        if (!files.licenseBack)
+            newErrors.licenseBack = "Upload License Back Image";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const validateStep6 = () => {
+        const newErrors = {};
+
+        if (!files.registrationImage)
+            newErrors.registrationImage = "Upload Registration Certificate";
+
+        if (!formData.registrationExpiry)
+            newErrors.registrationExpiry = "Registration Expiry Date is required";
+
+        if (!files.insuranceImage)
+            newErrors.insuranceImage = "Upload Insurance Certificate";
+
+        if (!formData.insuranceExpiry)
+            newErrors.insuranceExpiry = "Insurance Expiry Date is required";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const validateStep7 = () => {
+        const newErrors = {};
+
+        if (!files.nicFront)
+            newErrors.nicFront = "Upload NIC Front";
+
+        if (!files.nicBack)
+            newErrors.nicBack = "Upload NIC Back";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const validateStep8 = () => {
+        const newErrors = {};
+
+        if (!files.vehicleFront)
+            newErrors.vehicleFront = "Upload Vehicle Front";
+
+        if (!files.vehicleRear)
+            newErrors.vehicleRear = "Upload Vehicle Rear";
+
+        if (!files.vehicleInterior)
+            newErrors.vehicleInterior = "Upload Vehicle Interior";
+
+        if (!files.dashboardPhoto)
+            newErrors.dashboardPhoto = "Upload Dashboard Photo";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const validateStep9 = () => {
+
+        const newErrors = {};
+
+        if (!formData.password) {
+            newErrors.password = "Password is required";
+        } else if (formData.password.length < 6) {
+            newErrors.password = "Password must be at least 6 characters";
+        }
+
+        if (!formData.confirmPassword) {
+            newErrors.confirmPassword = "Please confirm your password";
+        } else if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = "Passwords do not match";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
 
     const nextStep = () => {
 
-        if (step === 2) {
+        if (step === 2 && !validateStep2()) return;
 
-            if (!validateStep2()) return;
+        if (step === 3 && !validateStep3()) return;
 
-        }
+        if (step === 4 && !validateStep4()) return;
+
+        if (step === 5 && !validateStep5()) return;
+
+        if (step === 6 && !validateStep6()) return;
+
+        if (step === 7 && !validateStep7()) return;
+
+        if (step === 8 && !validateStep8()) return;
+
+        if (step === 9 && !validateStep9()) return;
 
         setStep(step + 1);
-
     };
 
 
@@ -153,6 +345,47 @@ const DriverRegister = () => {
 
         }
 
+    };
+    const handleSubmit = async () => {
+
+        const form = new FormData();
+
+        // Add form data
+        Object.keys(formData).forEach((key) => {
+            form.append(key, formData[key]);
+        });
+
+        // Add uploaded files
+        Object.keys(files).forEach((key) => {
+            if (files[key]) {
+                form.append(key, files[key]);
+            }
+        });
+
+        try {
+
+            const response = await fetch(
+                "http://localhost/login/api/driver_register.php",
+                {
+                    method: "POST",
+                    body: form
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Registration Failed");
+            }
+
+            alert(result.message || "Registration Successful!");
+            navigate("/driver-login");
+
+        } catch (error) {
+
+            alert(error.message);
+
+        }
     };
 
     const ProgressBar = () => (
@@ -261,7 +494,7 @@ const DriverRegister = () => {
                 National Identity Card.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
 
@@ -373,17 +606,19 @@ const DriverRegister = () => {
                     name="driverPhoto"
                     preview={preview.driverPhoto}
                     onChange={handleFileChange}
+                    fit="cover"
                     instructions="Upload a clear color photo of yourself. Face must be clearly visible without sunglasses or face masks. Good lighting is essential. Accepted formats: JPG, PNG, JPEG. Max size: 5MB. "
+                    error={errors.driverPhoto}
                 />
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button
                     type="button"
                     onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg"
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto"
                 >
                     Back
                 </button>
@@ -391,7 +626,7 @@ const DriverRegister = () => {
                 <button
                     type="button"
                     onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg"
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto"
                 >
                     Next
                 </button>
@@ -413,7 +648,7 @@ const DriverRegister = () => {
                 Enter your current residential address.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div>
                     <label>Street Address</label>
@@ -424,6 +659,11 @@ const DriverRegister = () => {
                         onChange={handleChange}
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.street && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.street}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -435,6 +675,11 @@ const DriverRegister = () => {
                         onChange={handleChange}
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.town && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.town}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -446,6 +691,11 @@ const DriverRegister = () => {
                         onChange={handleChange}
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.district && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.district}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -467,6 +717,11 @@ const DriverRegister = () => {
                         <option>Uva</option>
                         <option>Sabaragamuwa</option>
                     </select>
+                    {errors.province && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.province}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -478,18 +733,23 @@ const DriverRegister = () => {
                         onChange={handleChange}
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.postalCode && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.postalCode}
+                        </p>
+                    )}
                 </div>
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
                 <button type="button" onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button type="button" onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
             </div>
@@ -528,6 +788,11 @@ const DriverRegister = () => {
                         <option>Van</option>
                         <option>Wheelchair Accessible Vehicle</option>
                     </select>
+                    {errors.vehicleType && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleType}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -543,6 +808,11 @@ const DriverRegister = () => {
                         placeholder="Toyota"
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.vehicleBrand && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleBrand}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -558,6 +828,11 @@ const DriverRegister = () => {
                         placeholder="Prius"
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.vehicleModel && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleModel}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -573,6 +848,11 @@ const DriverRegister = () => {
                         placeholder="White"
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.vehicleColor && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleColor}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -588,6 +868,11 @@ const DriverRegister = () => {
                         placeholder="2020"
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.yearManufacture && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.yearManufacture}
+                        </p>
+                    )}
                 </div>
 
                 <div>
@@ -603,16 +888,21 @@ const DriverRegister = () => {
                         placeholder="CAA-1234"
                         className="w-full border p-3 rounded-lg"
                     />
+                    {errors.vehicleRegistrationNumber && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.vehicleRegistrationNumber}
+                        </p>
+                    )}
                 </div>
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button
                     type="button"
                     onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg"
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto"
                 >
                     Back
                 </button>
@@ -620,7 +910,7 @@ const DriverRegister = () => {
                 <button
                     type="button"
                     onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg"
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto"
                 >
                     Next
                 </button>
@@ -653,14 +943,16 @@ const DriverRegister = () => {
                 className="w-full border p-3 rounded-lg mb-6"
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <UploadCard
                     title="License Front"
                     name="licenseFront"
                     preview={preview.licenseFront}
                     onChange={handleFileChange}
+                    fit="contain"
                     instructions="Upload the front side of your driving license."
+                    error={errors.licenseFront}
                 />
 
                 <UploadCard
@@ -668,19 +960,21 @@ const DriverRegister = () => {
                     name="licenseBack"
                     preview={preview.licenseBack}
                     onChange={handleFileChange}
+                    fit="contain"
                     instructions="Upload the back side of your driving license."
+                    error={errors.licenseBack}
                 />
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
             </div>
@@ -701,8 +995,10 @@ const DriverRegister = () => {
                 name="registrationImage"
                 preview={preview.registrationImage}
                 onChange={handleFileChange}
+                fit="contain"
                 instructions="Upload a clear image of the front side of your vehicle registration certificate.
                All text must be visible. "
+                error={errors.registrationImage}
             />
 
             <label className="mt-4 block">
@@ -715,14 +1011,21 @@ const DriverRegister = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded-lg mb-6"
             />
+            {errors.registrationExpiry && (
+                <p className="text-red-500 text-sm mt-1">
+                    {errors.registrationExpiry}
+                </p>
+            )}
 
             <UploadCard
                 title="Insurance Certificate"
                 name="insuranceImage"
                 preview={preview.insuranceImage}
                 onChange={handleFileChange}
+                fit="contain"
                 instructions="Upload a clear image of your insurance certificate.
                All text must be visible. "
+                error={errors.insuranceImage}
             />
 
             <label className="mt-4 block">
@@ -735,15 +1038,20 @@ const DriverRegister = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded-lg"
             />
+            {errors.insuranceExpiry && (
+                <p className="text-red-500 text-sm mt-1">
+                    {errors.insuranceExpiry}
+                </p>
+            )}
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
             </div>
@@ -760,14 +1068,16 @@ const DriverRegister = () => {
                 NIC Verification
             </h2>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <UploadCard
                     title="NIC Front Image"
                     name="nicFront"
                     preview={preview.nicFront}
                     onChange={handleFileChange}
+                    fit="contain"
                     instructions="Upload a clear image of the front side of your NIC."
+                    error={errors.nicFront}
                 />
 
                 <UploadCard
@@ -775,19 +1085,21 @@ const DriverRegister = () => {
                     name="nicBack"
                     preview={preview.nicBack}
                     onChange={handleFileChange}
+                    fit="contain"
                     instructions="Upload a clear image of the back side of your NIC."
+                    error={errors.nicBack}
                 />
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
 
@@ -811,14 +1123,16 @@ const DriverRegister = () => {
 
             </p>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <UploadCard
                     title="Vehicle Front"
                     name="vehicleFront"
                     preview={preview.vehicleFront}
                     onChange={handleFileChange}
+                    fit="cover"
                     instructions="Take a clear photo of the front side of your vehicle."
+                    error={errors.vehicleFront}
                 />
 
                 <UploadCard
@@ -826,7 +1140,9 @@ const DriverRegister = () => {
                     name="vehicleRear"
                     preview={preview.vehicleRear}
                     onChange={handleFileChange}
+                    fit="cover"
                     instructions="Take a clear photo of the rear side of your vehicle."
+                    error={errors.vehicleRear}
                 />
 
                 <UploadCard
@@ -834,7 +1150,9 @@ const DriverRegister = () => {
                     name="vehicleInterior"
                     preview={preview.vehicleInterior}
                     onChange={handleFileChange}
+                    fit="cover"
                     instructions="Show passenger seating area clearly."
+                    error={errors.vehicleInterior}
                 />
 
                 <UploadCard
@@ -842,20 +1160,22 @@ const DriverRegister = () => {
                     name="dashboardPhoto"
                     preview={preview.dashboardPhoto}
                     onChange={handleFileChange}
+                    fit="cover"
                     instructions="Show steering wheel and dashboard."
+                    error={errors.dashboardPhoto}
                 />
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
 
@@ -879,6 +1199,11 @@ const DriverRegister = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded-lg mb-4"
             />
+            {errors.password && (
+                <p className="text-red-500 text-sm mt-1 whitespace-pre-line">
+                    {errors.password}
+                </p>
+            )}
 
             <input
                 type="password"
@@ -887,16 +1212,21 @@ const DriverRegister = () => {
                 onChange={handleChange}
                 className="w-full border p-3 rounded-lg"
             />
+            {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                    {errors.confirmPassword}
+                </p>
+            )}
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg">
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto">
                     Back
                 </button>
 
                 <button onClick={nextStep}
-                    className="px-6 py-3 bg-blue-900 text-white rounded-lg">
+                    className="px-6 py-3 bg-blue-900 text-white rounded-lg w-full sm:w-auto">
                     Next
                 </button>
 
@@ -929,12 +1259,12 @@ const DriverRegister = () => {
 
             </div>
 
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col gap-3 sm:flex-row justify-between mt-8">
 
                 <button
                     type="button"
                     onClick={prevStep}
-                    className="px-6 py-3 border rounded-lg"
+                    className="px-6 py-3 border rounded-lg w-full sm:w-auto"
                 >
                     Back
                 </button>
@@ -942,7 +1272,7 @@ const DriverRegister = () => {
                 <button
                     type="button"
                     onClick={handleSubmit}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg"
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg w-full sm:w-auto"
                 >
                     Submit Registration
                 </button>
@@ -956,7 +1286,7 @@ const DriverRegister = () => {
 
     return (
 
-        <div className="min-h-screen bg-gray-100 py-10">
+        <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6">
 
             <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
 
