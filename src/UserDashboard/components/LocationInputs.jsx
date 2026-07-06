@@ -3,8 +3,12 @@ import axios from "axios";
 import { MapPin, ArrowUpDown } from "lucide-react";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const COLOMBO_LNG = 79.8612;
+const COLOMBO_LAT = 6.9271;
 
-const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSwap }) => {
+const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSwap, isLocating = false, userCoords = null }) => {
+  // Use user's GPS position as proximity for suggestions; fall back to Colombo
+  const [proxLng, proxLat] = userCoords || [COLOMBO_LNG, COLOMBO_LAT];
   const [localPickup, setLocalPickup] = useState(pickup);
   const [localDropoff, setLocalDropoff] = useState(dropoff);
   const [pickupSuggestions, setPickupSuggestions] = useState([]);
@@ -32,7 +36,7 @@ const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSw
 
     const delayDebounce = setTimeout(async () => {
       try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(localPickup)}.json?access_token=${MAPBOX_TOKEN}&country=lk&autocomplete=true&limit=5`;
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(localPickup)}.json?access_token=${MAPBOX_TOKEN}&country=lk&proximity=${proxLng},${proxLat}&autocomplete=true&limit=5`;
         const res = await axios.get(url);
         if (res.data?.features) {
           setPickupSuggestions(res.data.features.map(f => f.place_name));
@@ -54,7 +58,7 @@ const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSw
 
     const delayDebounce = setTimeout(async () => {
       try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(localDropoff)}.json?access_token=${MAPBOX_TOKEN}&country=lk&autocomplete=true&limit=5`;
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(localDropoff)}.json?access_token=${MAPBOX_TOKEN}&country=lk&proximity=${proxLng},${proxLat}&autocomplete=true&limit=5`;
         const res = await axios.get(url);
         if (res.data?.features) {
           setDropoffSuggestions(res.data.features.map(f => f.place_name));
@@ -118,20 +122,27 @@ const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSw
       <div className="flex-1 flex flex-col gap-2">
         {/* Pickup Input */}
         <div className="relative">
-          <input
-            type="text"
-            value={localPickup}
-            onChange={(e) => handlePickupChange(e.target.value)}
-            onFocus={() => setShowPickupList(true)}
-            onBlur={() => {
-              setTimeout(() => {
-                setShowPickupList(false);
-                onChangePickup(localPickup);
-              }, 250);
-            }}
-            placeholder="Pickup Location"
-            className="w-full py-1 text-sm text-[#0B2F89] font-medium outline-none placeholder:text-gray-400 placeholder:font-normal"
-          />
+          {isLocating ? (
+            <div className="flex items-center gap-2 py-1">
+              <div className="w-3.5 h-3.5 border-2 border-[#0B2F89] border-t-transparent rounded-full animate-spin shrink-0" />
+              <span className="text-sm text-gray-400 font-medium">Detecting your location...</span>
+            </div>
+          ) : (
+            <input
+              type="text"
+              value={localPickup}
+              onChange={(e) => handlePickupChange(e.target.value)}
+              onFocus={() => setShowPickupList(true)}
+              onBlur={() => {
+                setTimeout(() => {
+                  setShowPickupList(false);
+                  onChangePickup(localPickup);
+                }, 250);
+              }}
+              placeholder="Pickup Location"
+              className="w-full py-1 text-sm text-[#0B2F89] font-medium outline-none placeholder:text-gray-400 placeholder:font-normal"
+            />
+          )}
           {showPickupList && pickupSuggestions.length > 0 && (
             <div className="absolute left-0 right-0 top-8 bg-white border border-slate-150 rounded-2xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y divide-slate-50">
               {pickupSuggestions.map((sug, idx) => (

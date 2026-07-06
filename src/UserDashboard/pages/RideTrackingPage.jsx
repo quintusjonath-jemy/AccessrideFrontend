@@ -8,24 +8,24 @@ import "mapbox-gl/dist/mapbox-gl.css";
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
 
-// Geocode a location text to [longitude, latitude]
-const geocodeLocation = async (query) => {
+// Sri Lanka proximity bias center (Colombo)
+const COLOMBO_LNG = 79.8612;
+const COLOMBO_LAT = 6.9271;
+
+// Geocode a location text to [longitude, latitude] — restricted to Sri Lanka.
+// Pass optional proximity [lng, lat] to bias results toward a specific area
+// (e.g. driver location) so ambiguous place names resolve to the correct local place.
+const geocodeLocation = async (query, proximity = null) => {
   if (!query) return null;
-  const lowerQuery = query.toLowerCase();
-  
-  if (lowerQuery.includes("my current location") || lowerQuery.includes("central library")) {
-    return [79.8612, 6.9271];
-  } else if (lowerQuery.includes("hospital") || lowerQuery.includes("medical")) {
-    return [79.8732, 6.9012];
-  } else if (lowerQuery.includes("plaza") || lowerQuery.includes("market")) {
-    return [79.8501, 6.9321];
-  }
+
+  // Use provided proximity, or fall back to Colombo as a general Sri Lanka center
+  const [proxLng, proxLat] = proximity || [COLOMBO_LNG, COLOMBO_LAT];
 
   try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&proximity=${proxLng},${proxLat}&limit=1`;
     const res = await axios.get(url);
     if (res.data?.features && res.data.features.length > 0) {
-      return res.data.features[0].center; // [lng, lat]
+      return res.data.features[0].geometry.coordinates; // [lng, lat]
     }
   } catch (err) {
     console.error("Geocoding error:", err);
@@ -62,6 +62,7 @@ const RideTrackingPage = () => {
   const pickupMarkerRef = useRef(null);
   const dropoffMarkerRef = useRef(null);
   const driverMarkerRef = useRef(null);
+  const userMarkerRef = useRef(null);
   const mapInitRef = useRef(false);
 
   // Map Coordinates State
@@ -82,30 +83,44 @@ const RideTrackingPage = () => {
         const rideData = res.data.data;
         setRide(rideData);
 
-        // Resolve coordinates
-        const pCoords = await geocodeLocation(rideData.pickup_location);
-        const dCoords = await geocodeLocation(rideData.dropoff_location);
-        setPickupCoords(pCoords);
-        setDropoffCoords(dCoords);
-
-        // Resolve driver coordinates or set fallback close to pickup
+        // Resolve driver coordinates FIRST so we can use them as the geocoding
+        // proximity anchor — this ensures pickup/dropoff names like "Udawela"
+        // resolve to the correct place near the ride, not a different place of
+        // the same name near Colombo.
         let drvCoords = null;
         if (rideData.driver_lat && rideData.driver_lng) {
-          drvCoords = [rideData.driver_lng, rideData.driver_lat];
-        } else if (pCoords) {
-          // Mock driver coordinate offset slightly for live UI effect if not set
-          drvCoords = [pCoords[0] - 0.005, pCoords[1] + 0.003];
+          const dlat = parseFloat(rideData.driver_lat);
+          const dlng = parseFloat(rideData.driver_lng);
+          const inSriLanka = dlat >= 5.9 && dlat <= 9.9 && dlng >= 79.5 && dlng <= 81.9;
+          if (inSriLanka) {
+            drvCoords = [dlng, dlat];
+          }
         }
         setDriverCoords(drvCoords);
 
-        // Determine start and end points for the route depending on status
+        // Use driver coords (or user's live GPS) as proximity for geocoding
+        const proximityAnchor = drvCoords || userLiveCoords || null;
+
+        // Geocode pickup/dropoff biased toward the ride location
+        const pCoords = await geocodeLocation(rideData.pickup_location, proximityAnchor);
+        const dCoords = await geocodeLocation(rideData.dropoff_location, proximityAnchor);
+        setPickupCoords(pCoords);
+        setDropoffCoords(dCoords);
+
+        // Fallback driver offset if no valid coords
+        const resolvedDrvCoords = drvCoords || (pCoords ? [pCoords[0] - 0.005, pCoords[1] + 0.003] : null);
+        if (!drvCoords && resolvedDrvCoords) setDriverCoords(resolvedDrvCoords);
+
+        // Determine route endpoints based on ride status
         let startPoint = null;
         let endPoint = null;
 
         if (rideData.status === "pending" || rideData.status === "accepted") {
-          startPoint = drvCoords;
+          // Driver heading to user: driver → user's live GPS (or pickup as fallback)
+          startPoint = resolvedDrvCoords;
           endPoint = userLiveCoords || pCoords;
         } else {
+          // Ride in progress: pickup → dropoff
           startPoint = pCoords;
           endPoint = dCoords;
         }
@@ -246,6 +261,18 @@ const RideTrackingPage = () => {
       if (pickupMarkerRef.current) pickupMarkerRef.current.remove();
       if (dropoffMarkerRef.current) dropoffMarkerRef.current.remove();
       if (driverMarkerRef.current) driverMarkerRef.current.remove();
+      if (userMarkerRef.current) userMarkerRef.current.remove();
+
+      // User live location marker (blue pulsing)
+      if (userLiveCoords) {
+        const userEl = document.createElement("div");
+        userEl.className = "w-10 h-10 bg-[#0B2F89] rounded-full border-4 border-white shadow-xl flex items-center justify-center text-white text-base animate-pulse";
+        userEl.innerHTML = "🧑";
+        userMarkerRef.current = new mapboxgl.Marker(userEl)
+          .setLngLat(userLiveCoords)
+          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p class='font-bold text-xs p-1'>📍 You</p>"))
+          .addTo(map);
+      }
 
       // Add Pickup Marker (Green)
       if (pickupCoords) {
@@ -300,19 +327,20 @@ const RideTrackingPage = () => {
           .addTo(map);
       }
 
-      // Fit bounds to show relevant markers based on status
+      // Fit bounds to show driver and user (or pickup+dropoff if ride active)
       const bounds = new mapboxgl.LngLatBounds();
       let hasCoords = false;
       if (ride?.status === "pending" || ride?.status === "accepted") {
         if (driverCoords) { bounds.extend(driverCoords); hasCoords = true; }
-        if (pickupCoords) { bounds.extend(pickupCoords); hasCoords = true; }
+        const userTarget = userLiveCoords || pickupCoords;
+        if (userTarget) { bounds.extend(userTarget); hasCoords = true; }
       } else {
         if (pickupCoords) { bounds.extend(pickupCoords); hasCoords = true; }
         if (dropoffCoords) { bounds.extend(dropoffCoords); hasCoords = true; }
       }
 
       if (hasCoords) {
-        map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
+        map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 1200 });
       }
 
       // Render Route overlay
@@ -354,7 +382,7 @@ const RideTrackingPage = () => {
     } else {
       map.once("load", drawMapLayers);
     }
-  }, [map, pickupCoords, dropoffCoords, driverCoords, routeGeoJSON, ride?.status, displayDistance]);
+  }, [map, pickupCoords, dropoffCoords, driverCoords, routeGeoJSON, ride?.status, displayDistance, userLiveCoords]);
 
   // Loading indicator
   if (loading) {
@@ -582,15 +610,19 @@ const RideTrackingPage = () => {
           {/* Action Row: SOS trigger, Cancel & Back */}
           <div className="flex flex-col gap-3 border-t border-slate-50 pt-4">
             {ride && (ride.status === "pending" || ride.status === "accepted") && (
-              <div className="bg-[#0B2F89]/5 border border-[#0B2F89]/10 rounded-2xl p-4 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Share OTP with Driver</span>
-                  <p className="text-slate-600 text-xs mt-0.5 font-medium">Verify your ride before boarding</p>
+              <div className="bg-gradient-to-br from-[#0B2F89]/5 to-blue-50 border-2 border-[#0B2F89]/20 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🔑</span>
+                  <div>
+                    <span className="text-[11px] text-[#0B2F89] font-extrabold uppercase tracking-wider">Your OTP — Share with Driver</span>
+                    <p className="text-slate-500 text-[11px] mt-0.5">When your driver arrives, show them this code to start the ride.</p>
+                  </div>
                 </div>
-                <div className="bg-white border border-[#0B2F89]/10 px-4 py-2 rounded-2xl shadow-sm text-center shrink-0">
-                  <span className="text-base font-black text-[#0B2F89] tracking-widest font-mono">
+                <div className="bg-white border border-[#0B2F89]/15 rounded-2xl py-4 shadow-sm text-center">
+                  <span className="text-4xl font-black text-[#0B2F89] tracking-[0.4em] font-mono">
                     {((ride.id * 127 + 3571) % 9000 + 1000)}
                   </span>
+                  <p className="text-[10px] text-slate-400 mt-1 font-medium">Valid for this trip only</p>
                 </div>
               </div>
             )}
