@@ -73,6 +73,12 @@ const RideTrackingPage = () => {
   const [displayDistance, setDisplayDistance] = useState(null);
   const [userLiveCoords, setUserLiveCoords] = useState(null);
 
+  // Keep a ref of the ride state to prevent closure issue inside the polling interval
+  const rideRef = useRef(null);
+  useEffect(() => {
+    rideRef.current = ride;
+  }, [ride]);
+
   const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
   // Function to fetch the active ride from backend
@@ -120,8 +126,8 @@ const RideTrackingPage = () => {
           startPoint = resolvedDrvCoords;
           endPoint = userLiveCoords || pCoords;
         } else {
-          // Ride in progress: pickup → dropoff
-          startPoint = pCoords;
+          // Ride in progress (active): driver/car → dropoff destination
+          startPoint = resolvedDrvCoords;
           endPoint = dCoords;
         }
 
@@ -154,7 +160,13 @@ const RideTrackingPage = () => {
           setRouteGeoJSON(null);
         }
       } else {
-        setRide(null);
+        // If there was an active ride in progress and now it is null (i.e. completed),
+        // redirect the passenger to the complete-ride page so they can pay/rate.
+        if (!isFirstLoad && rideRef.current && (rideRef.current.status === "active" || rideRef.current.status === "accepted")) {
+          navigate("/complete-ride");
+        } else {
+          setRide(null);
+        }
       }
     } catch (err) {
       console.error("Error fetching active ride:", err);
@@ -327,7 +339,7 @@ const RideTrackingPage = () => {
           .addTo(map);
       }
 
-      // Fit bounds to show driver and user (or pickup+dropoff if ride active)
+      // Fit bounds to show driver and user (or driver+dropoff if ride active)
       const bounds = new mapboxgl.LngLatBounds();
       let hasCoords = false;
       if (ride?.status === "pending" || ride?.status === "accepted") {
@@ -335,7 +347,7 @@ const RideTrackingPage = () => {
         const userTarget = userLiveCoords || pickupCoords;
         if (userTarget) { bounds.extend(userTarget); hasCoords = true; }
       } else {
-        if (pickupCoords) { bounds.extend(pickupCoords); hasCoords = true; }
+        if (driverCoords) { bounds.extend(driverCoords); hasCoords = true; }
         if (dropoffCoords) { bounds.extend(dropoffCoords); hasCoords = true; }
       }
 
@@ -627,19 +639,31 @@ const RideTrackingPage = () => {
               </div>
             )}
             <div className="flex gap-3">
-              <button
-                onClick={() => navigate("/user/sos")}
-                className="flex-1 py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-2xl shadow flex items-center justify-center gap-2 transition cursor-pointer"
-              >
-                <ShieldAlert size={16} />
-                <span>Trigger SOS Alert</span>
-              </button>
-              <button
-                onClick={handleCancelRide}
-                className="flex-1 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs rounded-2xl transition cursor-pointer text-center"
-              >
-                Cancel Ride
-              </button>
+              {ride.status !== "active" ? (
+                <>
+                  <button
+                    onClick={() => navigate("/user/sos")}
+                    className="flex-1 py-3.5 bg-red-600 hover:bg-[#d32f2f] text-white font-bold text-xs rounded-2xl shadow flex items-center justify-center gap-2 transition cursor-pointer"
+                  >
+                    <ShieldAlert size={16} />
+                    <span>Trigger SOS Alert</span>
+                  </button>
+                  <button
+                    onClick={handleCancelRide}
+                    className="flex-1 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs rounded-2xl transition cursor-pointer text-center"
+                  >
+                    Cancel Ride
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => navigate("/user/sos")}
+                  className="w-full py-4 bg-red-600 hover:bg-[#d32f2f] text-white font-black text-sm rounded-2xl shadow flex items-center justify-center gap-2.5 transition cursor-pointer"
+                >
+                  <ShieldAlert size={20} />
+                  <span>TRIGGER EMERGENCY SOS</span>
+                </button>
+              )}
             </div>
             <button
               onClick={() => navigate("/user/dashboard")}
