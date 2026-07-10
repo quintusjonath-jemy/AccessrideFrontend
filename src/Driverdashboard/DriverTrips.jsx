@@ -15,7 +15,8 @@ const DriverTrips = () => {
   const [recentTrips, setRecentTrips] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost/AccessrideBackend/Driverdashboard/recent_trips.php")
+    const driverId = sessionStorage.getItem("driver_id") || 1;
+    fetch(`http://localhost/Driverdashboard/api/recent_trips.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.length > 0) {
