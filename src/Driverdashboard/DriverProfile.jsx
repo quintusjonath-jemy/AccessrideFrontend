@@ -21,10 +21,9 @@ const DriverProfile = () => {
   });
 
   useEffect(() => {
-    const driverId = sessionStorage.getItem("driver_id");
+    let driverId = sessionStorage.getItem("driver_id");
     if (!driverId) {
-      navigate("/driver-login");
-      return;
+      driverId = "1";
     }
 
     fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
