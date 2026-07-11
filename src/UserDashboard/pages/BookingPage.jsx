@@ -101,6 +101,28 @@ const BookingPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [distance, setDistance] = useState(0);
   const [isBookingInProgress, setIsBookingInProgress] = useState(false);
+  const [rates, setRates] = useState({
+    assist: 100.00,
+    auto: 60.00,
+    moto: 40.00,
+    eco: 80.00
+  });
+
+  useEffect(() => {
+    axios.get("http://localhost/UserDashboard/api/get_rates.php")
+      .then(res => {
+        if (res.data?.success && res.data.rates) {
+          const r = res.data.rates;
+          setRates({
+            assist: parseFloat(r['van'] ?? 100.00),
+            auto: parseFloat(r['three wheeler'] ?? 60.00),
+            moto: parseFloat(r['bike'] ?? 40.00),
+            eco: parseFloat(r['car'] ?? 80.00)
+          });
+        }
+      })
+      .catch(err => console.error("Error fetching rates:", err));
+  }, []);
 
   // Mapbox Refs & State
   const mapContainerRef = useRef(null);
@@ -510,18 +532,18 @@ const BookingPage = () => {
             <div className="flex justify-between items-center text-xs">
               <span className="text-gray-400 font-medium uppercase tracking-wider">
                 Fare Rate (
-                {rideClass === "assist" && "Rs. 100.00/km"}
-                {rideClass === "auto" && "Rs. 60.00/km"}
-                {rideClass === "moto" && "Rs. 40.00/km"}
-                {rideClass === "eco" && "Rs. 80.00/km"}
+                {rideClass === "assist" && `Rs. ${rates.assist.toFixed(2)}/km`}
+                {rideClass === "auto" && `Rs. ${rates.auto.toFixed(2)}/km`}
+                {rideClass === "moto" && `Rs. ${rates.moto.toFixed(2)}/km`}
+                {rideClass === "eco" && `Rs. ${rates.eco.toFixed(2)}/km`}
                 )
               </span>
               <span className="font-extrabold text-slate-800">
                 Rs. {
                   (distance * (
-                    rideClass === "assist" ? 100 :
-                    rideClass === "auto" ? 60 :
-                    rideClass === "moto" ? 40 : 80
+                    rideClass === "assist" ? rates.assist :
+                    rideClass === "auto" ? rates.auto :
+                    rideClass === "moto" ? rates.moto : rates.eco
                   )).toFixed(2)
                 }
               </span>
@@ -535,9 +557,9 @@ const BookingPage = () => {
               <span className="text-base font-black text-[#0B2F89]">
                 Rs. {
                   (distance * (
-                    rideClass === "assist" ? 100 :
-                    rideClass === "auto" ? 60 :
-                    rideClass === "moto" ? 40 : 80
+                    rideClass === "assist" ? rates.assist :
+                    rideClass === "auto" ? rates.auto :
+                    rideClass === "moto" ? rates.moto : rates.eco
                   )).toFixed(2)
                 }
               </span>
