@@ -14,6 +14,7 @@ const DriverRegister = () => {
 
         phone: "",
         otp: "",
+        email: "",
         firstName: "",
         lastName: "",
         nic: "",
@@ -165,6 +166,12 @@ const DriverRegister = () => {
 
         if (!formData.lastName)
             newErrors.lastName = "Last name required";
+
+        if (!formData.email) {
+            newErrors.email = "Email address required";
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = "Invalid email address format";
+        }
 
         if (!formData.nic)
             newErrors.nic = "NIC required";
@@ -535,6 +542,29 @@ const DriverRegister = () => {
                     {errors.lastName && (
                         <p className="text-red-500 text-sm">
                             {errors.lastName}
+                        </p>
+                    )}
+
+                </div>
+
+                <div>
+
+                    <label className="block mb-1 font-medium">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="w-full border p-3 rounded-lg"
+                        placeholder="john@example.com"
+                    />
+
+                    {errors.email && (
+                        <p className="text-red-500 text-sm">
+                            {errors.email}
                         </p>
                     )}
 
