@@ -29,7 +29,9 @@ const DriverDashboard = () => {
     rating: 4.8,
     total_trips: 0,
     today_earnings: 0.00,
-    today_trips: 0
+    today_trips: 0,
+    subscription_status: "",
+    subscription_expires_at: ""
   });
 
   const fetchDashboardData = () => {
@@ -236,6 +238,20 @@ const DriverDashboard = () => {
       </header>
 
       <main className="flex-1 px-5 pb-5 flex flex-col gap-4">
+        {/* Subscription Expired Warning Banner */}
+        {statistics.subscription_status === 'expired' && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.01)] flex flex-col gap-1.5 border-l-4 border-l-red-500">
+            <div className="flex items-center gap-2 text-red-700 font-extrabold text-sm">
+              <span className="text-base">⚠️</span>
+              <p>Membership Subscription Expired</p>
+            </div>
+            <p className="text-xs text-red-650 font-bold leading-relaxed">
+              Your driver membership has expired (expiry date: <span className="underline">{statistics.subscription_expires_at}</span>). 
+              Please contact the administrative team or renew your subscription to continue receiving bookings.
+            </p>
+          </div>
+        )}
+
         {/* Welcome Card */}
         <div className="flex items-start justify-between gap-4 bg-white border border-slate-300 rounded-2xl p-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
           <div>
