@@ -134,12 +134,13 @@ const BookingPage = () => {
       pickupCoordsRef.current = coords;    // sync ref immediately
       setPickupCoords(coords);
       try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
+        // Use types=place,locality,neighborhood,address for the most specific result
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&country=lk&types=place,locality,neighborhood,address&limit=1`;
         const res = await axios.get(url);
         if (res.data?.features && res.data.features.length > 0) {
-          // Use the human-readable place name (text = short name, place_name = full address)
+          // Use full place_name for the most accurate readable address
           const feature = res.data.features[0];
-          const placeName = feature.text || feature.place_name;
+          const placeName = feature.place_name || feature.text;
           setPickup(placeName);
         } else {
           setPickup("My Current Location");
@@ -151,15 +152,8 @@ const BookingPage = () => {
       }
     };
 
-    // Check if GPS coords already stored from a prior page load
-    const cachedLat = sessionStorage.getItem("user_latitude");
-    const cachedLng = sessionStorage.getItem("user_longitude");
-    if (cachedLat && cachedLng) {
-      resolveCurrentLocation(parseFloat(cachedLat), parseFloat(cachedLng));
-      return;
-    }
-
-    // Request live GPS from browser
+    // Always request fresh GPS — do NOT use stale cached coordinates from a
+    // previous session because the user may have moved to a different location.
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => resolveCurrentLocation(pos.coords.latitude, pos.coords.longitude),
@@ -168,7 +162,7 @@ const BookingPage = () => {
           setPickup("");
           setIsLocating(false);
         },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       setPickup("");
@@ -247,17 +241,24 @@ const BookingPage = () => {
     }
   }, [pickup, dropoff, swapTrigger]);
 
-  // Initialize Map
+  // Initialize Map — center on user's actual GPS location if available,
+  // otherwise fall back to the centre of Sri Lanka (Colombo).
   useEffect(() => {
     if (step !== 2 || !mapContainerRef.current || mapInitRef.current) return;
 
     mapInitRef.current = true;
 
+    // Use current GPS coords when available so the map opens on the user's
+    // actual position rather than always defaulting to Colombo.
+    const initialCenter = pickupCoordsRef.current
+      ? pickupCoordsRef.current          // [lng, lat] from GPS
+      : [COLOMBO_LNG, COLOMBO_LAT];      // fallback to Colombo
+
     const mapInstance = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [79.8612, 6.9271], // Default center
-      zoom: 12,
+      center: initialCenter,
+      zoom: pickupCoordsRef.current ? 14 : 12, // zoom in more if we have exact GPS
     });
 
     setMap(mapInstance);
