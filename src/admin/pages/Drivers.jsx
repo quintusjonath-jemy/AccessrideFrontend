@@ -949,15 +949,22 @@ const Drivers = () => {
                   Performance & Earnings
                 </h3>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl text-white shadow-sm">
                     <p className="text-xs text-blue-100 font-medium">Completed Rides</p>
-                    <p className="text-3xl font-extrabold mt-1">{detailedDriver.completed_rides_count || 0}</p>
+                    <p className="text-2xl font-extrabold mt-1 truncate">{detailedDriver.completed_rides_count || 0}</p>
                   </div>
 
                   <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl text-white shadow-sm">
                     <p className="text-xs text-green-100 font-medium">Gross Earnings</p>
-                    <p className="text-3xl font-extrabold mt-1">${Number(detailedDriver.gross_earnings || 0).toFixed(2)}</p>
+                    <p className="text-2xl font-extrabold mt-1 truncate">${Number(detailedDriver.gross_earnings || 0).toFixed(2)}</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-4 rounded-xl text-white shadow-sm">
+                    <p className="text-xs text-amber-100 font-medium">Monthly Rating</p>
+                    <p className="text-2xl font-extrabold mt-1 truncate">
+                      {detailedDriver.monthly_rating > 0 ? `⭐ ${detailedDriver.monthly_rating.toFixed(1)}` : "N/A"}
+                    </p>
                   </div>
                 </div>
 
