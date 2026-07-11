@@ -44,6 +44,7 @@ const DriverLogin = () => {
       alert(result.message || `Driver signed in: ${phone}`);
 
       if (result.driver && result.driver.id) {
+        localStorage.setItem("driver_id", result.driver.id);
         sessionStorage.setItem("driver_id", result.driver.id);
       }
 

@@ -43,6 +43,9 @@ const AdminLogin = () => {
       setError("");
 
       // Store admin details
+      localStorage.setItem("admin_id", result.admin.id);
+      localStorage.setItem("admin_email", result.admin.email);
+      localStorage.setItem("admin_name", result.admin.name);
       sessionStorage.setItem("admin_id", result.admin.id);
       sessionStorage.setItem("admin_email", result.admin.email);
       sessionStorage.setItem("admin_name", result.admin.name);

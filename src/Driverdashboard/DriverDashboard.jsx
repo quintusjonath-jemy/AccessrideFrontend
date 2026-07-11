@@ -33,12 +33,10 @@ const DriverDashboard = () => {
   });
 
   const fetchDashboardData = () => {
-    let driverId = sessionStorage.getItem("driver_id");
+    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (!driverId) {
-      // Temporarily disabled login redirect for testing
-      // navigate("/driver-login");
-      // return;
-      driverId = "1";
+      navigate("/driver-login");
+      return;
     }
 
     fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
@@ -170,7 +168,7 @@ const DriverDashboard = () => {
   const toggleStatus = () => {
     const newStatus = !isOnline;
     setIsOnline(newStatus);
-    const driverId = sessionStorage.getItem("driver_id") || "1";
+    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (driverId) {
       fetch("http://localhost/Driverdashboard/api/update_status.php", {
         method: "POST",
@@ -184,7 +182,7 @@ const DriverDashboard = () => {
   };
 
   const acceptRide = () => {
-    const driverId = sessionStorage.getItem("driver_id") || 1;
+    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     fetch("http://localhost/Driverdashboard/api/accept.php", {
       method: "POST",
       headers: {
@@ -203,7 +201,7 @@ const DriverDashboard = () => {
   };
 
   const rejectRide = () => {
-    const driverId = sessionStorage.getItem("driver_id") || 1;
+    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     fetch("http://localhost/Driverdashboard/api/reject.php", {
       method: "POST",
       headers: {

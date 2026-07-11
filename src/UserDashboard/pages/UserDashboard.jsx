@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import DashboardHeader from "../components/DashboardHeader";
@@ -9,6 +10,7 @@ import UpcomingRideCard from "../components/UpcomingRideCard";
 import RecentRides from "../components/RecentRides";
 
 const UserDashboard = () => {
+  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState({
     user: {},
     statistics: {},
@@ -20,7 +22,11 @@ const UserDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id");
+    if (!userId) {
+      navigate("/login");
+      return;
+    }
 
     // Request user location in the background and update database
     if (navigator.geolocation) {

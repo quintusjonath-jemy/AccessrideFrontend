@@ -45,6 +45,7 @@ const Login = () => {
 
       setUserError("");
       alert(result.message || "Login Successful!");
+      localStorage.setItem("user_id", result.user.id);
       sessionStorage.setItem("user_id", result.user.id);
       setEmail("");
       setPassword("");
