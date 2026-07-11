@@ -165,8 +165,8 @@ const LoginSelector = () => {
             Seamless Transportation <br className="hidden sm:block" />
             Designed For <span className="text-[#0B2F89]">Everyone</span>
           </h2>
-          <p className="text-slate-650 text-base md:text-lg max-w-lg mx-auto font-semibold leading-relaxed">
-            Welcome to AccessRide. Choose your portal below. Hover over each card to experience interactive 3D depth and dynamic custom media.
+          <p className="text-slate-600 text-base md:text-lg max-w-lg mx-auto font-semibold leading-relaxed">
+            Welcome to AccessRide. Choose your portal below to enter.
           </p>
         </div>
 
@@ -175,14 +175,10 @@ const LoginSelector = () => {
           {/* Rider Portal */}
           <Link
             to="/login"
-            onMouseEnter={() => setHoveredPortal("rider")}
-            onMouseMove={(e) => handleMouseMove(e, "rider")}
-            onMouseLeave={() => handleMouseLeave("rider")}
-            style={{ transform: tiltStyles.rider, transformStyle: "preserve-3d" }}
-            className="group relative bg-white border border-slate-100 hover:border-[#0B2F89]/50 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-lg hover:shadow-2xl transition-all duration-200 min-h-80 z-20"
+            className="group relative bg-white border border-slate-100 hover:border-[#0B2F89]/50 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-lg hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 min-h-[320px] z-20"
           >
-            <div style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }}>
-              <div className="w-14 h-14 bg-[#0B2F89] text-white rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-blue-900/20 group-hover:rotate-6 transition-transform">
+            <div>
+              <div className="w-14 h-14 bg-[#0B2F89] text-white rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-blue-900/20 group-hover:rotate-6 transition-transform duration-300">
                 <Accessibility size={28} />
               </div>
               <h3 className="text-2xl font-extrabold text-[#0B2F89] mb-2">Rider Portal</h3>
@@ -190,10 +186,7 @@ const LoginSelector = () => {
                 Book dynamic rides, monitor GPS tracking, share OTPs, and schedule accessibility vehicles instantly.
               </p>
             </div>
-            <div 
-              style={{ transform: "translateZ(20px)" }}
-              className="flex items-center gap-2 text-xs font-bold text-[#0B2F89] mt-8 group-hover:gap-3.5 transition-all"
-            >
+            <div className="flex items-center gap-2 text-xs font-bold text-[#0B2F89] mt-8 group-hover:gap-3.5 transition-all duration-300">
               <span>Enter Portal</span>
               <ArrowRight size={14} />
             </div>
@@ -202,14 +195,10 @@ const LoginSelector = () => {
           {/* Driver Portal */}
           <Link
             to="/driver-login"
-            onMouseEnter={() => setHoveredPortal("driver")}
-            onMouseMove={(e) => handleMouseMove(e, "driver")}
-            onMouseLeave={() => handleMouseLeave("driver")}
-            style={{ transform: tiltStyles.driver, transformStyle: "preserve-3d" }}
-            className="group relative bg-white border border-slate-100 hover:border-[#FEC329]/70 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-lg hover:shadow-2xl transition-all duration-200 min-h-80 z-20"
+            className="group relative bg-white border border-slate-100 hover:border-[#FEC329]/70 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-lg hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 min-h-[320px] z-20"
           >
-            <div style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }}>
-              <div className="w-14 h-14 bg-[#FEC329] text-slate-950 rounded-2xl flex items-center justify-center mb-6 shadow-md group-hover:rotate-6 transition-transform">
+            <div>
+              <div className="w-14 h-14 bg-[#FEC329] text-slate-900 rounded-2xl flex items-center justify-center mb-6 shadow-md group-hover:rotate-6 transition-transform duration-300">
                 <Car size={28} />
               </div>
               <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Driver Portal</h3>
@@ -217,10 +206,7 @@ const LoginSelector = () => {
                 Accept incoming requests, verify security OTPs, track monthly earnings, and manage your vehicle status.
               </p>
             </div>
-            <div 
-              style={{ transform: "translateZ(20px)" }}
-              className="flex items-center gap-2 text-xs font-bold text-[#0B2F89] mt-8 group-hover:gap-3.5 transition-all"
-            >
+            <div className="flex items-center gap-2 text-xs font-bold text-[#0B2F89] mt-8 group-hover:gap-3.5 transition-all duration-300">
               <span>Enter Portal</span>
               <ArrowRight size={14} />
             </div>
@@ -229,14 +215,10 @@ const LoginSelector = () => {
           {/* Admin Panel */}
           <Link
             to="/admin-login"
-            onMouseEnter={() => setHoveredPortal("admin")}
-            onMouseMove={(e) => handleMouseMove(e, "admin")}
-            onMouseLeave={() => handleMouseLeave("admin")}
-            style={{ transform: tiltStyles.admin, transformStyle: "preserve-3d" }}
-            className="group relative bg-white border border-slate-100 hover:border-slate-300 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-lg hover:shadow-2xl transition-all duration-200 min-h-80 z-20"
+            className="group relative bg-white border border-slate-100 hover:border-slate-350 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-lg hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 min-h-[320px] z-20"
           >
-            <div style={{ transform: "translateZ(40px)", transformStyle: "preserve-3d" }}>
-              <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mb-6 shadow-md group-hover:rotate-6 transition-transform">
+            <div>
+              <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mb-6 shadow-md group-hover:rotate-6 transition-transform duration-300">
                 <Shield size={28} />
               </div>
               <h3 className="text-2xl font-extrabold text-slate-800 mb-2">Admin Panel</h3>
@@ -244,10 +226,7 @@ const LoginSelector = () => {
                 Monitor live travel routes, resolve emergency SOS triggers, update driver verification, and inspect logs.
               </p>
             </div>
-            <div 
-              style={{ transform: "translateZ(20px)" }}
-              className="flex items-center gap-2 text-xs font-bold text-[#0B2F89] mt-8 group-hover:gap-3.5 transition-all"
-            >
+            <div className="flex items-center gap-2 text-xs font-bold text-[#0B2F89] mt-8 group-hover:gap-3.5 transition-all duration-300">
               <span>Enter Portal</span>
               <ArrowRight size={14} />
             </div>
