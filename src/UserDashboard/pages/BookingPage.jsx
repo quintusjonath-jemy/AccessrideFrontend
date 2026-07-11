@@ -93,9 +93,9 @@ const BookingPage = () => {
 
   // Booking details states
   const [vehicleType, setVehicleType] = useState("");
-  const [pickup, setPickup] = useState("");        // filled by GPS on mount
+  const [pickup, setPickup] = useState("");        // user types or uses GPS button
   const [dropoff, setDropoff] = useState("");       // user enters manually
-  const [isLocating, setIsLocating] = useState(true); // true while GPS resolves
+  const [isLocating, setIsLocating] = useState(false); // true only while GPS button resolves
   const [pickupCoords, setPickupCoords] = useState(null);
   const [rideClass, setRideClass] = useState("eco");
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -125,50 +125,38 @@ const BookingPage = () => {
   useEffect(() => { pickupCoordsRef.current = pickupCoords; }, [pickupCoords]);
   useEffect(() => { dropoffCoordsRef.current = dropoffCoords; }, [dropoffCoords]);
 
-  // Detect user's current GPS location and reverse-geocode it as the pickup address
-  useEffect(() => {
-    const resolveCurrentLocation = async (latitude, longitude) => {
-      sessionStorage.setItem("user_latitude", latitude);
-      sessionStorage.setItem("user_longitude", longitude);
-      const coords = [longitude, latitude];
-      pickupCoordsRef.current = coords;    // sync ref immediately
-      setPickupCoords(coords);
-      try {
-        // Use types=place,locality,neighborhood,address for the most specific result
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&country=lk&types=place,locality,neighborhood,address&limit=1`;
-        const res = await axios.get(url);
-        if (res.data?.features && res.data.features.length > 0) {
-          // Use full place_name for the most accurate readable address
-          const feature = res.data.features[0];
-          const placeName = feature.place_name || feature.text;
-          setPickup(placeName);
-        } else {
-          setPickup("My Current Location");
-        }
-      } catch {
-        setPickup("My Current Location");
-      } finally {
-        setIsLocating(false);
-      }
-    };
-
-    // Always request fresh GPS — do NOT use stale cached coordinates from a
-    // previous session because the user may have moved to a different location.
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolveCurrentLocation(pos.coords.latitude, pos.coords.longitude),
-        () => {
-          // Permission denied or unavailable — leave field empty for manual entry
-          setPickup("");
+  // Resolve GPS location on demand (called by the '📍 Use My Location' button
+  // inside LocationInputs). We do NOT auto-run on mount because the browser's
+  // IP-based fallback always returns Colombo for Sri Lankan ISPs, which would
+  // fill the field with the wrong city for users in Badulla, Kandy, Galle etc.
+  const requestGPS = () => {
+    if (!navigator.geolocation) return;
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const coords = [longitude, latitude];
+        pickupCoordsRef.current = coords;
+        setPickupCoords(coords);
+        try {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+          const res = await axios.get(url);
+          if (res.data?.features && res.data.features.length > 0) {
+            const feature = res.data.features[0];
+            setPickup(feature.place_name || feature.text);
+          } else {
+            setPickup(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+          }
+        } catch {
+          setPickup(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        } finally {
           setIsLocating(false);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    } else {
-      setPickup("");
-      setIsLocating(false);
-    }
-  }, []);
+        }
+      },
+      () => { setIsLocating(false); },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   // Fetch coordinates, route, and calculate distance.
   // Runs when pickup/dropoff text changes OR after a swap (swapTrigger bumps).
@@ -415,7 +403,8 @@ const BookingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 flex flex-col justify-between">
+    <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans w-full">
+      <div className="w-full max-w-md bg-slate-50 min-h-screen pb-[90px] relative flex flex-col shadow-2xl overflow-x-hidden">
       <div>
         {/* Header */}
         <header className="flex items-center justify-between px-5 py-4 bg-white shadow-sm mb-4">
@@ -486,6 +475,7 @@ const BookingPage = () => {
                 onSwap={handleSwapLocations}
                 isLocating={isLocating}
                 userCoords={pickupCoords}
+                onRequestGPS={requestGPS}
               />
 
               {/* Step 3: Ride Class Selection */}
@@ -576,6 +566,7 @@ const BookingPage = () => {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 };
