@@ -20,19 +20,10 @@ const Earnings = () => {
 
   return (
     <>
-      {/* Header */}
-      <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
-        <h1 className="text-2xl font-extrabold tracking-tight">
-          <span className="text-[#FEC329]">Access</span>
-          <span className="text-[#0B2F89]">Ride</span>
-        </h1>
-        <img 
-          src="/src/Driverdashboard/drivering.webp" 
-          alt="Driver avatar" 
-          className="h-10 w-10 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.05)] border-2 border-white bg-white" 
-          onError={(e) => { e.target.src = "/src/Driverdashboard/drivering.webp"; }}
-        />
-      </header>
+      <div className="flex justify-between items-center px-4 py-4 border-b">
+        <h1 className="text-[#00236F] font-bold">🚕 AccessRide</h1>
+        <img src="/src/Driverdashboard/drivering.webp" alt="Driver avatar" className="w-8 h-8 rounded-full" />
+      </div>
 
       <div className="bg-gray-100 p-4">
         <div className="flex justify-between gap-3">

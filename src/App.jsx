@@ -26,6 +26,7 @@ import SchedulePage from "./UserDashboard/pages/SchedulePage";
 import DriverDashboard from "./Driverdashboard/DriverDashboard";
 import DriverTrips from "./Driverdashboard/DriverTrips";
 import Earnings from "./Driverdashboard/Earnings";
+import DriverProfile from "./Driverdashboard/DriverProfile";
 import DriverLayout from "./Driverdashboard/layouts/DriverLayout";
 
 import RidePage from "./Ridepage/RidePage";
@@ -98,6 +99,7 @@ const App = () => {
           <Route path="/driver-dashboard" element={<DriverDashboard />} />
           <Route path="/driver-trips" element={<DriverTrips />} />
           <Route path="/driver-earnings" element={<Earnings />} />
+          <Route path="/driver-profile" element={<DriverProfile />} />
         </Route>
 
         {/* login & register routes */}
@@ -110,6 +112,7 @@ const App = () => {
 
         {/* standalone / shared routes */}
         <Route path="/ride" element={<RidePage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
         <Route path="/complete-ride" element={<CompleteRidePage />} />
       </Routes>
     </BrowserRouter>
