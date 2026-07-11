@@ -1,13 +1,20 @@
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
 
 const MainLayout = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const adminId = localStorage.getItem("admin_id") || sessionStorage.getItem("admin_id");
+    if (!adminId) {
+      navigate("/admin-login");
+      return;
+    }
+
     axios
       .get("http://localhost/admin/api/settings.php?action=system")
       .then((res) => {
@@ -20,7 +27,7 @@ const MainLayout = ({ children }) => {
       .catch((err) => {
         console.error("Failed to load theme setting in MainLayout:", err);
       });
-  }, []);
+  }, [navigate]);
 
   const isNavigationPage = location.pathname === "/navigation";
   const isMobilePage =

@@ -13,14 +13,28 @@ const DriverTrips = () => {
   );
 
   const [recentTrips, setRecentTrips] = useState([]);
+  const [weeklyEarnings, setWeeklyEarnings] = useState(0);
+  const [weeklyTrips, setWeeklyTrips] = useState(0);
 
   useEffect(() => {
-    const driverId = sessionStorage.getItem("driver_id") || 1;
+    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    if (!driverId) {
+      navigate("/driver-login");
+      return;
+    }
     fetch(`http://localhost/Driverdashboard/api/recent_trips.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.length > 0) {
-          setRecentTrips(data);
+        if (data) {
+          if (data.recent_trips) {
+            setRecentTrips(data.recent_trips);
+          }
+          if (data.weekly_earnings !== undefined) {
+            setWeeklyEarnings(Number(data.weekly_earnings));
+          }
+          if (data.weekly_trips !== undefined) {
+            setWeeklyTrips(Number(data.weekly_trips));
+          }
         }
       })
       .catch((err) => console.error("Error fetching recent trips:", err));
@@ -44,6 +58,8 @@ const DriverTrips = () => {
     []
   );
 
+  const progressPercent = Math.min(100, Math.round((weeklyEarnings / 2500) * 100));
+
   return (
     <>
       {/* Header */}
@@ -66,14 +82,14 @@ const DriverTrips = () => {
           </div>
 
       <div className="mx-4 bg-[#00236F] text-white rounded-2xl p-4 shadow-lg">
-        <p className="text-sm">This Week's Trips</p>
-        <h2 className="text-2xl font-bold mt-1">Rs. 1,850.00</h2>
+        <p className="text-sm font-semibold">This Week's Trips ({weeklyTrips} Completed)</p>
+        <h2 className="text-2xl font-bold mt-1">Rs. {weeklyEarnings.toFixed(2)}</h2>
 
-        <div className="mt-2 bg-gray-400 h-1 rounded">
-          <div className="bg-white h-1 w-[70%] rounded" />
+        <div className="mt-2 bg-slate-500/40 h-1.5 rounded overflow-hidden">
+          <div className="bg-white h-full rounded transition-all duration-500" style={{ width: `${progressPercent}%` }} />
         </div>
 
-        <p className="text-xs mt-2 text-gray-300">Goal: Rs. 2,500.00</p>
+        <p className="text-xs mt-2 text-gray-300">Goal: Rs. 2,500.00 ({progressPercent}% Achieved)</p>
       </div>
 
       <div className="flex gap-3 px-4 mt-4">

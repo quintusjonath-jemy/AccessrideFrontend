@@ -191,9 +191,16 @@ const Sidebar = () => {
         </div>
 
         {/* Logout */}
-
         <button 
-          onClick={() => navigate("/admin-login")}
+          onClick={() => {
+            localStorage.removeItem("admin_id");
+            localStorage.removeItem("admin_email");
+            localStorage.removeItem("admin_name");
+            sessionStorage.removeItem("admin_id");
+            sessionStorage.removeItem("admin_email");
+            sessionStorage.removeItem("admin_name");
+            navigate("/admin-login");
+          }}
           className="w-full flex items-center justify-center gap-3 text-red-600 hover:text-red-700 hover:bg-red-50/50 dark:hover:bg-red-950/10 py-3 rounded-xl font-semibold transition-all duration-300"
         >
           <FaSignOutAlt />

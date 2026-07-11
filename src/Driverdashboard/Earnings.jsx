@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Earnings = () => {
@@ -9,14 +9,57 @@ const Earnings = () => {
     return stored ? JSON.parse(stored) : true;
   });
 
-  const transactions = useMemo(
-    () => [
-      { time: "Today, 10:30 AM", trip: "Trip #AR-9402", amount: "+ Rs. 640.00" },
-      { time: "Today, 08:15 AM", trip: "Trip #AR-9398", amount: "+ Rs. 420.00" },
-      { time: "Yesterday, 11:45 PM", trip: "Trip #AR-9350", amount: "+ Rs. 1,120.00" },
-    ],
-    []
-  );
+  const [driverInfo, setDriverInfo] = useState({ first_name: "Driver", last_name: "", profile_image: "" });
+  const [statistics, setStatistics] = useState({ weekly_earnings: 0, weekly_trips: 0 });
+  const [recentRides, setRecentRides] = useState([]);
+
+  useEffect(() => {
+    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    if (!driverId) {
+      navigate("/driver-login");
+      return;
+    }
+    fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          const { driver, statistics, recent_rides } = res.data;
+          if (driver) {
+            setDriverInfo(driver);
+          }
+          if (statistics) {
+            setStatistics(statistics);
+          }
+          if (recent_rides) {
+            setRecentRides(recent_rides);
+          }
+        }
+      })
+      .catch((err) => console.error("Error fetching earnings data:", err));
+  }, []);
+
+  const transactions = useMemo(() => {
+    return recentRides.map((ride) => {
+      try {
+        const date = new Date(ride.ride_date.replace(/-/g, "/"));
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+        const dayStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return {
+          time: `${dayStr}, ${timeStr}`,
+          trip: `Trip #AR-${ride.id}`,
+          amount: `+ Rs. ${parseFloat(ride.fare).toFixed(2)}`
+        };
+      } catch (e) {
+        return {
+          time: ride.ride_date,
+          trip: `Trip #AR-${ride.id}`,
+          amount: `+ Rs. ${parseFloat(ride.fare).toFixed(2)}`
+        };
+      }
+    });
+  }, [recentRides]);
+
+  const estimatedHours = Math.round((statistics.weekly_trips || 0) * 0.8);
 
   return (
     <>
@@ -27,7 +70,7 @@ const Earnings = () => {
           <span className="text-[#0B2F89]">Ride</span>
         </h1>
         <img 
-          src="/src/Driverdashboard/drivering.webp" 
+          src={driverInfo.profile_image ? `http://localhost/admin/uploads/${driverInfo.profile_image}` : "/src/Driverdashboard/drivering.webp"} 
           alt="Driver avatar" 
           className="h-10 w-10 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.05)] border-2 border-white bg-white" 
           onError={(e) => { e.target.src = "/src/Driverdashboard/drivering.webp"; }}
@@ -37,7 +80,7 @@ const Earnings = () => {
       <div className="bg-gray-100 p-4">
         <div className="flex justify-between gap-3">
           <div>
-            <h2 className="text-[#00236F] font-bold">Hello, Driver</h2>
+            <h2 className="text-[#00236F] font-bold">Hello, {driverInfo.first_name}</h2>
             <p className="text-sm text-gray-600">Weekly earnings summary</p>
           </div>
           <div className="text-right">
@@ -52,7 +95,7 @@ const Earnings = () => {
       <div className="bg-[#00236F] text-white p-5 rounded-2xl m-3 shadow-lg">
         <p className="text-sm opacity-80">Active Period</p>
         <h2 className="text-2xl font-semibold mb-3">Weekly Earnings</h2>
-        <div className="text-4xl font-bold mb-4">Rs. 12,450.00</div>
+        <div className="text-4xl font-bold mb-4">Rs. {Number(statistics.weekly_earnings || 0).toFixed(2)}</div>
         <div className="bg-blue-800 p-3 rounded-xl flex justify-between items-center">
           <span>Payout scheduled: Mon</span>
           <span className="text-xl">📅</span>
@@ -62,11 +105,11 @@ const Earnings = () => {
       <div className="grid grid-cols-2 gap-3 px-3 mb-4">
         <div className="bg-white p-4 rounded-2xl shadow">
           <p className="text-gray-500 text-sm">Trips</p>
-          <h2 className="text-2xl font-bold">42</h2>
+          <h2 className="text-2xl font-bold">{statistics.weekly_trips || 0}</h2>
         </div>
         <div className="bg-white p-4 rounded-2xl shadow">
           <p className="text-gray-500 text-sm">Online</p>
-          <h2 className="text-2xl font-bold">34h</h2>
+          <h2 className="text-2xl font-bold">{estimatedHours}h</h2>
         </div>
       </div>
 
@@ -84,15 +127,19 @@ const Earnings = () => {
         </div>
 
         <div className="space-y-3">
-          {transactions.map((txn) => (
-            <div key={txn.trip} className="flex justify-between items-center">
-              <div>
-                <p className="font-semibold">{txn.time}</p>
-                <p className="text-sm text-gray-500">{txn.trip}</p>
+          {transactions.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-4">No recent transactions found.</p>
+          ) : (
+            transactions.map((txn) => (
+              <div key={txn.trip} className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">{txn.time}</p>
+                  <p className="text-sm text-gray-500">{txn.trip}</p>
+                </div>
+                <p className="text-green-600 font-semibold">{txn.amount}</p>
               </div>
-              <p className="text-green-600 font-semibold">{txn.amount}</p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

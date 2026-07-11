@@ -18,7 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import LiveClock from "./LiveClock";
 import { useCallback } from "react";
@@ -59,6 +59,7 @@ const getPageIcon = (iconName) => {
 };
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [admin, setAdmin] = useState({});
   const [openMenu, setOpenMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -565,7 +566,13 @@ const Navbar = () => {
               <button
                 onClick={() => {
                   setOpenMenu(false);
-                  // your logout logic here
+                  localStorage.removeItem("admin_id");
+                  localStorage.removeItem("admin_email");
+                  localStorage.removeItem("admin_name");
+                  sessionStorage.removeItem("admin_id");
+                  sessionStorage.removeItem("admin_email");
+                  sessionStorage.removeItem("admin_name");
+                  navigate("/admin-login");
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition border-t border-gray-100 dark:border-slate-700"
               >

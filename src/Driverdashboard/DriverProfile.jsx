@@ -21,9 +21,10 @@ const DriverProfile = () => {
   });
 
   useEffect(() => {
-    let driverId = sessionStorage.getItem("driver_id");
+    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (!driverId) {
-      driverId = "1";
+      navigate("/driver-login");
+      return;
     }
 
     fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
@@ -52,6 +53,7 @@ const DriverProfile = () => {
   }, [navigate]);
 
   const handleLogout = () => {
+    localStorage.removeItem("driver_id");
     sessionStorage.removeItem("driver_id");
     navigate("/driver-login");
   };
