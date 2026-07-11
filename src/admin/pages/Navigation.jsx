@@ -14,6 +14,7 @@ const NavigationPage = () => {
   const [showDriversOnly, setShowDriversOnly] = useState(false);
 
   const location = useLocation();
+  const trackedAlertId = location.state?.alertId;
   const trackedRide = location.state?.rideId;
   const trackedDriver = location.state?.driverId;
   const trackedLat = location.state?.latitude;
@@ -43,6 +44,30 @@ const NavigationPage = () => {
       eventSource.close();
     };
   }, []);
+
+  // Poll alerts to check if the tracked alert gets resolved
+  useEffect(() => {
+    if (!trackedAlertId) return;
+
+    const checkAlertStatus = () => {
+      axios.get("http://localhost/admin/api/alerts.php")
+        .then((res) => {
+          const alertsList = Array.isArray(res.data) ? res.data : [];
+          const currentAlert = alertsList.find((a) => a.id == trackedAlertId);
+          if (currentAlert && currentAlert.status === "resolved") {
+            // Alert resolved! Clear the tracked coordinates/state.
+            navigate("/admin/navigation", { replace: true, state: {} });
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to check tracked alert status:", err);
+        });
+    };
+
+    checkAlertStatus();
+    const interval = setInterval(checkAlertStatus, 4000);
+    return () => clearInterval(interval);
+  }, [trackedAlertId, navigate]);
 
 
 
@@ -130,6 +155,7 @@ const NavigationPage = () => {
           rides={filteredRides} 
           center={mapCenter} 
           driversOnly={showDriversOnly} 
+          trackedLocation={trackedLat && trackedLng ? [parseFloat(trackedLng), parseFloat(trackedLat)] : null}
         />
 
         {/* LEFT FLOAT PANEL */}

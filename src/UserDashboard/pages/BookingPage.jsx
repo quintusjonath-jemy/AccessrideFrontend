@@ -93,9 +93,9 @@ const BookingPage = () => {
 
   // Booking details states
   const [vehicleType, setVehicleType] = useState("");
-  const [pickup, setPickup] = useState("");        // filled by GPS on mount
+  const [pickup, setPickup] = useState("");        // user types or uses GPS button
   const [dropoff, setDropoff] = useState("");       // user enters manually
-  const [isLocating, setIsLocating] = useState(true); // true while GPS resolves
+  const [isLocating, setIsLocating] = useState(false); // true only while GPS button resolves
   const [pickupCoords, setPickupCoords] = useState(null);
   const [rideClass, setRideClass] = useState("eco");
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -118,6 +118,11 @@ const BookingPage = () => {
   const pickupCoordsRef = useRef(null);
   const dropoffCoordsRef = useRef(null);
 
+  // Track the text for which coordinates were last resolved, so that we know
+  // when the user has typed/edited a location and we must re-geocode.
+  const lastGeocodedPickupRef = useRef("");
+  const lastGeocodedDropoffRef = useRef("");
+
   // Counter incremented on every swap so the route effect re-runs after a swap
   const [swapTrigger, setSwapTrigger] = useState(0);
 
@@ -125,61 +130,45 @@ const BookingPage = () => {
   useEffect(() => { pickupCoordsRef.current = pickupCoords; }, [pickupCoords]);
   useEffect(() => { dropoffCoordsRef.current = dropoffCoords; }, [dropoffCoords]);
 
-  // Detect user's current GPS location and reverse-geocode it as the pickup address
-  useEffect(() => {
-    const resolveCurrentLocation = async (latitude, longitude) => {
-      sessionStorage.setItem("user_latitude", latitude);
-      sessionStorage.setItem("user_longitude", longitude);
-      const coords = [longitude, latitude];
-      pickupCoordsRef.current = coords;    // sync ref immediately
-      setPickupCoords(coords);
-      try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
-        const res = await axios.get(url);
-        if (res.data?.features && res.data.features.length > 0) {
-          // Use the human-readable place name (text = short name, place_name = full address)
-          const feature = res.data.features[0];
-          const placeName = feature.text || feature.place_name;
-          setPickup(placeName);
-        } else {
-          setPickup("My Current Location");
-        }
-      } catch {
-        setPickup("My Current Location");
-      } finally {
-        setIsLocating(false);
-      }
-    };
-
-    // Check if GPS coords already stored from a prior page load
-    const cachedLat = sessionStorage.getItem("user_latitude");
-    const cachedLng = sessionStorage.getItem("user_longitude");
-    if (cachedLat && cachedLng) {
-      resolveCurrentLocation(parseFloat(cachedLat), parseFloat(cachedLng));
-      return;
-    }
-
-    // Request live GPS from browser
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolveCurrentLocation(pos.coords.latitude, pos.coords.longitude),
-        () => {
-          // Permission denied or unavailable — leave field empty for manual entry
-          setPickup("");
+  // Resolve GPS location on demand (called by the '📍 Use My Location' button
+  // inside LocationInputs). We do NOT auto-run on mount because the browser's
+  // IP-based fallback always returns Colombo for Sri Lankan ISPs, which would
+  // fill the field with the wrong city for users in Badulla, Kandy, Galle etc.
+  const requestGPS = () => {
+    if (!navigator.geolocation) return;
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const coords = [longitude, latitude];
+        pickupCoordsRef.current = coords;
+        setPickupCoords(coords);
+        try {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+          const res = await axios.get(url);
+          if (res.data?.features && res.data.features.length > 0) {
+            const feature = res.data.features[0];
+            const placeName = feature.place_name || feature.text;
+            lastGeocodedPickupRef.current = placeName;
+            setPickup(placeName);
+          } else {
+            const coordsStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            lastGeocodedPickupRef.current = coordsStr;
+            setPickup(coordsStr);
+          }
+        } catch {
+          const coordsStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          lastGeocodedPickupRef.current = coordsStr;
+          setPickup(coordsStr);
+        } finally {
           setIsLocating(false);
-        },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
-      );
-    } else {
-      setPickup("");
-      setIsLocating(false);
-    }
-  }, []);
+        }
+      },
+      () => { setIsLocating(false); },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
-  // Fetch coordinates, route, and calculate distance.
-  // Runs when pickup/dropoff text changes OR after a swap (swapTrigger bumps).
-  // Uses refs for cached coords so we avoid an infinite loop while still reading
-  // the latest swapped values.
   useEffect(() => {
     if (pickup && dropoff) {
       const fetchRoute = async () => {
@@ -191,22 +180,25 @@ const BookingPage = () => {
 
           // Step 1: resolve pickup coords (GPS cache or geocode biased toward dropoff side)
           let pCoords = pickupCoordsRef.current;
-          if (!pCoords) {
+          if (!pCoords || pickup !== lastGeocodedPickupRef.current) {
             // Use cached dropoff coords as proximity hint (if available)
             pCoords = await geocodeLocation(pickup, dropoffCoordsRef.current);
+            lastGeocodedPickupRef.current = pickup;
+            pickupCoordsRef.current = pCoords;
+            setPickupCoords(pCoords);
           }
 
           // Step 2: resolve dropoff coords (biased toward pickup position)
           let dCoords = dropoffCoordsRef.current;
-          if (!dCoords) {
+          if (!dCoords || dropoff !== lastGeocodedDropoffRef.current) {
             // Use pickup GPS as proximity hint — critical for local disambiguation
             dCoords = await geocodeLocation(dropoff, pCoords);
+            lastGeocodedDropoffRef.current = dropoff;
+            dropoffCoordsRef.current = dCoords;
+            setDropoffCoords(dCoords);
           }
 
           if (pCoords && dCoords) {
-            setPickupCoords(pCoords);
-            setDropoffCoords(dCoords);
-
             const [startLng, startLat] = pCoords;
             const [endLng, endLat] = dCoords;
 
@@ -229,8 +221,6 @@ const BookingPage = () => {
             }
           } else {
             setDistance(0);
-            if (!pCoords) setPickupCoords(null);
-            if (!dCoords) setDropoffCoords(null);
             setRouteGeoJSON(null);
           }
         } catch (err) {
@@ -247,17 +237,23 @@ const BookingPage = () => {
     }
   }, [pickup, dropoff, swapTrigger]);
 
-  // Initialize Map
+  // Initialize Map. Runs when user moves to Step 2.
+  // IMPORTANT: route/coords may already be resolved in state before the map
+  // is created (user typed pickup+dropoff on Step 1 before advancing).
+  // We capture those values via closure so the onload callback can draw them
+  // immediately rather than waiting for the next state update.
   useEffect(() => {
     if (step !== 2 || !mapContainerRef.current || mapInitRef.current) return;
 
     mapInitRef.current = true;
 
+    const initialCenter = pickupCoordsRef.current || [COLOMBO_LNG, COLOMBO_LAT];
+
     const mapInstance = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [79.8612, 6.9271], // Default center
-      zoom: 12,
+      center: initialCenter,
+      zoom: pickupCoordsRef.current ? 14 : 12,
     });
 
     setMap(mapInstance);
@@ -273,74 +269,65 @@ const BookingPage = () => {
     };
   }, [step]);
 
-  // Update Map Markers and Route Layer
+  // Update Map Markers and Route Layer whenever coords or route geometry changes.
   useEffect(() => {
     if (!map) return;
 
-    const updateMapElements = () => {
-      // Remove old markers
+    const drawOnMap = () => {
+      // --- Markers ---
       if (pickupMarkerRef.current) pickupMarkerRef.current.remove();
       if (dropoffMarkerRef.current) dropoffMarkerRef.current.remove();
 
       if (pickupCoords) {
         pickupMarkerRef.current = new mapboxgl.Marker({ color: "#22c55e" })
           .setLngLat(pickupCoords)
-          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p class='font-bold text-xs p-1'>Pickup Location</p>"))
+          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p style='font-weight:700;font-size:11px;padding:4px'>Pickup</p>"))
           .addTo(map);
       }
-
       if (dropoffCoords) {
         dropoffMarkerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
           .setLngLat(dropoffCoords)
-          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p class='font-bold text-xs p-1'>Drop-off Destination</p>"))
+          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p style='font-weight:700;font-size:11px;padding:4px'>Drop-off</p>"))
           .addTo(map);
       }
 
+      // --- Fit bounds ---
       if (pickupCoords && dropoffCoords) {
         const bounds = new mapboxgl.LngLatBounds()
           .extend(pickupCoords)
           .extend(dropoffCoords);
-        
         map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+      }
 
-        if (routeGeoJSON) {
-          if (map.getSource("route")) {
-            map.getSource("route").setData({
-              type: "Feature",
-              geometry: routeGeoJSON
-            });
-          } else {
-            map.addSource("route", {
-              type: "geojson",
-              data: {
-                type: "Feature",
-                geometry: routeGeoJSON
-              }
-            });
+      // --- Route line ---
+      if (routeGeoJSON) {
+        const geojsonData = { type: "Feature", geometry: routeGeoJSON };
 
-            map.addLayer({
-              id: "route",
-              type: "line",
-              source: "route",
-              layout: {
-                "line-join": "round",
-                "line-cap": "round"
-              },
-              paint: {
-                "line-color": "#0B2F89",
-                "line-width": 5,
-                "line-opacity": 0.75
-              }
-            });
-          }
+        if (map.getSource("route")) {
+          // Source exists — just update the data
+          map.getSource("route").setData(geojsonData);
+        } else {
+          // First time — add source + layer
+          map.addSource("route", { type: "geojson", data: geojsonData });
+          map.addLayer({
+            id: "route",
+            type: "line",
+            source: "route",
+            layout: { "line-join": "round", "line-cap": "round" },
+            paint: { "line-color": "#0B2F89", "line-width": 5, "line-opacity": 0.85 },
+          });
         }
+      } else {
+        // Route cleared — remove layer and source if they exist
+        if (map.getLayer("route")) map.removeLayer("route");
+        if (map.getSource("route")) map.removeSource("route");
       }
     };
 
     if (map.isStyleLoaded()) {
-      updateMapElements();
+      drawOnMap();
     } else {
-      map.once("load", updateMapElements);
+      map.once("load", drawOnMap);
     }
   }, [map, pickupCoords, dropoffCoords, routeGeoJSON]);
 
@@ -378,6 +365,11 @@ const BookingPage = () => {
     setPickupCoords(newPickupCoords);
     setDropoffCoords(newDropoffCoords);
 
+    // Swap the lastGeocoded text cache as well to prevent redundant geocoding
+    const tempLastGeocoded = lastGeocodedPickupRef.current;
+    lastGeocodedPickupRef.current = lastGeocodedDropoffRef.current;
+    lastGeocodedDropoffRef.current = tempLastGeocoded;
+
     // 3. Bump the swap counter to force the route useEffect to re-run
     setSwapTrigger((n) => n + 1);
   };
@@ -414,7 +406,8 @@ const BookingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 flex flex-col justify-between">
+    <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans w-full">
+      <div className="w-full max-w-md bg-slate-50 min-h-screen pb-[90px] relative flex flex-col shadow-2xl overflow-x-hidden">
       <div>
         {/* Header */}
         <header className="flex items-center justify-between px-5 py-4 bg-white shadow-sm mb-4">
@@ -485,6 +478,7 @@ const BookingPage = () => {
                 onSwap={handleSwapLocations}
                 isLocating={isLocating}
                 userCoords={pickupCoords}
+                onRequestGPS={requestGPS}
               />
 
               {/* Step 3: Ride Class Selection */}
@@ -575,6 +569,7 @@ const BookingPage = () => {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 };

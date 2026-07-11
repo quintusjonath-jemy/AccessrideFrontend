@@ -6,7 +6,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const COLOMBO_LNG = 79.8612;
 const COLOMBO_LAT = 6.9271;
 
-const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSwap, isLocating = false, userCoords = null }) => {
+const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSwap, isLocating = false, userCoords = null, onRequestGPS = null }) => {
   // Use user's GPS position as proximity for suggestions; fall back to Colombo
   const [proxLng, proxLat] = userCoords || [COLOMBO_LNG, COLOMBO_LAT];
   const [localPickup, setLocalPickup] = useState(pickup);
@@ -122,26 +122,40 @@ const LocationInputs = ({ pickup, dropoff, onChangePickup, onChangeDropoff, onSw
       <div className="flex-1 flex flex-col gap-2">
         {/* Pickup Input */}
         <div className="relative">
-          {isLocating ? (
-            <div className="flex items-center gap-2 py-1">
-              <div className="w-3.5 h-3.5 border-2 border-[#0B2F89] border-t-transparent rounded-full animate-spin shrink-0" />
-              <span className="text-sm text-gray-400 font-medium">Detecting your location...</span>
-            </div>
-          ) : (
-            <input
-              type="text"
-              value={localPickup}
-              onChange={(e) => handlePickupChange(e.target.value)}
-              onFocus={() => setShowPickupList(true)}
-              onBlur={() => {
-                setTimeout(() => {
-                  setShowPickupList(false);
-                  onChangePickup(localPickup);
-                }, 250);
-              }}
-              placeholder="Pickup Location"
-              className="w-full py-1 text-sm text-[#0B2F89] font-medium outline-none placeholder:text-gray-400 placeholder:font-normal"
-            />
+          <input
+            type="text"
+            value={localPickup}
+            onChange={(e) => handlePickupChange(e.target.value)}
+            onFocus={() => setShowPickupList(true)}
+            onBlur={() => {
+              setTimeout(() => {
+                setShowPickupList(false);
+                onChangePickup(localPickup);
+              }, 250);
+            }}
+            placeholder="Pickup Location"
+            className="w-full py-1 text-sm text-[#0B2F89] font-medium outline-none placeholder:text-gray-400 placeholder:font-normal"
+          />
+          {/* GPS button — visible when field is empty and GPS is supported */}
+          {!localPickup && onRequestGPS && (
+            <button
+              type="button"
+              onClick={onRequestGPS}
+              disabled={isLocating}
+              className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-[#0B2F89] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full hover:bg-blue-100 transition cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+            >
+              {isLocating ? (
+                <>
+                  <span className="inline-block w-2.5 h-2.5 border border-[#0B2F89] border-t-transparent rounded-full animate-spin" />
+                  <span>Detecting…</span>
+                </>
+              ) : (
+                <>
+                  <span>📍</span>
+                  <span>Use My Location</span>
+                </>
+              )}
+            </button>
           )}
           {showPickupList && pickupSuggestions.length > 0 && (
             <div className="absolute left-0 right-0 top-8 bg-white border border-slate-150 rounded-2xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y divide-slate-50">

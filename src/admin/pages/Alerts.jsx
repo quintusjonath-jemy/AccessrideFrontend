@@ -250,6 +250,7 @@ const Alerts = () => {
                               onClick={() =>
                                 navigate("/admin/navigation", {
                                   state: {
+                                    alertId: alert.id,
                                     driverId: alert.driver_id || null,
                                     latitude: alert.latitude || null,
                                     longitude: alert.longitude || null,
