@@ -4,6 +4,9 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* Default Font */
+  --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
+
   /* AccessRide brand color tokens */
   --color-ar-bg: hsl(22 67% 98%);
   --color-ar-navy: hsl(222 100% 13%);
