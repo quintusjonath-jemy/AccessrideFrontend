@@ -239,6 +239,7 @@ const Earnings = () => {
                 <tr className="bg-slate-50/50 dark:bg-slate-900/40 border-b border-gray-100 dark:border-slate-700 text-slate-400 dark:text-slate-400 font-bold text-xs uppercase">
                   <th className="py-4 px-6">Driver Details</th>
                   <th className="py-4 px-6 text-center">Completed Rides</th>
+                  <th className="py-4 px-6 text-center">Monthly Rating</th>
                   <th className="py-4 px-6">Gross Bookings (100% Payout)</th>
                   <th className="py-4 px-6">Membership Fee</th>
                   <th className="py-4 px-6 text-right">Membership Status</th>
@@ -270,6 +271,17 @@ const Earnings = () => {
                     {/* Completed Rides */}
                     <td className="py-4 px-6 text-center font-medium text-slate-800 dark:text-slate-200">
                       {driver.completed_rides_count}
+                    </td>
+
+                    {/* Monthly Rating */}
+                    <td className="py-4 px-6 text-center font-semibold text-amber-500 dark:text-amber-400">
+                      {driver.monthly_rating > 0 ? (
+                        <span className="flex items-center justify-center gap-0.5">
+                          ⭐ {driver.monthly_rating.toFixed(1)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 dark:text-slate-500">N/A</span>
+                      )}
                     </td>
 
                     {/* Gross Bookings */}
