@@ -167,9 +167,7 @@ const DriverRegister = () => {
         if (!formData.lastName)
             newErrors.lastName = "Last name required";
 
-        if (!formData.email) {
-            newErrors.email = "Email address required";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = "Invalid email address format";
         }
 

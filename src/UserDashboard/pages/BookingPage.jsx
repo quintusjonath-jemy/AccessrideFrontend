@@ -118,6 +118,11 @@ const BookingPage = () => {
   const pickupCoordsRef = useRef(null);
   const dropoffCoordsRef = useRef(null);
 
+  // Track the text for which coordinates were last resolved, so that we know
+  // when the user has typed/edited a location and we must re-geocode.
+  const lastGeocodedPickupRef = useRef("");
+  const lastGeocodedDropoffRef = useRef("");
+
   // Counter incremented on every swap so the route effect re-runs after a swap
   const [swapTrigger, setSwapTrigger] = useState(0);
 
@@ -143,12 +148,18 @@ const BookingPage = () => {
           const res = await axios.get(url);
           if (res.data?.features && res.data.features.length > 0) {
             const feature = res.data.features[0];
-            setPickup(feature.place_name || feature.text);
+            const placeName = feature.place_name || feature.text;
+            lastGeocodedPickupRef.current = placeName;
+            setPickup(placeName);
           } else {
-            setPickup(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+            const coordsStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            lastGeocodedPickupRef.current = coordsStr;
+            setPickup(coordsStr);
           }
         } catch {
-          setPickup(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+          const coordsStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          lastGeocodedPickupRef.current = coordsStr;
+          setPickup(coordsStr);
         } finally {
           setIsLocating(false);
         }
@@ -158,10 +169,6 @@ const BookingPage = () => {
     );
   };
 
-  // Fetch coordinates, route, and calculate distance.
-  // Runs when pickup/dropoff text changes OR after a swap (swapTrigger bumps).
-  // Uses refs for cached coords so we avoid an infinite loop while still reading
-  // the latest swapped values.
   useEffect(() => {
     if (pickup && dropoff) {
       const fetchRoute = async () => {
@@ -173,22 +180,25 @@ const BookingPage = () => {
 
           // Step 1: resolve pickup coords (GPS cache or geocode biased toward dropoff side)
           let pCoords = pickupCoordsRef.current;
-          if (!pCoords) {
+          if (!pCoords || pickup !== lastGeocodedPickupRef.current) {
             // Use cached dropoff coords as proximity hint (if available)
             pCoords = await geocodeLocation(pickup, dropoffCoordsRef.current);
+            lastGeocodedPickupRef.current = pickup;
+            pickupCoordsRef.current = pCoords;
+            setPickupCoords(pCoords);
           }
 
           // Step 2: resolve dropoff coords (biased toward pickup position)
           let dCoords = dropoffCoordsRef.current;
-          if (!dCoords) {
+          if (!dCoords || dropoff !== lastGeocodedDropoffRef.current) {
             // Use pickup GPS as proximity hint — critical for local disambiguation
             dCoords = await geocodeLocation(dropoff, pCoords);
+            lastGeocodedDropoffRef.current = dropoff;
+            dropoffCoordsRef.current = dCoords;
+            setDropoffCoords(dCoords);
           }
 
           if (pCoords && dCoords) {
-            setPickupCoords(pCoords);
-            setDropoffCoords(dCoords);
-
             const [startLng, startLat] = pCoords;
             const [endLng, endLat] = dCoords;
 
@@ -211,8 +221,6 @@ const BookingPage = () => {
             }
           } else {
             setDistance(0);
-            if (!pCoords) setPickupCoords(null);
-            if (!dCoords) setDropoffCoords(null);
             setRouteGeoJSON(null);
           }
         } catch (err) {
@@ -229,24 +237,23 @@ const BookingPage = () => {
     }
   }, [pickup, dropoff, swapTrigger]);
 
-  // Initialize Map — center on user's actual GPS location if available,
-  // otherwise fall back to the centre of Sri Lanka (Colombo).
+  // Initialize Map. Runs when user moves to Step 2.
+  // IMPORTANT: route/coords may already be resolved in state before the map
+  // is created (user typed pickup+dropoff on Step 1 before advancing).
+  // We capture those values via closure so the onload callback can draw them
+  // immediately rather than waiting for the next state update.
   useEffect(() => {
     if (step !== 2 || !mapContainerRef.current || mapInitRef.current) return;
 
     mapInitRef.current = true;
 
-    // Use current GPS coords when available so the map opens on the user's
-    // actual position rather than always defaulting to Colombo.
-    const initialCenter = pickupCoordsRef.current
-      ? pickupCoordsRef.current          // [lng, lat] from GPS
-      : [COLOMBO_LNG, COLOMBO_LAT];      // fallback to Colombo
+    const initialCenter = pickupCoordsRef.current || [COLOMBO_LNG, COLOMBO_LAT];
 
     const mapInstance = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
       center: initialCenter,
-      zoom: pickupCoordsRef.current ? 14 : 12, // zoom in more if we have exact GPS
+      zoom: pickupCoordsRef.current ? 14 : 12,
     });
 
     setMap(mapInstance);
@@ -262,74 +269,65 @@ const BookingPage = () => {
     };
   }, [step]);
 
-  // Update Map Markers and Route Layer
+  // Update Map Markers and Route Layer whenever coords or route geometry changes.
   useEffect(() => {
     if (!map) return;
 
-    const updateMapElements = () => {
-      // Remove old markers
+    const drawOnMap = () => {
+      // --- Markers ---
       if (pickupMarkerRef.current) pickupMarkerRef.current.remove();
       if (dropoffMarkerRef.current) dropoffMarkerRef.current.remove();
 
       if (pickupCoords) {
         pickupMarkerRef.current = new mapboxgl.Marker({ color: "#22c55e" })
           .setLngLat(pickupCoords)
-          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p class='font-bold text-xs p-1'>Pickup Location</p>"))
+          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p style='font-weight:700;font-size:11px;padding:4px'>Pickup</p>"))
           .addTo(map);
       }
-
       if (dropoffCoords) {
         dropoffMarkerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
           .setLngLat(dropoffCoords)
-          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p class='font-bold text-xs p-1'>Drop-off Destination</p>"))
+          .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML("<p style='font-weight:700;font-size:11px;padding:4px'>Drop-off</p>"))
           .addTo(map);
       }
 
+      // --- Fit bounds ---
       if (pickupCoords && dropoffCoords) {
         const bounds = new mapboxgl.LngLatBounds()
           .extend(pickupCoords)
           .extend(dropoffCoords);
-        
         map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+      }
 
-        if (routeGeoJSON) {
-          if (map.getSource("route")) {
-            map.getSource("route").setData({
-              type: "Feature",
-              geometry: routeGeoJSON
-            });
-          } else {
-            map.addSource("route", {
-              type: "geojson",
-              data: {
-                type: "Feature",
-                geometry: routeGeoJSON
-              }
-            });
+      // --- Route line ---
+      if (routeGeoJSON) {
+        const geojsonData = { type: "Feature", geometry: routeGeoJSON };
 
-            map.addLayer({
-              id: "route",
-              type: "line",
-              source: "route",
-              layout: {
-                "line-join": "round",
-                "line-cap": "round"
-              },
-              paint: {
-                "line-color": "#0B2F89",
-                "line-width": 5,
-                "line-opacity": 0.75
-              }
-            });
-          }
+        if (map.getSource("route")) {
+          // Source exists — just update the data
+          map.getSource("route").setData(geojsonData);
+        } else {
+          // First time — add source + layer
+          map.addSource("route", { type: "geojson", data: geojsonData });
+          map.addLayer({
+            id: "route",
+            type: "line",
+            source: "route",
+            layout: { "line-join": "round", "line-cap": "round" },
+            paint: { "line-color": "#0B2F89", "line-width": 5, "line-opacity": 0.85 },
+          });
         }
+      } else {
+        // Route cleared — remove layer and source if they exist
+        if (map.getLayer("route")) map.removeLayer("route");
+        if (map.getSource("route")) map.removeSource("route");
       }
     };
 
     if (map.isStyleLoaded()) {
-      updateMapElements();
+      drawOnMap();
     } else {
-      map.once("load", updateMapElements);
+      map.once("load", drawOnMap);
     }
   }, [map, pickupCoords, dropoffCoords, routeGeoJSON]);
 
@@ -366,6 +364,11 @@ const BookingPage = () => {
     dropoffCoordsRef.current = newDropoffCoords;
     setPickupCoords(newPickupCoords);
     setDropoffCoords(newDropoffCoords);
+
+    // Swap the lastGeocoded text cache as well to prevent redundant geocoding
+    const tempLastGeocoded = lastGeocodedPickupRef.current;
+    lastGeocodedPickupRef.current = lastGeocodedDropoffRef.current;
+    lastGeocodedDropoffRef.current = tempLastGeocoded;
 
     // 3. Bump the swap counter to force the route useEffect to re-run
     setSwapTrigger((n) => n + 1);
