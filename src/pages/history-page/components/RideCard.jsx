@@ -53,7 +53,7 @@ const RideCard = ({ ride }) => {
               <div className="absolute -left-[32px] top-0.5 w-6 h-6 rounded-full bg-[#0d6b63] flex items-center justify-center text-white z-10">
                 <MapPin className="w-3.5 h-3.5" />
               </div>
-              <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1">Dropoff</div>
+              <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1">Drop-off</div>
               <div className="font-extrabold text-slate-900 text-lg leading-tight">{ride.endLocation}</div>
             </div>
           </div>
