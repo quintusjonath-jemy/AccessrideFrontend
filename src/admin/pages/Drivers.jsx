@@ -322,6 +322,10 @@ const Drivers = () => {
               </th>
 
               <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
+                Rating
+              </th>
+
+              <th className="text-left px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                 Location
               </th>
 
@@ -431,6 +435,17 @@ const Drivers = () => {
                           </span>
                         )}
                       </div>
+                    </td>
+
+                    {/* RATING */}
+                    <td className="px-6 py-4">
+                      {driver.monthly_rating > 0 ? (
+                        <span className="flex items-center gap-1 text-sm font-semibold text-amber-500 dark:text-amber-400">
+                          ⭐ {driver.monthly_rating.toFixed(1)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 dark:text-slate-550 text-xs">N/A</span>
+                      )}
                     </td>
 
                     {/* LOCATION */}
