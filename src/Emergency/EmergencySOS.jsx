@@ -186,7 +186,7 @@ const EmergencySOS = () => {
                 {showLiveMap && (
                   <div className="mt-4 md:mt-8 lg:mt-4 w-full animate-fade-in">
                     <div className="h-48 md:h-64 lg:h-48 rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-inner border border-slate-200">
-                      <LiveMap rides={[]} center={userLocation} />
+                      <LiveMap rides={[]} center={userLocation} trackedLocation={userLocation} />
                     </div>
                   </div>
                 )}

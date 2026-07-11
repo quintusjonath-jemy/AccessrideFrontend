@@ -64,7 +64,7 @@ const geocodeLocation = async (query) => {
   return null;
 };
 
-const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }) => {
+const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, trackedLocation = null }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersRef = useRef([]);
@@ -96,14 +96,15 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false }
 
     if (userMarkerRef.current) {
       userMarkerRef.current.remove();
+      userMarkerRef.current = null;
     }
 
-    if (!driversOnly) {
+    if (trackedLocation && trackedLocation.length === 2 && !driversOnly) {
       userMarkerRef.current = new mapboxgl.Marker({ color: "#ef4444" })
-        .setLngLat(center)
+        .setLngLat(trackedLocation)
         .addTo(map.current);
     }
-  }, [center, driversOnly]);
+  }, [center, driversOnly, trackedLocation]);
 
   // Resolve geocoding and direction geometries per ride status dynamically
   useEffect(() => {
