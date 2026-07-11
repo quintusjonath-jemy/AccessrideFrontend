@@ -812,9 +812,11 @@ const DriverRegister = () => {
                         className="w-full border p-3 rounded-lg"
                     >
                         <option value="">Select Vehicle Type</option>
-                        <option>Car</option>
-                        <option>Van</option>
-                        <option>Wheelchair Accessible Vehicle</option>
+                        <option value="car">Car</option>
+                        <option value="van">Van</option>
+                        <option value="three wheeler">Three Wheeler</option>
+                        <option value="bike">Bike</option>
+                        <option value="wheelchair accessible vehicle">Wheelchair Accessible Vehicle</option>
                     </select>
                     {errors.vehicleType && (
                         <p className="text-red-500 text-sm mt-1">
