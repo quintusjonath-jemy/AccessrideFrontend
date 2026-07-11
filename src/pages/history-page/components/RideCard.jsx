@@ -9,7 +9,7 @@ const RideCard = ({ ride }) => {
   const rideDate = ride.date || (isCancelled ? 'Oct 18, 2024' : 'Oct 24, 2024');
   const rideId = ride.id ? `#AR-690${ride.id}` : (isCancelled ? '#AR-6902' : '#AR-8821');
   const price = isCancelled ? '$0.00' : (ride.price || '$14.50');
-  
+
   // Custom time fallback for the cancelled one to match image
   const time = ride.time || (isCancelled ? '05:45 PM' : '02:30 PM');
 
@@ -40,7 +40,7 @@ const RideCard = ({ ride }) => {
           <div className="relative pl-8 flex flex-col gap-6 mb-7 mt-2">
             {/* Connecting line */}
             <div className="absolute left-[11px] top-[14px] bottom-[14px] w-0.5 border-l-2 border-dashed border-slate-200"></div>
-            
+
             {/* Pickup */}
             <div className="relative">
               <div className="absolute -left-[32px] top-0.5 w-6 h-6 rounded-full border-[5px] border-[#0e2769] bg-white z-10"></div>
@@ -53,7 +53,7 @@ const RideCard = ({ ride }) => {
               <div className="absolute -left-[32px] top-0.5 w-6 h-6 rounded-full bg-[#0d6b63] flex items-center justify-center text-white z-10">
                 <MapPin className="w-3.5 h-3.5" />
               </div>
-              <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1">Drop-off</div>
+              <div className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1">Dropoff</div>
               <div className="font-extrabold text-slate-900 text-lg leading-tight">{ride.endLocation}</div>
             </div>
           </div>
