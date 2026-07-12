@@ -69,7 +69,17 @@ function Register() {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      let result;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        // Remove HTML tags for clean alert message
+        const cleanText = text.replace(/<[^>]*>/g, '').trim();
+        throw new Error(cleanText || "Server error occurred");
+      }
+
       if (!response.ok) {
         throw new Error(result.error || "Registration failed");
       }
