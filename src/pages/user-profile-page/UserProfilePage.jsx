@@ -75,6 +75,11 @@ const UserProfilePage = () => {
       return;
     }
     
+    if (action === 'Notifications') {
+       navigate('/user/notifications');
+       return;
+    }
+
     if (action === 'Logout') {
        localStorage.removeItem("user_id");
        sessionStorage.removeItem("user_id");
