@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mic } from 'lucide-react';
 import './HistoryPage.css';
 import DashboardHeader from '../../UserDashboard/components/DashboardHeader';
@@ -6,6 +7,7 @@ import HistoryFilters from './components/HistoryFilters';
 import RideCard from './components/RideCard';
 
 const HistoryPage = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('Completed');
   const [rides, setRides] = useState([]);
   const [user, setUser] = useState(null);
@@ -54,6 +56,25 @@ const HistoryPage = () => {
     return acc;
   }, {});
 
+  const handleRebook = (ride) => {
+    // Map vehicle string to the correct type id
+    let vehicleType = "car";
+    const vStr = (ride.vehicle || "").toLowerCase();
+    if (vStr.includes("car")) vehicleType = "car";
+    else if (vStr.includes("van")) vehicleType = "van";
+    else if (vStr.includes("three wheeler") || vStr.includes("auto") || vStr.includes("tuktuk")) vehicleType = "three wheeler";
+    else if (vStr.includes("bike") || vStr.includes("moto")) vehicleType = "bike";
+
+    navigate("/user/booking", {
+      state: {
+        step: 2, // Skip vehicle selection step
+        vehicleType: vehicleType,
+        pickup: ride.startLocation || "",
+        dropoff: ride.endLocation || ""
+      }
+    });
+  };
+
   return (
     <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col shadow-2xl">
@@ -94,7 +115,7 @@ const HistoryPage = () => {
                 </h2>
                 
                 {rides.map(ride => (
-                  <RideCard key={ride.id} ride={ride} />
+                  <RideCard key={ride.id} ride={ride} onRebook={handleRebook} />
                 ))}
               </section>
             ))
