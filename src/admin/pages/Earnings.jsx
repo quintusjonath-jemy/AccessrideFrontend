@@ -24,6 +24,7 @@ const Earnings = () => {
   });
 
   const [drivers, setDrivers] = useState([]);
+  const [monthlyDriver, setMonthlyDriver] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,6 +48,7 @@ const Earnings = () => {
             total_completed_rides: 0,
           });
           setDrivers(res.data.drivers || []);
+          setMonthlyDriver(res.data.monthly_driver || null);
         }
       })
       .catch((err) => {
@@ -96,6 +98,42 @@ const Earnings = () => {
           Refresh
         </button>
       </div>
+
+      {/* Driver of the Month Highlight Banner */}
+      {!loading && monthlyDriver && (
+        <div className="bg-gradient-to-r from-slate-900 via-[#0B2F89] to-slate-900 dark:from-[#0f172a] dark:via-[#1e3a8a] dark:to-[#0f172a] rounded-2xl p-6 shadow-lg text-white relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-6 transition-all border border-blue-950/20">
+          <div className="flex items-center gap-5 z-10">
+            <div className="p-4 bg-white/10 rounded-2xl text-yellow-400 border border-white/10 shadow-inner shrink-0">
+              <Award size={36} className="animate-bounce" />
+            </div>
+            <div>
+              <span className="bg-yellow-400 text-slate-900 font-extrabold text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">
+                Driver of the Month
+              </span>
+              <h2 className="text-2xl font-black mt-2 tracking-tight">{monthlyDriver.name}</h2>
+              <p className="text-blue-200 text-xs mt-1 font-medium">
+                Top rated and most active driver for this calendar month
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-8 z-10 shrink-0">
+            <div className="text-center bg-white/10 px-4 py-2.5 rounded-2xl border border-white/5">
+              <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider">Monthly Rating</p>
+              <p className="text-2xl font-black text-yellow-400 mt-0.5">⭐ {monthlyDriver.monthly_rating.toFixed(1)}</p>
+            </div>
+            <div className="text-center bg-white/10 px-4 py-2.5 rounded-2xl border border-white/5">
+              <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider">Trips Completed</p>
+              <p className="text-2xl font-black text-yellow-400 mt-0.5">{monthlyDriver.completed_rides}</p>
+            </div>
+            <div className="text-center bg-white/10 px-4 py-2.5 rounded-2xl border border-white/5">
+              <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider">Contact</p>
+              <p className="text-sm font-bold text-slate-100 mt-1">{monthlyDriver.phone}</p>
+            </div>
+          </div>
+          <div className="absolute right-0 top-0 bottom-0 w-96 bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
