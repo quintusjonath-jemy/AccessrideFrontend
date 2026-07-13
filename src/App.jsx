@@ -22,6 +22,7 @@ import RideTrackingPage from "./UserDashboard/pages/RideTrackingPage";
 import EmergencySOS from "./Emergency/EmergencySOS";
 import BookingPage from "./UserDashboard/pages/BookingPage";
 import SchedulePage from "./UserDashboard/pages/SchedulePage";
+import NotificationsPage from "./UserDashboard/pages/NotificationsPage";
 
 import DriverDashboard from "./Driverdashboard/DriverDashboard";
 import DriverTrips from "./Driverdashboard/DriverTrips";
@@ -92,6 +93,7 @@ const App = () => {
           <Route path="sos" element={<EmergencySOS />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="profile" element={<UserProfilePage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
         </Route>
 
         {/* driver routes */}
