@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, UserCircle, Car } from "lucide-react";
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
@@ -87,14 +87,16 @@ const calculateDistance = async (pickup, dropoff) => {
 
 const BookingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialData = location.state || {};
 
   // Multi-step state: 1 = vehicle selection, 2 = route/class selection
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialData.step || 1);
 
   // Booking details states
-  const [vehicleType, setVehicleType] = useState("");
-  const [pickup, setPickup] = useState("");        // user types or uses GPS button
-  const [dropoff, setDropoff] = useState("");       // user enters manually
+  const [vehicleType, setVehicleType] = useState(initialData.vehicleType || "");
+  const [pickup, setPickup] = useState(initialData.pickup || "");        // user types or uses GPS button
+  const [dropoff, setDropoff] = useState(initialData.dropoff || "");       // user enters manually
   const [isLocating, setIsLocating] = useState(false); // true only while GPS button resolves
   const [pickupCoords, setPickupCoords] = useState(null);
   const [rideClass, setRideClass] = useState("eco");
