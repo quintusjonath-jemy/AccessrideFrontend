@@ -3,11 +3,9 @@ import { Menu, Bell, Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './CompleteRidePage.css';
-import { UserCircle, LogOut, Settings, ChevronDown } from "lucide-react";
-
+import DashboardHeader from '../../UserDashboard/components/DashboardHeader';
 import RideSummary from './components/RideSummary';
 import RatingSection from './components/RatingSection';
-
 import { rideDetails } from './data/rideDetails';
 
 const CompleteRidePage = () => {
@@ -17,14 +15,26 @@ const CompleteRidePage = () => {
   const [rating, setRating] = useState(0);
   const [isRated, setIsRated] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [openMenu, setOpenMenu] = useState(false);
   const [ride, setRide] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const tabs = ['All', 'Upcoming', 'Completed', 'Cancelled'];
 
   useEffect(() => {
-    const userId = sessionStorage.getItem("userId") || 1;
+    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    
+    // Fetch profile
+    fetch(`http://localhost/history_and_profile/profile/get_profile.php?user_id=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          setUser(data);
+        }
+      })
+      .catch(err => console.error("Error fetching profile:", err));
+
+    // Fetch latest completed ride
     axios.get(`http://localhost/UserDashboard/api/latest_completed_ride.php?user_id=${userId}`)
       .then(res => {
         if (res.data?.success && res.data.ride) {
@@ -111,49 +121,7 @@ const CompleteRidePage = () => {
     <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-100 min-h-screen relative flex flex-col shadow-2xl">
         {/* Top Navigation */}
-        <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
-          <h1 className="text-xl font-extrabold">
-            <span className="text-[#FEC329]">Access</span>
-            <span className="text-[#0B2F89]">Ride</span>
-          </h1>
-
-          <div className="relative">
-            <button
-              onClick={() => setOpenMenu(!openMenu)}
-              className="flex items-center gap-1 focus:outline-none cursor-pointer"
-            >
-              <UserCircle
-                size={32}
-                className="text-[#0B2F89] hover:scale-105 transition"
-              />
-              <ChevronDown size={14} className="text-[#0B2F89]" />
-            </button>
-
-            {openMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-150 rounded-2xl shadow-xl py-2 z-50">
-                <button
-                  onClick={() => { setOpenMenu(false); navigate("/user/profile"); }}
-                  className="flex items-center gap-2 px-4 py-3 text-slate-700 hover:bg-slate-50 w-full text-left font-bold text-sm cursor-pointer"
-                >
-                  <Settings size={16} className="text-slate-400" />
-                  Settings
-                </button>
-                <div className="h-px bg-slate-100 my-1"></div>
-                <button
-                  onClick={() => {
-                    setOpenMenu(false);
-                    sessionStorage.clear();
-                    navigate("/login");
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 text-red-600 hover:bg-red-50 w-full text-left font-bold text-sm cursor-pointer"
-                >
-                  <LogOut size={16} />
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        </header>
+        <DashboardHeader user={user} />
 
         {/* Tabs */}
         <div className="flex justify-between px-2 my-2 overflow-x-auto hide-scrollbar">

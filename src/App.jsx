@@ -89,7 +89,6 @@ const App = () => {
           <Route path="booking" element={<BookingPage />} />
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="ride" element={<RideTrackingPage />} />
-          <Route path="/user/profile" element={<UserProfilePage />} />
           <Route path="sos" element={<EmergencySOS />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="profile" element={<UserProfilePage />} />
@@ -114,7 +113,6 @@ const App = () => {
 
         {/* standalone / shared routes */}
         <Route path="/ride" element={<RidePage />} />
-        <Route path="/profile" element={<UserProfilePage />} />
         <Route path="/complete-ride" element={<CompleteRidePage />} />
       </Routes>
     </BrowserRouter>
