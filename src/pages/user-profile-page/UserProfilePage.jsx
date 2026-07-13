@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Menu, Mic, AudioLines, LocateFixed, Bell, LogOut, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './UserProfilePage.css';
-import { UserCircle, Settings, ChevronDown } from "lucide-react";
-
+import DashboardHeader from '../../UserDashboard/components/DashboardHeader';
 import ProfileCard from './components/ProfileCard';
 import AccessibilityCard from './components/AccessibilityCard';
 import VoiceSettingsCard from './components/VoiceSettingsCard';
-
 import { userData } from './data/userData';
 
 const UserProfilePage = () => {
@@ -16,6 +14,19 @@ const UserProfilePage = () => {
   const [textSize, setTextSize] = useState(2);
   const [voiceGuidance, setVoiceGuidance] = useState(true);
   const [voiceSpeed, setVoiceSpeed] = useState('normal');
+  const [user, setUser] = useState(userData);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    fetch(`http://localhost/history_and_profile/profile/get_profile.php?user_id=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          setUser(data);
+        }
+      })
+      .catch(err => console.error("Error fetching profile", err));
+  }, []);
 
   useEffect(() => {
     if (textSize === 1) {
@@ -32,10 +43,45 @@ const UserProfilePage = () => {
   }, [textSize]);
 
   const handleActionClick = (action) => {
-    alert(`Action: ${action}`);
-    if (action === 'Logout') {
-       navigate('/login');
+    if (action === 'Edit Profile') {
+      const newName = prompt("Enter new name:", user.name);
+      const newPhone = prompt("Enter new phone:", user.phone);
+      const newLocation = prompt("Enter new address:", user.location);
+      
+      if (newName !== null && newPhone !== null && newLocation !== null) {
+        const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+        fetch(`http://localhost/history_and_profile/profile/update_profile.php`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: userId,
+            name: newName,
+            phone: newPhone,
+            location: newLocation,
+            email: user.email
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(data.message);
+            setUser({ ...user, name: newName, phone: newPhone, location: newLocation });
+          } else {
+            alert(data.error || "Update failed");
+          }
+        })
+        .catch(err => console.error("Error updating profile", err));
+      }
+      return;
     }
+    
+    if (action === 'Logout') {
+       localStorage.removeItem("user_id");
+       sessionStorage.removeItem("user_id");
+       navigate('/login');
+       return;
+    }
+    alert(`Action: ${action}`);
   };
 
   const handleVoiceSearch = () => {
@@ -46,25 +92,7 @@ const UserProfilePage = () => {
     <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col">
          {/* Top Navigation */}
-        <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
-      <h1 className="text-xl font-extrabold">
-        <span className="text-[#FEC329]">Access</span>
-        <span className="text-[#0B2F89]">Ride</span>
-      </h1>
-      
-      {/* <div ref={dropdownRef} className="relative"> */}
-        <button
-          onClick={() => setOpenMenu(!openMenu)}
-          className="flex items-center gap-1 focus:outline-none"
-        >
-          <UserCircle
-            size={32}
-            className="text-[#0B2F89] hover:scale-105 transition"
-          />
-          <ChevronDown size={14} className="text-[#0B2F89]" />
-        </button>
-          
-        </header>
+        <DashboardHeader user={user} />
 
         {/* Main Content */}
         <main className="flex-1 px-5 pb-5 flex flex-col gap-4">
@@ -87,7 +115,7 @@ const UserProfilePage = () => {
           </div>
 
           {/* Profile Card */}
-          <ProfileCard userData={userData} handleActionClick={handleActionClick} />
+          <ProfileCard userData={user} handleActionClick={handleActionClick} />
 
           {/* Accessibility Card */}
           <AccessibilityCard 
