@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle2, XCircle, MapPin, Receipt, RefreshCw } from 'lucide-react';
 
-const RideCard = ({ ride }) => {
+const RideCard = ({ ride, onRebook }) => {
   const isCompleted = ride.status === 'Completed';
   const isCancelled = ride.status === 'Cancelled';
 
@@ -64,7 +64,10 @@ const RideCard = ({ ride }) => {
               <Receipt className="w-5 h-5" /> View Receipt
             </button>
             <div className="flex gap-3">
-              <button className="flex-1 py-3.5 rounded-xl bg-[#fbbf24] text-[#0e2769] font-extrabold text-[17px] hover:bg-[#f59e0b] transition-colors">
+              <button 
+                onClick={() => onRebook && onRebook(ride)}
+                className="flex-1 py-3.5 rounded-xl bg-[#fbbf24] text-[#0e2769] font-extrabold text-[17px] hover:bg-[#f59e0b] transition-colors"
+              >
                 Book Again
               </button>
               <button className="flex-1 py-3.5 rounded-xl bg-[#fbbf24] text-[#0e2769] font-extrabold text-[17px] hover:bg-[#f59e0b] transition-colors">
@@ -83,7 +86,10 @@ const RideCard = ({ ride }) => {
           </div>
 
           {/* Cancelled Actions */}
-          <button className="w-full py-3.5 rounded-xl bg-[#facc15] text-[#1e3a8a] font-extrabold text-[17px] flex items-center justify-center gap-2 hover:bg-[#eab308] transition-colors">
+          <button 
+            onClick={() => onRebook && onRebook(ride)}
+            className="w-full py-3.5 rounded-xl bg-[#facc15] text-[#1e3a8a] font-extrabold text-[17px] flex items-center justify-center gap-2 hover:bg-[#eab308] transition-colors"
+          >
             <RefreshCw className="w-5 h-5" /> Rebook Trip
           </button>
         </>
