@@ -82,7 +82,7 @@ const DriverDashboard = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             driver_id: driverId,
-            amount: 3000.00
+            amount: 1500.00
           })
         })
         .then(() => {
@@ -547,7 +547,7 @@ const DriverDashboard = () => {
                   </div>
                   <h3 className="text-lg font-extrabold text-[#0B2F89]">PayHere Payment</h3>
                   <p className="text-xs text-slate-500 font-medium font-sans">Renew Driver Subscription</p>
-                  <p className="text-lg font-black text-[#0B2F89] mt-1">Rs. 3,000.00 / mo</p>
+                  <p className="text-lg font-black text-[#0B2F89] mt-1">Rs. 1,500.00 / mo</p>
                 </div>
 
                 {checkoutError && (
