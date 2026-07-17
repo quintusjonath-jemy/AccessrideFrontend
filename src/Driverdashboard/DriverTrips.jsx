@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import DriverHeader from "./components/DriverHeader";
 
 const DriverTrips = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const DriverTrips = () => {
   const [recentTrips, setRecentTrips] = useState([]);
   const [weeklyEarnings, setWeeklyEarnings] = useState(0);
   const [weeklyTrips, setWeeklyTrips] = useState(0);
+  const [driverInfo, setDriverInfo] = useState({ first_name: "Driver", last_name: "", profile_image: "" });
 
   useEffect(() => {
     const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
@@ -38,6 +40,11 @@ const DriverTrips = () => {
         }
       })
       .catch((err) => console.error("Error fetching recent trips:", err));
+
+    fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
+      .then((res) => res.json())
+      .then((res) => { if (res.success && res.data?.driver) setDriverInfo(res.data.driver); })
+      .catch(() => {});
   }, []);
 
   const tips = useMemo(
@@ -62,19 +69,7 @@ const DriverTrips = () => {
 
   return (
     <>
-      {/* Header */}
-      <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
-        <h1 className="text-2xl font-extrabold tracking-tight">
-          <span className="text-[#FEC329]">Access</span>
-          <span className="text-[#0B2F89]">Ride</span>
-        </h1>
-        <img 
-          src="/src/Driverdashboard/drivering.webp" 
-          alt="Driver avatar" 
-          className="h-10 w-10 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.05)] border-2 border-white bg-white" 
-          onError={(e) => { e.target.src = "/src/Driverdashboard/drivering.webp"; }}
-        />
-      </header>
+      <DriverHeader driverInfo={driverInfo} />
 
       <div className="p-4">
         <h2 className="font-bold text-gray-800">Trips & Feedback</h2>

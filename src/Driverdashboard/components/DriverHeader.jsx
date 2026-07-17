@@ -60,7 +60,7 @@ const DriverHeader = ({ driverInfo = {} }) => {
       <div className="flex items-center gap-3">
         {/* Notification Bell */}
         <button
-          onClick={() => navigate("/driver/notifications")}
+          onClick={() => navigate("/driver-notifications")}
           className="relative p-2 rounded-full hover:bg-slate-100 text-[#0B2F89] transition"
           title="Notifications"
         >
