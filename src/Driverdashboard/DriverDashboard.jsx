@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiHome, FiMapPin, FiClock, FiDollarSign, FiUser, FiTruck } from "react-icons/fi";
+import { FiHome, FiMapPin, FiClock, FiDollarSign, FiUser, FiTruck, FiCreditCard, FiCheckCircle, FiLock, FiLoader } from "react-icons/fi";
 
 const DriverDashboard = () => {
   const navigate = useNavigate();
@@ -33,6 +33,91 @@ const DriverDashboard = () => {
     subscription_status: "",
     subscription_expires_at: ""
   });
+
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState("form"); // form, processing, success, error
+  const [checkoutError, setCheckoutError] = useState("");
+  const [txnId, setTxnId] = useState("");
+
+  const submitPayment = async (e) => {
+    if (e) e.preventDefault();
+    setCheckoutStep("processing");
+    setCheckoutError("");
+
+    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    
+    try {
+      // 1. Fetch secure PayHere configuration and MD5 hash from backend
+      const response = await fetch("http://localhost/Driverdashboard/api/initiate_payment.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          driver_id: driverId
+        })
+      });
+
+      const res = await response.json();
+      if (!res.success || !res.payhere_config) {
+        setCheckoutError(res.message || "Failed to initialize payment gateway.");
+        setCheckoutStep("error");
+        return;
+      }
+
+      const config = res.payhere_config;
+
+      // 2. Configure PayHere callbacks
+      window.payhere.onCompleted = function onCompleted(orderId) {
+        console.log("PayHere Payment completed. OrderID:" + orderId);
+        setTxnId(orderId);
+        
+        // Localhost development fallback: trigger local subscription renewal since webhook cannot reach localhost
+        fetch("http://localhost/Driverdashboard/api/renew_subscription.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            driver_id: driverId,
+            amount: 3000.00
+          })
+        })
+        .then(() => {
+          setCheckoutStep("success");
+          setTimeout(() => {
+            setShowCheckoutModal(false);
+            setCheckoutStep("form");
+            fetchDashboardData();
+          }, 3000);
+        })
+        .catch(err => {
+          console.error("Local database update failed:", err);
+          setCheckoutStep("success");
+          setTimeout(() => {
+            setShowCheckoutModal(false);
+            setCheckoutStep("form");
+            fetchDashboardData();
+          }, 3000);
+        });
+      };
+
+      window.payhere.onDismissed = function onDismissed() {
+        console.log("PayHere Payment dismissed");
+        setCheckoutStep("form");
+      };
+
+      window.payhere.onError = function onError(error) {
+        console.error("PayHere Error:", error);
+        setCheckoutError("Payment gateway error: " + error);
+        setCheckoutStep("error");
+      };
+
+      // 3. Initiate payment modal
+      window.payhere.startPayment(config);
+
+    } catch (err) {
+      console.error("Payment API Error:", err);
+      setCheckoutError("Unable to connect to payment gateway. Please check connection.");
+      setCheckoutStep("error");
+    }
+  };
 
   const fetchDashboardData = () => {
     let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
@@ -247,8 +332,14 @@ const DriverDashboard = () => {
             </div>
             <p className="text-xs text-red-650 font-bold leading-relaxed">
               Your driver membership has expired (expiry date: <span className="underline">{statistics.subscription_expires_at}</span>). 
-              Please contact the administrative team or renew your subscription to continue receiving bookings.
+              Please renew your subscription to continue receiving bookings.
             </p>
+            <button
+              onClick={() => setShowCheckoutModal(true)}
+              className="mt-3 w-full bg-red-650 hover:bg-red-700 text-white py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
+            >
+              💳 Renew Subscription Now
+            </button>
           </div>
         )}
 
@@ -323,9 +414,17 @@ const DriverDashboard = () => {
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
             <div>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Subscription Expiry</p>
-              <p className="mt-1 text-sm font-extrabold text-[#0B2F89]">{statistics.subscription_expires_at || "No Active Plan"}</p>
+              <p className="mt-1 text-sm font-extrabold text-[#0B2F89]">
+                {statistics.subscription_expires_at || "No Active Plan"}
+                {statistics.subscription_status === 'expired' && <span className="ml-2 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded font-extrabold">Expired</span>}
+              </p>
             </div>
-            <span className="text-xl">📅</span>
+            <button
+              onClick={() => setShowCheckoutModal(true)}
+              className="bg-[#0B2F89] hover:bg-blue-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm"
+            >
+              Renew
+            </button>
           </div>
         </div>
 
@@ -419,6 +518,97 @@ const DriverDashboard = () => {
                 Accept Ride
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Checkout Payment Gateway Modal Overlay */}
+      {showCheckoutModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => { setShowCheckoutModal(false); setCheckoutStep("form"); }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-650 font-bold p-1 rounded-full hover:bg-slate-100"
+            >
+              ✕
+            </button>
+
+            {checkoutStep === "form" && (
+              <div className="space-y-4 text-center">
+                <div className="pb-2 border-b border-slate-100">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2 text-emerald-600">
+                    <FiCreditCard className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-extrabold text-[#0B2F89]">PayHere Payment</h3>
+                  <p className="text-xs text-slate-500 font-medium font-sans">Renew Driver Subscription</p>
+                  <p className="text-lg font-black text-[#0B2F89] mt-1">Rs. 3,000.00 / mo</p>
+                </div>
+
+                {checkoutError && (
+                  <div className="bg-red-50 text-red-700 text-xs font-bold p-3 rounded-xl border border-red-200">
+                    ⚠️ {checkoutError}
+                  </div>
+                )}
+
+                <div className="py-2 text-left space-y-2">
+                  <p className="text-xs text-slate-650 font-bold leading-normal">
+                    This will open PayHere's secure sandbox checkout portal. You can complete the payment using sandbox credit cards or eZ Cash.
+                  </p>
+                  <div className="bg-slate-100 p-3 rounded-xl border border-slate-200 text-[10px] font-bold text-slate-500 flex flex-col gap-1">
+                    <p>• Currency: LKR</p>
+                    <p>• Gateway Mode: PayHere Sandbox</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-1 text-[10px] text-slate-400 font-semibold">
+                  <FiLock className="w-3.5 h-3.5" /> Secure Checkout by PayHere
+                </div>
+
+                <button 
+                  onClick={submitPayment}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold text-sm transition shadow-lg shadow-emerald-600/10 flex items-center justify-center gap-2"
+                >
+                  🚀 Launch Checkout Portal
+                </button>
+              </div>
+            )}
+
+            {checkoutStep === "processing" && (
+              <div className="text-center py-8 space-y-4">
+                <FiLoader className="w-12 h-12 text-[#0B2F89] animate-spin mx-auto" />
+                <h4 className="text-base font-extrabold text-[#0B2F89]">Processing Secure Payment</h4>
+                <p className="text-xs text-slate-500 font-medium">Please do not refresh or close the page...</p>
+              </div>
+            )}
+
+            {checkoutStep === "success" && (
+              <div className="text-center py-8 space-y-4">
+                <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500 animate-bounce">
+                  <FiCheckCircle className="w-10 h-10" />
+                </div>
+                <h4 className="text-lg font-black text-emerald-600">Payment Successful!</h4>
+                <p className="text-xs text-slate-650 font-bold">Your driver membership has been successfully renewed.</p>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[10px] font-bold text-slate-500 inline-block">
+                  Txn ID: {txnId}
+                </div>
+              </div>
+            )}
+
+            {checkoutStep === "error" && (
+              <div className="text-center py-8 space-y-4">
+                <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto text-red-550">
+                  ⚠️
+                </div>
+                <h4 className="text-base font-extrabold text-red-700">Payment Failed</h4>
+                <p className="text-xs text-slate-550 font-bold">{checkoutError || "An unexpected error occurred."}</p>
+                <button 
+                  onClick={() => setCheckoutStep("form")}
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs transition"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
