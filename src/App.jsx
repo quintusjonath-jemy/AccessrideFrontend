@@ -28,6 +28,7 @@ import DriverDashboard from "./Driverdashboard/DriverDashboard";
 import DriverTrips from "./Driverdashboard/DriverTrips";
 import Earnings from "./Driverdashboard/Earnings";
 import DriverProfile from "./Driverdashboard/DriverProfile";
+import DriverNotifications from "./Driverdashboard/DriverNotifications";
 import DriverLayout from "./Driverdashboard/layouts/DriverLayout";
 
 import RidePage from "./Ridepage/RidePage";
@@ -101,6 +102,7 @@ const App = () => {
           <Route path="/driver-trips" element={<DriverTrips />} />
           <Route path="/driver-earnings" element={<Earnings />} />
           <Route path="/driver-profile" element={<DriverProfile />} />
+          <Route path="/driver-notifications" element={<DriverNotifications />} />
         </Route>
 
         {/* login & register routes */}
