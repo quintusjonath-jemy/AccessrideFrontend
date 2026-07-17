@@ -70,6 +70,12 @@ const DriverDashboard = () => {
         console.log("PayHere Payment completed. OrderID:" + orderId);
         setTxnId(orderId);
         
+        // Live update the UI state instantly to active (avoids background webhook race condition delays)
+        setStatistics(prev => ({
+          ...prev,
+          subscription_status: 'active'
+        }));
+        
         // Localhost development fallback: trigger local subscription renewal since webhook cannot reach localhost
         fetch("http://localhost/Driverdashboard/api/renew_subscription.php", {
           method: "POST",
