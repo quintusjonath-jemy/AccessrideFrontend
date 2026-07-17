@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiHome, FiMapPin, FiClock, FiDollarSign, FiUser, FiTruck, FiCreditCard, FiCheckCircle, FiLock, FiLoader } from "react-icons/fi";
+import { FiHome, FiMapPin, FiClock, FiDollarSign, FiUser, FiTruck, FiCreditCard, FiCheckCircle, FiLock, FiLoader, FiPlus, FiTrash2 } from "react-icons/fi";
+import DriverHeader from "./components/DriverHeader";
 
 const DriverDashboard = () => {
   const navigate = useNavigate();
@@ -314,19 +315,7 @@ const DriverDashboard = () => {
 
   return (
     <div className="bg-slate-100 min-h-full flex flex-col font-sans text-slate-800">
-      {/* Header */}
-      <header className="flex justify-between items-center p-4 bg-slate-100 sticky top-0 z-50">
-        <h1 className="text-2xl font-extrabold tracking-tight">
-          <span className="text-[#FEC329]">Access</span>
-          <span className="text-[#0B2F89]">Ride</span>
-        </h1>
-        <img 
-          src={driverInfo.profile_image ? `http://localhost/admin/uploads/${driverInfo.profile_image}` : "/src/Driverdashboard/drivering.webp"} 
-          alt="Driver avatar" 
-          className="h-10 w-10 rounded-full object-cover shadow-[0_2px_10px_rgba(0,0,0,0.05)] border-2 border-white bg-white" 
-          onError={(e) => { e.target.src = "/src/Driverdashboard/drivering.webp"; }}
-        />
-      </header>
+      <DriverHeader driverInfo={driverInfo} />
 
       <main className="flex-1 px-5 pb-5 flex flex-col gap-4">
         {/* Subscription Expired Warning Banner */}
