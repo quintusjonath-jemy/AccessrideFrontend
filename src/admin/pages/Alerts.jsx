@@ -3,6 +3,19 @@ import { useEffect, useState } from "react";
 import { Bell, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+const getWhatsAppLink = (phone, riderName) => {
+  if (!phone) return "#";
+  // Remove non-numeric characters
+  let cleaned = phone.replace(/\D/g, "");
+  // If local Sri Lankan number (starts with 0 and is 10 digits), convert to 94...
+  if (cleaned.startsWith("0") && cleaned.length === 10) {
+    cleaned = "94" + cleaned.substring(1);
+  }
+  // Pre-filled message
+  const msg = encodeURIComponent(`AccessRide EMERGENCY ALERT: Your contact ${riderName || ""} has triggered an SOS alert! Please contact them or check their status.`);
+  return `https://wa.me/${cleaned}?text=${msg}`;
+};
+
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -224,7 +237,24 @@ const Alerts = () => {
                           <div className="text-[11px] text-red-600 dark:text-red-400 mt-2 border-t border-gray-100 dark:border-slate-700/40 pt-1.5 font-semibold">
                             <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">SOS Contact</p>
                             👤 {alert.emergency_contact_name} 
-                            {alert.emergency_contact_phone && ` (${alert.emergency_contact_phone})`}
+                            {alert.emergency_contact_phone && (
+                              <>
+                                <span className="text-slate-500 font-normal"> ({alert.emergency_contact_phone})</span>
+                                <div className="mt-1.5 flex items-center">
+                                  <a
+                                    href={getWhatsAppLink(alert.emergency_contact_phone, alert.user_name)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[10px] font-bold shadow-sm transition-all"
+                                  >
+                                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.968C16.59 1.97 14.12 .948 11.492.948c-5.442 0-9.866 4.372-9.87 9.802 0 1.714.453 3.39 1.313 4.876L1.879 22.12l6.59-1.766zM17.47 15.397c-.3-.149-1.777-.878-2.076-.985-.3-.108-.52-.163-.74.163-.219.324-.851 1.082-1.042 1.298-.19.216-.382.243-.682.094-.3-.15-1.267-.467-2.415-1.492-.893-.797-1.497-1.783-1.673-2.083-.176-.3-.019-.462.13-.611.135-.134.302-.351.453-.527.15-.176.2-.303.3-.505.099-.202.049-.379-.025-.528-.075-.15-.74-1.784-1.013-2.44-.267-.643-.539-.556-.738-.566-.19-.01-.409-.012-.628-.012-.22 0-.576.082-.878.411-.3.33-1.157 1.132-1.157 2.76 0 1.629 1.185 3.202 1.349 3.422.164.22 2.33 3.559 5.645 4.992.788.341 1.402.545 1.88.697.791.251 1.512.215 2.08.13.634-.094 1.777-.726 2.027-1.43.25-.704.25-1.307.175-1.43-.075-.124-.298-.199-.597-.348z"/>
+                                    </svg>
+                                    WhatsApp Contact
+                                  </a>
+                                </div>
+                              </>
+                            )}
                           </div>
                         )}
                       </td>
