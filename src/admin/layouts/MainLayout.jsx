@@ -1,5 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import VoiceCallReceiver from "../components/VoiceCallReceiver";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
@@ -48,6 +49,7 @@ const MainLayout = ({ children }) => {
 
         <div className="flex-1 overflow-y-auto p-6">{children}</div>
       </div>
+      <VoiceCallReceiver />
     </div>
   );
 };
