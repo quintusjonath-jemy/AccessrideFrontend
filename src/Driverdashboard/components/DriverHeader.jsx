@@ -24,15 +24,11 @@ const DriverHeader = ({ driverInfo = {} }) => {
     const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (!driverId) return;
 
-    fetch(`http://localhost/Driverdashboard/api/notifications.php?driver_id=${driverId}`)
+    fetch(`http://localhost/Driverdashboard/api/notifications.php?driver_id=${driverId}&count=1`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          const unread = data.filter((n) => !n.is_read).length;
-          setUnreadCount(unread);
-        } else if (data && Array.isArray(data.notifications)) {
-          const unread = data.notifications.filter((n) => !n.is_read).length;
-          setUnreadCount(unread);
+        if (data && typeof data.unread_count === 'number') {
+          setUnreadCount(data.unread_count);
         }
       })
       .catch(() => {}); // silently ignore if endpoint doesn't exist yet
