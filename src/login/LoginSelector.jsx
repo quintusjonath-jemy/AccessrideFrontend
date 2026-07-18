@@ -139,9 +139,7 @@ const LoginSelector = () => {
       {/* Header / Brand */}
       <header className="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center relative z-20">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 bg-[#0B2F89] rounded-xl flex items-center justify-center shadow-md" role="img" aria-label="AccessRide Logo">
-            <Accessibility size={22} className="text-white" />
-          </div>
+          <img src="/logo.png" alt="AccessRide Logo" className="w-10 h-10 rounded-xl shadow-md border border-slate-200 bg-white" />
           <span className="text-xl font-black tracking-tight" aria-label="AccessRide brand name">
             <span className="text-[#FEC329]">Access</span>
             <span className="text-[#0B2F89]">Ride</span>

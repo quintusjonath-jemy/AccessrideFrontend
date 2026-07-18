@@ -41,10 +41,13 @@ const DashboardHeader = ({ user }) => {
 
   return (
     <div className="flex items-center justify-between px-5 py-4 bg-white shadow-sm relative">
-      <h1 className="text-xl font-extrabold">
-        <span className="text-[#FEC329]">Access</span>
-        <span className="text-[#0B2F89]">Ride</span>
-      </h1>
+      <div className="flex items-center gap-2">
+        <img src="/logo.png" alt="AccessRide" className="w-8 h-8 rounded-lg shadow-sm border border-slate-100" />
+        <h1 className="text-xl font-extrabold">
+          <span className="text-[#FEC329]">Access</span>
+          <span className="text-[#0B2F89]">Ride</span>
+        </h1>
+      </div>
 
       <div className="flex items-center gap-4">
         {/* Notifications Bell */}
