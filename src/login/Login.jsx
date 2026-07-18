@@ -125,7 +125,34 @@ const Login = () => {
     const cleanText = text.toLowerCase().trim();
     const currentStep = voiceStepRef.current;
 
-    if (currentStep === "email") {
+    if (currentStep === "mode") {
+      if (
+        cleanText.includes("login") ||
+        cleanText.includes("log in") ||
+        cleanText.includes("sign")
+      ) {
+        voiceStepRef.current = "email";
+        setVoiceStep("email");
+        speakWithFallback("Please state your email address.", null, () => {
+          startListeningForStep("email");
+        });
+      } else if (
+        cleanText.includes("register") ||
+        cleanText.includes("create") ||
+        cleanText.includes("signup") ||
+        cleanText.includes("sign up")
+      ) {
+        voiceStepRef.current = "idle";
+        setVoiceStep("idle");
+        speakWithFallback("Opening registration page.", null, () => {
+          navigate("/register", { state: { voiceStart: true } });
+        });
+      } else {
+        speakWithFallback("Would you like to login or register?", null, () => {
+          startListeningForStep("mode");
+        });
+      }
+    } else if (currentStep === "email") {
       const parsedEmail = cleanSpokenEmail(text);
       setEmail(parsedEmail);
       emailRef.current = parsedEmail; // Update ref synchronously
@@ -207,7 +234,15 @@ const Login = () => {
 
     rec.onstart = () => {
       setIsListening(true);
-      setVoiceStatus(step === "email" ? "Say your email..." : step === "password" ? "Say your password..." : "Say login...");
+      setVoiceStatus(
+        step === "mode" 
+          ? "Say login or register..." 
+          : step === "email" 
+            ? "Say your email..." 
+            : step === "password" 
+              ? "Say your password..." 
+              : "Say login..."
+      );
     };
 
     rec.onresult = (event) => {
@@ -232,10 +267,10 @@ const Login = () => {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
-    voiceStepRef.current = "email";
-    setVoiceStep("email");
-    speakWithFallback("Voice login activated. Please state your email address.", null, () => {
-      startListeningForStep("email");
+    voiceStepRef.current = "mode";
+    setVoiceStep("mode");
+    speakWithFallback("Would you like to login or register?", null, () => {
+      startListeningForStep("mode");
     });
   };
 
