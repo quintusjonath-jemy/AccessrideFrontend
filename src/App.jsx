@@ -15,6 +15,7 @@ import SystemSettings from "./admin/pages/settings/SystemSettings";
 import AdminEarnings from "./admin/pages/Earnings";
 import Users from "./admin/pages/Users";
 import MonthlyReport from "./admin/pages/MonthlyReport";
+import AdminNotifications from "./admin/pages/Notifications";
 
 import UserDashboard from "./UserDashboard/pages/UserDashboard";
 import UserLayout from "./UserDashboard/layouts/UserLayout";
@@ -72,6 +73,7 @@ const App = () => {
           <Route path="settings/system" element={<SystemSettings />} />
           <Route path="earnings" element={<AdminEarnings />} />
           <Route path="monthly-report" element={<MonthlyReport />} />
+          <Route path="notifications" element={<AdminNotifications />} />
         </Route>
 
         {/* Support non-prefixed settings links from Settings.jsx */}
