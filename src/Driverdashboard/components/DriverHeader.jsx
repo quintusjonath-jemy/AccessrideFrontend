@@ -48,10 +48,13 @@ const DriverHeader = ({ driverInfo = {} }) => {
   return (
     <header className="flex justify-between items-center px-4 py-3.5 bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
       {/* Logo */}
-      <h1 className="text-2xl font-extrabold tracking-tight">
-        <span className="text-[#FEC329]">Access</span>
-        <span className="text-[#0B2F89]">Ride</span>
-      </h1>
+      <div className="flex items-center gap-2">
+        <img src="/logo.png" alt="AccessRide" className="w-8 h-8 rounded-lg shadow-sm border border-slate-100" />
+        <h1 className="text-2xl font-extrabold tracking-tight">
+          <span className="text-[#FEC329]">Access</span>
+          <span className="text-[#0B2F89]">Ride</span>
+        </h1>
+      </div>
 
       <div className="flex items-center gap-3">
         {/* Notification Bell */}

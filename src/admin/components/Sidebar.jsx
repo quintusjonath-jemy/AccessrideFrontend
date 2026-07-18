@@ -60,15 +60,17 @@ const Sidebar = () => {
       {/* Logo Section */}
 
       <div>
-        <div className="p-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
-          <h1 className="text-3xl font-extrabold">
-            <span className="text-[#FEC329]">Access</span>
-            <span className="text-[#0B2F89] dark:text-white">Ride</span>
-          </h1>
-
-          <p className="text-sm text-slate-500 mt-1">
-            Blind Assistance Dashboard
-          </p>
+        <div className="p-6 bg-white dark:bg-slate-955 border-b border-slate-200 dark:border-slate-800 flex flex-col items-center gap-3">
+          <img src="/logo.png" alt="AccessRide Logo" className="w-16 h-16 rounded-2xl shadow-md border border-slate-100 dark:border-slate-850" />
+          <div className="text-center">
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              <span className="text-[#FEC329]">Access</span>
+              <span className="text-[#0B2F89] dark:text-white">Ride</span>
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Blind Assistance Dashboard
+            </p>
+          </div>
         </div>
 
         {/* Navigation */}
