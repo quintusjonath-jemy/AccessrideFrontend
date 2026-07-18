@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Lock,
   Mic,
+  MicOff,
   Shield,
   Headphones,
   Accessibility,
 } from "lucide-react";
+import { speakWithFallback } from "../UserDashboard/components/voiceassistant/VoiceAssistant";
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,9 +20,37 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [userError, setUserError] = useState("");
 
+  // Refs to prevent stale closures in voice event handlers
+  const emailRef = useRef("");
+  const passwordRef = useRef("");
+  
+  // Voice Guidance States
+  const [voiceStep, setVoiceStep] = useState("idle"); // For UI display: idle | email | password | confirm
+  const voiceStepRef = useRef("idle"); // Synchronous ref for event listeners
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState("Tap to use Voice Login");
+  const recognitionRef = useRef(null);
+
+  // Greet the user when they mount the login page
+  useEffect(() => {
+    speakWithFallback(
+      "Welcome to AccessRide Login. If you need voice guidance, please tap the yellow microphone button at the bottom of the screen."
+    );
+  }, []);
+
   const loginUser = async () => {
-    if (!email || !password) {
+    const currentEmail = emailRef.current;
+    const currentPassword = passwordRef.current;
+
+    if (!currentEmail || !currentPassword) {
+      speakWithFallback("Please enter both email and password.");
       alert("Please enter email and password");
+      return;
+    }
+
+    if (currentPassword.length < 8) {
+      speakWithFallback("Password must be at least 8 characters. Please try again.");
+      setUserError("Password must be at least 8 characters.");
       return;
     }
 
@@ -31,33 +63,182 @@ const Login = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
-          password
+          email: currentEmail,
+          password: currentPassword
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        setUserError(result.error || "Login failed");
+        const errMsg = result.error || "Login failed";
+        setUserError(errMsg);
+        speakWithFallback(
+          `Login failed. ${errMsg}. Let's try again. Please state your email address.`,
+          null,
+          () => {
+            voiceStepRef.current = "email";
+            setVoiceStep("email");
+            startListeningForStep("email");
+          }
+        );
         return;
       }
 
       setUserError("");
-      alert(result.message || "Login Successful!");
+      speakWithFallback("Login successful. Opening your dashboard.");
       localStorage.setItem("user_id", result.user.id);
       sessionStorage.setItem("user_id", result.user.id);
+      
       setEmail("");
       setPassword("");
+      emailRef.current = "";
+      passwordRef.current = "";
+      
       navigate("/user/dashboard");
     } catch (error) {
       setUserError("Unable to connect to server. Please try again.");
+      speakWithFallback(
+        "Server error. Let's try again. Please state your email address.",
+        null,
+        () => {
+          voiceStepRef.current = "email";
+          setVoiceStep("email");
+          startListeningForStep("email");
+        }
+      );
     }
   };
 
-  const voiceLogin = () => {
-    alert("Voice Login Activated");
+  // Helper to clean up spoken emails (e.g. "john and gmail dot com" or "john at gmail..." -> "john@gmail.com")
+  const cleanSpokenEmail = (text) => {
+    return text
+      .toLowerCase()
+      .replace(/\s+/g, "") // remove all spaces
+      .replace(/at/g, "@")
+      .replace(/and/g, "@") // replace common transcription errors
+      .replace(/an/g, "@")
+      .replace(/dot/g, ".");
   };
+
+  const handleVoiceInput = (text) => {
+    const cleanText = text.toLowerCase().trim();
+    const currentStep = voiceStepRef.current;
+
+    if (currentStep === "email") {
+      const parsedEmail = cleanSpokenEmail(text);
+      setEmail(parsedEmail);
+      emailRef.current = parsedEmail; // Update ref synchronously
+      speakWithFallback(
+        `Email set to ${parsedEmail.split("").join(" ")}. Next, please state your password.`,
+        null,
+        () => {
+          voiceStepRef.current = "password";
+          setVoiceStep("password");
+          startListeningForStep("password");
+        }
+      );
+    } else if (currentStep === "password") {
+      const parsedPassword = cleanText.replace(/\s+/g, ""); // remove spaces
+      if (parsedPassword.length < 8) {
+        speakWithFallback(
+          "Password must be at least 8 characters. Please state your password again.",
+          null,
+          () => {
+            startListeningForStep("password");
+          }
+        );
+        return;
+      }
+
+      setPassword(parsedPassword);
+      passwordRef.current = parsedPassword; // Update ref synchronously
+      speakWithFallback(
+        "Password received. Say login to sign in.",
+        null,
+        () => {
+          voiceStepRef.current = "confirm";
+          setVoiceStep("confirm");
+          startListeningForStep("confirm");
+        }
+      );
+    } else if (currentStep === "confirm") {
+      console.log("Voice Confirmation Input:", cleanText);
+      if (
+        cleanText.includes("login") ||
+        cleanText.includes("log in") ||
+        cleanText.includes("sign") ||
+        cleanText.includes("yes")
+      ) {
+        voiceStepRef.current = "idle";
+        setVoiceStep("idle");
+        loginUser();
+      } else if (
+        cleanText.includes("clear") ||
+        cleanText.includes("reset") ||
+        cleanText.includes("start over") ||
+        cleanText.includes("clean") ||
+        cleanText.includes("delete")
+      ) {
+        setEmail("");
+        setPassword("");
+        emailRef.current = "";
+        passwordRef.current = "";
+        voiceStepRef.current = "idle";
+        setVoiceStep("idle");
+        speakWithFallback("Form cleared. Tap the mic button to start over.");
+      } else {
+        speakWithFallback("Say login to sign in, or clear to reset.");
+      }
+    }
+  };
+
+  const startListeningForStep = (step) => {
+    if (!SpeechRecognition) return;
+    
+    if (recognitionRef.current) {
+      recognitionRef.current.abort();
+    }
+
+    const rec = new SpeechRecognition();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    rec.onstart = () => {
+      setIsListening(true);
+      setVoiceStatus(step === "email" ? "Say your email..." : step === "password" ? "Say your password..." : "Say login...");
+    };
+
+    rec.onresult = (event) => {
+      const spokenText = event.results[0][0].transcript;
+      handleVoiceInput(spokenText);
+    };
+
+    rec.onerror = () => {
+      setIsListening(false);
+      setVoiceStatus("Voice error. Tap mic to retry.");
+    };
+
+    rec.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = rec;
+    rec.start();
+  };
+
+  const startVoiceLoginWizard = () => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    voiceStepRef.current = "email";
+    setVoiceStep("email");
+    speakWithFallback("Voice login activated. Please state your email address.", null, () => {
+      startListeningForStep("email");
+    });
+  };
+
 
   return (
     <div className="bg-linear-to-br from-blue-100 to-gray-200 min-h-screen flex items-center justify-center p-5">
@@ -94,7 +275,10 @@ const Login = () => {
                     placeholder="Enter your email"
                     className="w-full ml-3 outline-none"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      emailRef.current = e.target.value;
+                    }}
                   />
                 </div>
               </div>
@@ -113,7 +297,10 @@ const Login = () => {
                     placeholder="Enter your password"
                     className="w-full ml-3 outline-none"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      passwordRef.current = e.target.value;
+                    }}
                   />
                 </div>
               </div>
@@ -139,14 +326,16 @@ const Login = () => {
               {/* Voice Login */}
               <div className="text-center mt-10">
                 <button
-                  onClick={voiceLogin}
-                  className="w-24 h-24 bg-yellow-400 hover:bg-yellow-300 rounded-full shadow-lg text-yellow-900 flex items-center justify-center mx-auto"
+                  onClick={startVoiceLoginWizard}
+                  className={`w-24 h-24 rounded-full shadow-lg flex items-center justify-center mx-auto transition-all cursor-pointer ${
+                    isListening ? "bg-red-500 text-white animate-pulse" : "bg-yellow-400 hover:bg-yellow-300 text-yellow-900"
+                  }`}
                 >
-                  <Mic size={40} />
+                  {isListening ? <MicOff size={40} /> : <Mic size={40} />}
                 </button>
 
                 <p className="text-blue-900 font-semibold text-xl mt-4">
-                  Use Voice Login
+                  {voiceStatus}
                 </p>
               </div>
 
