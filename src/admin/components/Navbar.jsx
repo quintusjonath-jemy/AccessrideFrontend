@@ -116,7 +116,7 @@ const Navbar = () => {
     try {
       await axios.put(`http://localhost/admin/api/notifications.php?id=${id}`);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: "1" } : n))
+        prev.filter((n) => n.id !== id)
       );
     } catch (err) {
       console.log(err);
@@ -126,7 +126,7 @@ const Navbar = () => {
   const markAllAsRead = async () => {
     try {
       await axios.put("http://localhost/admin/api/notifications.php?read_all=1");
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: "1" })));
+      setNotifications([]);
     } catch (err) {
       console.log(err);
     }
@@ -385,17 +385,40 @@ const Navbar = () => {
 
               {/* Body */}
               <div className="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700">
-                {notifications.length === 0 ? (
+                {notifications.filter((n) => n.is_read == 0).length === 0 ? (
                   <p className="p-6 text-gray-500 dark:text-slate-400 text-center text-sm">
                     No notifications yet
                   </p>
                 ) : (
-                  notifications.map((item) => {
+                  notifications.filter((n) => n.is_read == 0).map((item) => {
                     const isUnread = item.is_read == 0;
                     return (
                       <div
                         key={item.id}
-                        className={`p-4 transition flex gap-3 relative group ${
+                        onClick={(e) => {
+                          // Ignore click if clicking on the action buttons
+                          if (e.target.closest("button")) return;
+
+                          // Mark as read if unread
+                          if (isUnread) {
+                            markAsRead(item.id);
+                          }
+
+                          // Close the dropdown
+                          setShowNotifications(false);
+
+                          // Redirect based on type
+                          if (item.type === "SOS" || item.type === "Alert") {
+                            navigate("/admin/alerts");
+                          } else if (item.type === "Ride") {
+                            navigate("/admin/rides");
+                          } else if (item.type === "Driver") {
+                            navigate("/admin/drivers");
+                          } else {
+                            navigate("/admin/users");
+                          }
+                        }}
+                        className={`p-4 transition flex gap-3 relative group cursor-pointer ${
                           isUnread
                             ? "bg-yellow-50/20 hover:bg-yellow-50/40 dark:bg-yellow-950/10 dark:hover:bg-yellow-950/20"
                             : "hover:bg-gray-50 dark:hover:bg-slate-700/50"
@@ -487,11 +510,11 @@ const Navbar = () => {
               {/* Footer */}
               <div className="p-3 text-center bg-gray-50 dark:bg-slate-850 border-t border-gray-100 dark:border-slate-700">
                 <Link
-                  to="/admin/alerts"
+                  to="/admin/notifications"
                   onClick={() => setShowNotifications(false)}
                   className="text-yellow-600 dark:text-yellow-500 font-semibold text-sm hover:text-yellow-700 dark:hover:text-yellow-400 transition"
                 >
-                  View All Alerts →
+                  View All →
                 </Link>
               </div>
             </div>

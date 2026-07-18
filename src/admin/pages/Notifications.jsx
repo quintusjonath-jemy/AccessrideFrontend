@@ -1,0 +1,308 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Bell,
+  CheckCircle,
+  AlertTriangle,
+  Car,
+  User,
+  UserCheck,
+  Trash2,
+  Check,
+  Search,
+} from "lucide-react";
+
+const getPageIcon = (type) => {
+  switch (type) {
+    case "SOS":
+      return (
+        <div className="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl text-red-500 animate-pulse">
+          <AlertTriangle size={20} />
+        </div>
+      );
+    case "Alert":
+      return (
+        <div className="p-3 bg-orange-50 dark:bg-orange-950/40 rounded-xl text-orange-500">
+          <AlertTriangle size={20} />
+        </div>
+      );
+    case "Ride":
+      return (
+        <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl text-blue-500">
+          <Car size={20} />
+        </div>
+      );
+    case "Driver":
+      return (
+        <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-xl text-purple-500">
+          <UserCheck size={20} />
+        </div>
+      );
+    default:
+      return (
+        <div className="p-3 bg-green-50 dark:bg-green-950/40 rounded-xl text-green-500">
+          <User size={20} />
+        </div>
+      );
+  }
+};
+
+const formatTime = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr.replace(/-/g, "/"));
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHrs / 24);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const Notifications = () => {
+  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all"); // all | unread | read
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get("http://localhost/admin/api/notifications.php");
+      setNotifications(Array.isArray(res.data) ? res.data : []);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const markAsRead = async (id) => {
+    try {
+      await axios.put(`http://localhost/admin/api/notifications.php?id=${id}`);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: "1" } : n))
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await axios.put("http://localhost/admin/api/notifications.php?read_all=1");
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: "1" })));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const deleteNotification = async (id) => {
+    try {
+      await axios.delete(`http://localhost/admin/api/notifications.php?id=${id}`);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleNotificationClick = (item) => {
+    // Mark as read if it is unread
+    if (item.is_read == 0) {
+      markAsRead(item.id);
+    }
+
+    // Redirect based on type
+    if (item.type === "SOS" || item.type === "Alert") {
+      navigate("/admin/alerts");
+    } else if (item.type === "Ride") {
+      navigate("/admin/rides");
+    } else if (item.type === "Driver") {
+      navigate("/admin/drivers");
+    } else {
+      navigate("/admin/users");
+    }
+  };
+
+  // Filters
+  const filteredNotifications = notifications
+    .filter((n) => {
+      if (activeTab === "unread") return n.is_read == 0;
+      if (activeTab === "read") return n.is_read == 1;
+      return true;
+    })
+    .filter((n) => {
+      return (
+        n.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        n.type.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+
+  const unreadCount = notifications.filter((n) => n.is_read == 0).length;
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
+      {/* Header section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-3">
+            <Bell className="text-yellow-500" /> System Notifications
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+            Manage alerts and notifications generated by the system.
+          </p>
+        </div>
+
+        {unreadCount > 0 && (
+          <button
+            onClick={markAllAsRead}
+            className="flex items-center gap-2 px-4 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-semibold rounded-xl transition shadow-sm"
+          >
+            <CheckCircle size={18} /> Mark All as Read
+          </button>
+        )}
+      </div>
+
+      {/* Control bar */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between bg-white dark:bg-slate-800 border border-gray-150 dark:border-slate-700 p-4 rounded-2xl shadow-sm">
+        {/* Tab filters */}
+        <div className="flex gap-2">
+          {["all", "unread", "read"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize transition ${
+                activeTab === tab
+                  ? "bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-100 font-bold"
+                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400"
+              }`}
+            >
+              {tab} ({
+                tab === "all"
+                  ? notifications.length
+                  : tab === "unread"
+                    ? unreadCount
+                    : notifications.length - unreadCount
+              })
+            </button>
+          ))}
+        </div>
+
+        {/* Search bar */}
+        <div className="relative w-full md:w-80">
+          <Search
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Search notifications..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-100 focus:bg-white outline-none transition"
+          />
+        </div>
+      </div>
+
+      {/* List items */}
+      <div className="space-y-3">
+        {loading ? (
+          <div className="bg-white dark:bg-slate-800 border border-gray-150 dark:border-slate-700 rounded-2xl p-12 text-center text-gray-500">
+            <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            Loading notifications...
+          </div>
+        ) : filteredNotifications.length === 0 ? (
+          <div className="bg-white dark:bg-slate-800 border border-gray-150 dark:border-slate-700 rounded-2xl p-12 text-center text-gray-500">
+            <Bell size={40} className="mx-auto text-gray-300 mb-4" />
+            <p className="font-semibold text-lg">No notifications found</p>
+            <p className="text-sm text-gray-400 mt-1">
+              There are no notifications matching your selected criteria.
+            </p>
+          </div>
+        ) : (
+          filteredNotifications.map((item) => {
+            const isUnread = item.is_read == 0;
+            return (
+              <div
+                key={item.id}
+                onClick={() => handleNotificationClick(item)}
+                className={`flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white dark:bg-slate-800 border border-gray-150 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer relative group ${
+                  isUnread
+                    ? "border-l-4 border-l-yellow-400 bg-yellow-500/[0.02]"
+                    : "opacity-75"
+                }`}
+              >
+                <div className="flex gap-4 items-start flex-1 min-w-0 pr-6">
+                  {getPageIcon(item.type)}
+                  <div className="space-y-1">
+                    <p className={`text-gray-850 dark:text-slate-200 text-sm leading-relaxed ${isUnread ? "font-semibold" : ""}`}>
+                      {item.message}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-slate-500 font-medium">
+                      <span className="uppercase tracking-wider font-semibold text-yellow-650 dark:text-yellow-500">
+                        {item.type}
+                      </span>
+                      <span>•</span>
+                      <span>{formatTime(item.created_at)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 mt-4 md:mt-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150 shrink-0">
+                  {isUnread && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markAsRead(item.id);
+                      }}
+                      title="Mark as read"
+                      className="p-2 text-gray-400 hover:text-green-500 bg-gray-50 hover:bg-green-50 dark:bg-slate-900 dark:hover:bg-green-950/20 rounded-xl transition border border-gray-100 dark:border-slate-700"
+                    >
+                      <Check size={16} />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteNotification(item.id);
+                    }}
+                    title="Delete"
+                    className="p-2 text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 dark:bg-slate-900 dark:hover:bg-red-950/20 rounded-xl transition border border-gray-100 dark:border-slate-700"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
+                {/* Unread indicator */}
+                {isUnread && (
+                  <span className="absolute right-4 top-4 w-2 h-2 bg-yellow-500 rounded-full group-hover:scale-0 transition duration-150"></span>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Notifications;
