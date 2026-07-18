@@ -71,10 +71,10 @@ const DriverTrips = () => {
     <>
       <DriverHeader driverInfo={driverInfo} />
 
-      <div className="p-4">
+      <div className="px-4 pt-4 pb-2">
         <h2 className="font-bold text-gray-800">Trips & Feedback</h2>
         <p className="text-xs text-gray-500">WEEKLY PERFORMANCE REVIEW</p>
-          </div>
+      </div>
 
       <div className="mx-4 bg-[#00236F] text-white rounded-2xl p-4 shadow-lg">
         <p className="text-sm font-semibold">This Week's Trips ({weeklyTrips} Completed)</p>

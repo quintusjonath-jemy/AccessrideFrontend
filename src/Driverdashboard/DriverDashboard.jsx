@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiHome, FiMapPin, FiClock, FiDollarSign, FiUser, FiTruck, FiCreditCard, FiCheckCircle, FiLock, FiLoader, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiTruck, FiCreditCard, FiCheckCircle, FiLock, FiLoader } from "react-icons/fi";
 import DriverHeader from "./components/DriverHeader";
 
 const DriverDashboard = () => {
@@ -331,7 +331,7 @@ const DriverDashboard = () => {
             </p>
             <button
               onClick={() => setShowCheckoutModal(true)}
-              className="mt-3 w-full bg-red-650 hover:bg-red-700 text-white py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
+              className="mt-3 w-full bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow"
             >
               💳 Renew Subscription Now
             </button>
