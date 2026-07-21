@@ -68,7 +68,7 @@ export const speakWithFallback = async (text, onStart, onEnd) => {
   try {
     const response = await fetch(
       `${AGENT_BASE}?action=speak&text=${encodeURIComponent(text)}`,
-      { signal }
+      { signal, credentials: 'include' }  // credentials: send session cookie
     );
 
     if (response.ok) {
@@ -113,7 +113,8 @@ export const speakWithFallback = async (text, onStart, onEnd) => {
 const fetchHomeLocation = async (userId) => {
   try {
     const res = await fetch(
-      `${AGENT_BASE}?action=get_user_location&user_id=${userId}`
+      `${AGENT_BASE}?action=get_user_location&user_id=${userId}`,
+      { credentials: 'include' }  // credentials: send session cookie for auth
     );
     const data = await res.json();
     if (data.success) return data.location;
@@ -127,7 +128,8 @@ const fetchHomeLocation = async (userId) => {
 const fetchLastRide = async (userId) => {
   try {
     const res = await fetch(
-      `${AGENT_BASE}?action=get_last_ride&user_id=${userId}`
+      `${AGENT_BASE}?action=get_last_ride&user_id=${userId}`,
+      { credentials: 'include' }  // credentials: send session cookie for auth
     );
     const data = await res.json();
     if (data.success) return data;
