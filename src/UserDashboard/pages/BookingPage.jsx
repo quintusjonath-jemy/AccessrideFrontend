@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, UserCircle, Car } from "lucide-react";
 import axios from "axios";
+import { speakWithFallback } from "../components/voiceassistant/VoiceAssistant";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -93,10 +94,14 @@ const BookingPage = () => {
   // Multi-step state: 1 = vehicle selection, 2 = route/class selection
   const [step, setStep] = useState(initialData.step || 1);
 
+  // Voice agent pre-fill: voiceDestination and voiceVehicle come from VoiceAssistant.jsx
+  const voiceDestination = initialData.voiceDestination || "";
+  const voiceVehicle     = initialData.voiceVehicle     || "";
+
   // Booking details states
-  const [vehicleType, setVehicleType] = useState(initialData.vehicleType || "");
+  const [vehicleType, setVehicleType] = useState(voiceVehicle || initialData.vehicleType || "");
   const [pickup, setPickup] = useState(initialData.pickup || "");        // user types or uses GPS button
-  const [dropoff, setDropoff] = useState(initialData.dropoff || "");       // user enters manually
+  const [dropoff, setDropoff] = useState(voiceDestination || initialData.dropoff || "");       // user enters manually
   const [isLocating, setIsLocating] = useState(false); // true only while GPS button resolves
   const [pickupCoords, setPickupCoords] = useState(null);
   const [rideClass, setRideClass] = useState("eco");
@@ -124,6 +129,17 @@ const BookingPage = () => {
         }
       })
       .catch(err => console.error("Error fetching rates:", err));
+  }, []);
+
+  // Announce voice pre-fill to user (only when arriving via voice agent)
+  useEffect(() => {
+    if (voiceDestination) {
+      const vehicle = voiceVehicle ? ` by ${voiceVehicle}` : "";
+      speakWithFallback(
+        `Booking page ready. Destination set to ${voiceDestination}${vehicle}. Please confirm your pickup location and tap Book Ride.`
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Mapbox Refs & State

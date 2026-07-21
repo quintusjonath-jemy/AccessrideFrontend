@@ -4,7 +4,7 @@ import axios from "axios";
 
 import DashboardHeader from "../components/DashboardHeader";
 import WelcomeSection from "../components/WelcomeSection";
-import VoiceBookingCard from "../components/VoiceBookingCard";
+import { VoiceAssistantButton } from "../components/voiceassistant/VoiceAssistant";
 import QuickActions from "../components/QuickActions";
 import UpcomingRideCard from "../components/UpcomingRideCard";
 import RecentRides from "../components/RecentRides";
@@ -113,7 +113,12 @@ const UserDashboard = () => {
           {/* 3. Pass user object instead of name */}
           <WelcomeSection user={dashboard?.user} />
 
-          <VoiceBookingCard />
+          <div className="mx-5 mt-5">
+            <VoiceAssistantButton
+              pageName="AccessRide"
+              welcomePrompt={`Welcome back${dashboard?.user?.first_name ? ', ' + dashboard.user.first_name : ''}. Say book a ride, take me home, same as last time, track my driver, or SOS.`}
+            />
+          </div>
 
           {/* 4. Pass statistics to QuickActions */}
           <QuickActions statistics={dashboard?.statistics} />
