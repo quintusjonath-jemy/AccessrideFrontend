@@ -3,6 +3,7 @@ import { FiPhoneCall, FiMapPin, FiUsers, FiX, FiArrowLeft, FiUser } from "react-
 import LiveMap from "../admin/components/LiveMap";
 import { useNavigate } from "react-router-dom";
 import { Peer } from "peerjs";
+import API_BASE from "../config/api";
 
 const EmergencySOS = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const EmergencySOS = () => {
   useEffect(() => {
     // Fetch passenger's name to pass to the admin receiver
     const userId = getUserId();
-    fetch(`http://localhost/history_and_profile/profile/get_profile.php?user_id=${userId}`)
+    fetch(`${API_BASE}/history_and_profile/profile/get_profile.php?user_id=${userId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.user) {
@@ -56,7 +57,7 @@ const EmergencySOS = () => {
         setUserLocation([longitude, latitude]);
 
         // Send SOS alert to backend
-        fetch("http://localhost/Emergency/sos.php", {
+        fetch(`${API_BASE}/Emergency/sos.php`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
