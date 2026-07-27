@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DriverHeader from "./components/DriverHeader";
+import API_BASE from "../config/api";
 
 const DriverTrips = () => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const DriverTrips = () => {
       navigate("/driver-login");
       return;
     }
-    fetch(`http://localhost/Driverdashboard/api/recent_trips.php?driver_id=${driverId}`)
+    fetch(`${API_BASE}/Driverdashboard/api/recent_trips.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data) {
@@ -41,7 +42,7 @@ const DriverTrips = () => {
       })
       .catch((err) => console.error("Error fetching recent trips:", err));
 
-    fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
+    fetch(`${API_BASE}/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then((res) => { if (res.success && res.data?.driver) setDriverInfo(res.data.driver); })
       .catch(() => {});

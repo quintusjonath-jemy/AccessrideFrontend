@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DriverHeader from "./components/DriverHeader";
+import API_BASE from "../config/api";
 
 const Earnings = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Earnings = () => {
       navigate("/driver-login");
       return;
     }
-    fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
+    fetch(`${API_BASE}/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.data) {

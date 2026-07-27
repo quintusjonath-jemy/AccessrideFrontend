@@ -6,6 +6,7 @@ import {
   FiMapPin, FiClock
 } from "react-icons/fi";
 import DriverHeader from "./components/DriverHeader";
+import API_BASE from "../config/api";
 
 const DriverProfile = () => {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ const DriverProfile = () => {
       return;
     }
 
-    fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
+    fetch(`${API_BASE}/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.data) {
@@ -109,7 +110,7 @@ const DriverProfile = () => {
     const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
 
     try {
-      const response = await fetch("http://localhost/Driverdashboard/api/update_profile.php", {
+      const response = await fetch(`${API_BASE}/Driverdashboard/api/update_profile.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ driver_id: driverId, ...editForm })
@@ -175,7 +176,7 @@ const DriverProfile = () => {
             <div className="relative shrink-0">
               <img
                 src={driverInfo.profile_image
-                  ? `http://localhost/admin/uploads/${driverInfo.profile_image}`
+                  ? `${API_BASE}/admin/uploads/${driverInfo.profile_image}`
                   : "/src/Driverdashboard/drivering.webp"}
                 alt="Driver"
                 className="h-20 w-20 rounded-full object-cover shadow ring-4 ring-slate-100"

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FiBell, FiUser, FiLogOut, FiChevronDown, FiSettings } from "react-icons/fi";
+import API_BASE from "../../config/api";
 
 const DriverHeader = ({ driverInfo = {} }) => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const DriverHeader = ({ driverInfo = {} }) => {
     const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (!driverId) return;
 
-    fetch(`http://localhost/Driverdashboard/api/notifications.php?driver_id=${driverId}&count=1`)
+    fetch(`${API_BASE}/Driverdashboard/api/notifications.php?driver_id=${driverId}&count=1`)
       .then((res) => res.json())
       .then((data) => {
         if (data && typeof data.unread_count === 'number') {
@@ -42,7 +43,7 @@ const DriverHeader = ({ driverInfo = {} }) => {
   };
 
   const avatarSrc = driverInfo.profile_image
-    ? `http://localhost/admin/uploads/${driverInfo.profile_image}`
+    ? `${API_BASE}/admin/uploads/${driverInfo.profile_image}`
     : "/src/Driverdashboard/drivering.webp";
 
   return (
