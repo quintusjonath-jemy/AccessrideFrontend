@@ -4,6 +4,7 @@ import { ArrowLeft, Phone, MessageSquare, ShieldAlert, Navigation, Car, Star } f
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import API_BASE from "../../config/api";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
@@ -84,7 +85,7 @@ const RideTrackingPage = () => {
   // Function to fetch the active ride from backend
   const fetchActiveRide = async (isFirstLoad = false) => {
     try {
-      const res = await axios.get(`http://localhost/UserDashboard/api/active_ride.php?user_id=${userId}`);
+      const res = await axios.get(`${API_BASE}/UserDashboard/api/active_ride.php?user_id=${userId}`);
       if (res.data.success && res.data.data) {
         const rideData = res.data.data;
         setRide(rideData);
@@ -183,8 +184,9 @@ const RideTrackingPage = () => {
     if (!confirmCancel) return;
 
     try {
-      const res = await axios.post("http://localhost/UserDashboard/api/cancel_ride.php", {
-        ride_id: ride.id
+      const res = await axios.post(`${API_BASE}/UserDashboard/api/cancel_ride.php`, {
+        ride_id: ride.id,
+        user_id: parseInt(userId)
       });
       if (res.data.success) {
         alert("Ride cancelled and deleted successfully.");

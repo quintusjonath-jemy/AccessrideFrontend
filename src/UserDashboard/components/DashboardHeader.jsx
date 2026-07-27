@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { UserCircle, LogOut, Settings, ChevronDown, Bell } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const DashboardHeader = ({ user }) => {
   const [openMenu, setOpenMenu] = useState(false);
@@ -22,7 +23,7 @@ const DashboardHeader = ({ user }) => {
 
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
-    fetch(`http://localhost/UserDashboard/api/notifications.php?user_id=${userId}`)
+    fetch(`${API_BASE}/UserDashboard/api/notifications.php?user_id=${userId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

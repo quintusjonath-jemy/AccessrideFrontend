@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, UserCircle, Car } from "lucide-react";
+import { ArrowLeft, UserCircle, Car, Mic, MicOff } from "lucide-react";
 import axios from "axios";
 import { speakWithFallback } from "../components/voiceassistant/VoiceAssistant";
 import mapboxgl from "mapbox-gl";
@@ -10,6 +10,7 @@ import VehicleSelection from "../components/VehicleSelection";
 import LocationInputs from "../components/LocationInputs";
 import RideOptionsList from "../components/RideOptionsList";
 import PaymentSelection from "../components/PaymentSelection";
+import API_BASE from "../../config/api";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
@@ -86,6 +87,30 @@ const calculateDistance = async (pickup, dropoff) => {
   return fallbackDistance;
 };
 
+// ─── Vehicle keyword → BookingPage vehicle id ────────────────────────────────
+const matchVehicleFromSpeech = (text) => {
+  const t = text.toLowerCase();
+  if (t.includes("van"))                                       return "van";
+  if (t.includes("three wheeler") || t.includes("three-wheeler") ||
+      t.includes("tuk") || t.includes("auto"))                 return "three wheeler";
+  if (t.includes("bike") || t.includes("motor") || t.includes("moto")) return "bike";
+  if (t.includes("car") || t.includes("sedan") || t.includes("cab"))   return "car";
+  return null;
+};
+
+// ─── Voice guide states ───────────────────────────────────────────────────────
+const VSTATE = {
+  IDLE:       "IDLE",
+  VEHICLE:    "VEHICLE",    // waiting for vehicle type
+  PICKUP:     "PICKUP",     // waiting for pickup location
+  DROPOFF:    "DROPOFF",    // waiting for dropoff location
+  CONFIRMING: "CONFIRMING", // waiting for confirm / cancel
+};
+
+// ─── Shared SpeechRecognition constructor ────────────────────────────────────
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
 const BookingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,6 +118,9 @@ const BookingPage = () => {
 
   // Multi-step state: 1 = vehicle selection, 2 = route/class selection
   const [step, setStep] = useState(initialData.step || 1);
+
+  // Voice mode flag — set to true when arriving via "book it" voice command
+  const voiceModeActive = !!initialData.voiceMode;
 
   // Voice agent pre-fill: voiceDestination and voiceVehicle come from VoiceAssistant.jsx
   const voiceDestination = initialData.voiceDestination || "";
@@ -115,8 +143,27 @@ const BookingPage = () => {
     eco: 80.00
   });
 
+  // ── Voice guide state for voiceMode ─────────────────────────────────────────
+  const [vState, setVState]         = useState(VSTATE.IDLE);
+  const [vListening, setVListening] = useState(false);
+  const [vStatus, setVStatus]       = useState("");
+  const vStateRef  = useRef(VSTATE.IDLE);
+  const vRecRef    = useRef(null);
+  const vStopRef   = useRef(false);    // true = user manually stopped
+  const stepRef    = useRef(step);     // mirror step for callbacks
+  const pickupRef  = useRef("");
+  const dropoffRef = useRef("");
+  const vTypeRef   = useRef("");
+
+  // keep refs in sync
+  useEffect(() => { stepRef.current = step; },       [step]);
+  useEffect(() => { pickupRef.current  = pickup; },  [pickup]);
+  useEffect(() => { dropoffRef.current = dropoff; }, [dropoff]);
+  useEffect(() => { vTypeRef.current   = vehicleType; }, [vehicleType]);
+  useEffect(() => { vStateRef.current  = vState; },  [vState]);
+
   useEffect(() => {
-    axios.get("http://localhost/UserDashboard/api/get_rates.php")
+    axios.get(`${API_BASE}/UserDashboard/api/get_rates.php`)
       .then(res => {
         if (res.data?.success && res.data.rates) {
           const r = res.data.rates;
@@ -131,9 +178,138 @@ const BookingPage = () => {
       .catch(err => console.error("Error fetching rates:", err));
   }, []);
 
-  // Announce voice pre-fill to user (only when arriving via voice agent)
+  // ── Voice Guide: full step-by-step when voiceModeActive ─────────────────────
+  // handleVCommand processes each spoken phrase and moves the booking forward
+  const handleVCommand = useCallback((rawText) => {
+    const text = rawText.toLowerCase().trim();
+    const cur  = vStateRef.current;
+
+    // Cancel at any point
+    if (text.includes("cancel") || text.includes("never mind") || text.includes("stop")) {
+      speakWithFallback("Cancelled. You can fill in the details manually.");
+      setVState(VSTATE.IDLE);
+      setVStatus("Voice guide stopped");
+      return;
+    }
+
+    // ── VEHICLE step ─────────────────────────────────────────────────────────
+    if (cur === VSTATE.VEHICLE) {
+      const v = matchVehicleFromSpeech(text);
+      if (!v) {
+        speakWithFallback("Sorry, I didn't catch that. Please say car, van, bike, or three wheeler.");
+        return;
+      }
+      // Programmatically select the vehicle (same as clicking it)
+      handleSelectVehicle(v);
+      // Move to step 2
+      setStep(2);
+      setVState(VSTATE.PICKUP);
+      setVStatus("What is your pickup location?");
+      setTimeout(() => {
+        speakWithFallback(`${v} selected. Now, what is your pickup location?`);
+      }, 400);
+      return;
+    }
+
+    // ── PICKUP step ──────────────────────────────────────────────────────────
+    if (cur === VSTATE.PICKUP) {
+      const cleaned = text.replace(/^(from|at|my pickup is|pickup|starting from)\s+/i, "").trim();
+      if (!cleaned || cleaned.length < 2) {
+        speakWithFallback("I didn't catch that. Please say your pickup location.");
+        return;
+      }
+      setPickup(cleaned);
+      setVState(VSTATE.DROPOFF);
+      setVStatus("Where are you going?");
+      setTimeout(() => {
+        speakWithFallback(`Pickup set to ${cleaned}. Now, where are you going?`);
+      }, 400);
+      return;
+    }
+
+    // ── DROPOFF step ─────────────────────────────────────────────────────────
+    if (cur === VSTATE.DROPOFF) {
+      const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff)\s+/i, "").trim();
+      if (!cleaned || cleaned.length < 2) {
+        speakWithFallback("I didn't catch that. Please say your destination.");
+        return;
+      }
+      setDropoff(cleaned);
+      setVState(VSTATE.CONFIRMING);
+      setVStatus("Say confirm to book or cancel");
+      const vehicle = vTypeRef.current;
+      setTimeout(() => {
+        speakWithFallback(
+          `Great! Booking a ${vehicle} from ${pickupRef.current || cleaned} to ${cleaned}. Say confirm to book, or cancel to start over.`
+        );
+      }, 400);
+      return;
+    }
+
+    // ── CONFIRMING step ──────────────────────────────────────────────────────
+    if (cur === VSTATE.CONFIRMING) {
+      if (text.includes("yes") || text.includes("confirm") || text.includes("okay") || text.includes("book")) {
+        speakWithFallback("Booking your ride now. Please wait.");
+        setVState(VSTATE.IDLE);
+        setVStatus("Booking…");
+        // Trigger the existing confirm handler (needs pickup + dropoff ready in state)
+        setTimeout(() => handleConfirmBooking(), 1200);
+        return;
+      }
+      speakWithFallback("Say confirm to book, or cancel to start over.");
+      return;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Set up voice recognition for the booking guide ───────────────────────
   useEffect(() => {
-    if (voiceDestination) {
+    if (!voiceModeActive || !SpeechRecognition) return;
+
+    const rec = new SpeechRecognition();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    vRecRef.current = rec;
+
+    rec.onstart  = () => setVListening(true);
+    rec.onresult = (e) => {
+      const t = e.results[0][0].transcript;
+      setVStatus(`"${t}"`);
+      handleVCommand(t);
+    };
+    rec.onerror = (e) => {
+      if (e.error === "no-speech") {
+        if (!vStopRef.current) { try { rec.start(); } catch (_) {} }
+        return;
+      }
+      setVListening(false);
+    };
+    rec.onend = () => {
+      if (!vStopRef.current) {
+        setTimeout(() => { try { rec.start(); } catch (_) {} }, 300);
+      } else {
+        setVListening(false);
+      }
+    };
+
+    // Start the guide: announce and begin listening
+    vStopRef.current = false;
+    setVState(VSTATE.VEHICLE);
+    setVStatus("Which vehicle would you like?");
+    speakWithFallback("Which vehicle would you like? Car, van, bike, or three wheeler?");
+    setTimeout(() => { try { rec.start(); } catch (_) {} }, 1800);
+
+    return () => {
+      vStopRef.current = true;
+      rec.abort();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceModeActive]);
+
+  // Announce voice pre-fill to user (only when arriving via non-voiceMode pre-fill)
+  useEffect(() => {
+    if (voiceDestination && !voiceModeActive) {
       const vehicle = voiceVehicle ? ` by ${voiceVehicle}` : "";
       speakWithFallback(
         `Booking page ready. Destination set to ${voiceDestination}${vehicle}. Please confirm your pickup location and tap Book Ride.`
@@ -141,6 +317,7 @@ const BookingPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   // Mapbox Refs & State
   const mapContainerRef = useRef(null);
@@ -429,7 +606,7 @@ const BookingPage = () => {
       pickup_lng: pickupCoords ? pickupCoords[0] : null
     };
 
-    axios.post("http://localhost/UserDashboard/api/book_ride.php", payload)
+    axios.post(`${API_BASE}/UserDashboard/api/book_ride.php`, payload)
       .then(res => {
         setIsBookingInProgress(false);
         if (res.data.success) {

@@ -6,6 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import LocationInputs from "./LocationInputs";
 import VehicleSelection from "./VehicleSelection";
 import PaymentSelection from "./PaymentSelection";
+import API_BASE from "../../config/api";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
@@ -316,8 +317,8 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
     }
 
     const apiRequest = editingRide
-      ? axios.put(`http://localhost/UserDashboard/api/schedule.php?user_id=${userId}`, payload)
-      : axios.post(`http://localhost/UserDashboard/api/schedule.php?user_id=${userId}`, payload);
+      ? axios.put(`${API_BASE}/UserDashboard/api/schedule.php?user_id=${userId}`, payload)
+      : axios.post(`${API_BASE}/UserDashboard/api/schedule.php?user_id=${userId}`, payload);
 
     apiRequest
       .then(res => {

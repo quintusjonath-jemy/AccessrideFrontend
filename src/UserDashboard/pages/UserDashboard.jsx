@@ -8,6 +8,7 @@ import { VoiceAssistantButton } from "../components/voiceassistant/VoiceAssistan
 import QuickActions from "../components/QuickActions";
 import UpcomingRideCard from "../components/UpcomingRideCard";
 import RecentRides from "../components/RecentRides";
+import API_BASE from "../../config/api";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const UserDashboard = () => {
             }
 
             // Update user location in the database
-            await axios.post("http://localhost/UserDashboard/api/update_location.php", {
+            await axios.post(`${API_BASE}/UserDashboard/api/update_location.php`, {
               user_id: userId,
               location: resolvedLocation
             });
@@ -76,7 +77,7 @@ const UserDashboard = () => {
     const fetchDashboard = async () => {
       try {
         const res = await axios.get(
-          `http://localhost/UserDashboard/api/dashboard.php?user_id=${userId}`,
+          `${API_BASE}/UserDashboard/api/dashboard.php?user_id=${userId}`,
         );
 
         if (res.data?.success && res.data?.data) {

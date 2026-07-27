@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Bell, Trash2, Check, Inbox } from "lucide-react";
 import axios from "axios";
+import API_BASE from "../../config/api";
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const NotificationsPage = () => {
   const fetchNotifications = async () => {
     try {
       const res = await axios.get(
-        `http://localhost/UserDashboard/api/notifications.php?user_id=${userId}`
+        `${API_BASE}/UserDashboard/api/notifications.php?user_id=${userId}`
       );
       if (Array.isArray(res.data)) {
         setNotifications(res.data);
@@ -36,7 +37,7 @@ const NotificationsPage = () => {
   const handleMarkRead = async (id) => {
     try {
       const res = await axios.put(
-        `http://localhost/UserDashboard/api/notifications.php`,
+        `${API_BASE}/UserDashboard/api/notifications.php`,
         { id }
       );
       if (res.data?.success) {
@@ -53,7 +54,7 @@ const NotificationsPage = () => {
     if (notifications.length === 0) return;
     try {
       const res = await axios.put(
-        `http://localhost/UserDashboard/api/notifications.php?read_all=1&user_id=${userId}`
+        `${API_BASE}/UserDashboard/api/notifications.php?read_all=1&user_id=${userId}`
       );
       if (res.data?.success) {
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
@@ -67,7 +68,7 @@ const NotificationsPage = () => {
     e.stopPropagation(); // Avoid triggering card click
     try {
       const res = await axios.delete(
-        `http://localhost/UserDashboard/api/notifications.php?id=${id}`
+        `${API_BASE}/UserDashboard/api/notifications.php?id=${id}`
       );
       if (res.data?.success) {
         setNotifications(prev => prev.filter(n => n.id !== id));

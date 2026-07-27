@@ -5,6 +5,7 @@ import axios from "axios";
 
 import ScheduleForm from "../components/ScheduleForm";
 import ScheduledRidesList from "../components/ScheduledRidesList";
+import API_BASE from "../../config/api";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const SchedulePage = () => {
 
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
-    axios.get(`http://localhost/UserDashboard/api/schedule.php?user_id=${userId}`)
+    axios.get(`${API_BASE}/UserDashboard/api/schedule.php?user_id=${userId}`)
       .then(res => {
         if (res.data.success && res.data.data !== null) {
           setScheduledRides(res.data.data || []);
@@ -41,7 +42,7 @@ const SchedulePage = () => {
   const handleCancelSchedule = (rideId) => {
     if (window.confirm("Are you sure you want to cancel this scheduled ride?")) {
       const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
-      axios.delete(`http://localhost/UserDashboard/api/schedule.php?ride_id=${rideId}&user_id=${userId}`)
+      axios.delete(`${API_BASE}/UserDashboard/api/schedule.php?ride_id=${rideId}&user_id=${userId}`)
       .then(res => {
         if (res.data.success) {
           setScheduledRides((prev) => prev.filter((r) => r.id !== rideId));
