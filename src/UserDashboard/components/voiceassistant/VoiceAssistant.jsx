@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mic, MicOff, Sparkles, Loader } from "lucide-react";
+import API_BASE from "../../../config/api";
 
 // ─── Web Speech API ───────────────────────────────────────────────────────────
 const SpeechRecognition =
@@ -12,7 +13,7 @@ let currentUtterance = null;
 let currentAbortController = null;
 
 // ─── Agent backend URL ────────────────────────────────────────────────────────
-const AGENT_BASE = "http://localhost/voiceassistant/agent.php";
+const AGENT_BASE = `${API_BASE}/voiceassistant/agent.php`;
 
 // ─── Conversation States ──────────────────────────────────────────────────────
 const STATE = {
@@ -161,6 +162,7 @@ export const VoiceAssistantButton = ({
 
   const recognitionRef = useRef(null);
   const agentStateRef = useRef(STATE.IDLE); // always up-to-date in callbacks
+  const manualStopRef = useRef(false);      // true when user tapped mic to stop
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -316,6 +318,21 @@ export const VoiceAssistantButton = ({
             );
             resetToIdle();
           }
+          return;
+        }
+
+        // ── BOOK IT — open booking page with guided voice flow ──────────────
+        if (
+          text === "book it" ||
+          text === "book now" ||
+          text.includes("open booking") ||
+          text.includes("go to booking")
+        ) {
+          speak("Opening the booking page. Please choose your vehicle.");
+          setTimeout(() =>
+            navigate("/user/booking", { state: { voiceMode: true } })
+          , 1200);
+          resetToIdle();
           return;
         }
 
@@ -566,6 +583,8 @@ export const VoiceAssistantButton = ({
     rec.lang = "en-US";
     rec.interimResults = false;
     rec.maxAlternatives = 1;
+    // continuous = true would cause issues in some browsers; instead we
+    // auto-restart in onend so the mic stays on after each utterance.
 
     rec.onstart = () => {
       setIsListening(true);
@@ -579,28 +598,54 @@ export const VoiceAssistantButton = ({
     };
 
     rec.onerror = (event) => {
+      // 'no-speech' is normal — just restart quietly
+      if (event.error === "no-speech") {
+        if (!manualStopRef.current) {
+          try { rec.start(); } catch (_) {}
+        }
+        return;
+      }
       console.error("Speech Recognition Error:", event.error);
       setIsListening(false);
-      setStatusText("Error. Tap to try again.");
+      setStatusText("Mic error. Tap to try again.");
     };
 
     rec.onend = () => {
-      setIsListening(false);
-      // Keep statusText as-is (don't overwrite state messages)
-      if (agentStateRef.current === STATE.IDLE) {
-        setStatusText("Tap to speak");
+      // Auto-restart mic unless the user manually tapped to stop
+      if (!manualStopRef.current) {
+        // Small delay so TTS can start before we listen again
+        setTimeout(() => {
+          try {
+            rec.start();
+          } catch (_) {
+            // Already running — ignore
+          }
+        }, 300);
+      } else {
+        // User tapped stop — stay off
+        setIsListening(false);
+        setStatusText(
+          agentStateRef.current === STATE.IDLE ? "Tap to speak" : statusText
+        );
       }
     };
 
     recognitionRef.current = rec;
-    return () => recognitionRef.current?.abort();
+    return () => {
+      manualStopRef.current = true;
+      recognitionRef.current?.abort();
+    };
   }, [handleCommand]);
 
   const toggleListen = () => {
     if (!recognitionRef.current) return;
     if (isListening) {
+      // User wants to stop — set flag so onend doesn't restart
+      manualStopRef.current = true;
       recognitionRef.current.stop();
     } else {
+      // User wants to start — clear flag so onend auto-restarts
+      manualStopRef.current = false;
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       recognitionRef.current.start();
     }
@@ -635,14 +680,14 @@ export const VoiceAssistantButton = ({
             ? "bg-slate-300 border-slate-200 text-slate-500 cursor-not-allowed"
             : "bg-yellow-400 border-white text-[#0B2F89] hover:scale-105"
           }`}
-        aria-label={isListening ? "Stop listening" : "Start listening"}
+        aria-label={isListening ? "Tap to stop mic" : "Tap to start mic"}
       >
         {agentState === STATE.EXECUTING_BOOKING ? (
           <Loader size={30} className="animate-spin" />
         ) : isListening ? (
-          <MicOff size={30} />
+          <Mic size={30} className="animate-pulse" />
         ) : (
-          <Mic size={30} />
+          <MicOff size={30} />
         )}
       </button>
 
@@ -669,7 +714,9 @@ export const VoiceAssistantButton = ({
 
       {/* Status text */}
       <p className="mt-3 text-xs font-semibold text-slate-500 animate-pulse text-center max-w-[200px] leading-relaxed">
-        {statusText}
+        {isListening
+          ? "Always listening — tap to stop"
+          : statusText}
       </p>
     </div>
   );

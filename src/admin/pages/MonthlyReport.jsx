@@ -7,6 +7,7 @@ import {
   Truck, Star, Download
 } from "lucide-react";
 import { downloadReport } from "../components/ReportPDF";
+import API_BASE from "../../config/api";
 
 const THIS_YEAR  = new Date().getFullYear();
 const THIS_MONTH = new Date().getMonth() + 1;
@@ -62,7 +63,7 @@ const MonthlyReport = () => {
   const fetchReport = () => {
     setLoading(true);
     setError("");
-    axios.get(`http://localhost/admin/api/monthly_report.php?year=${selYear}&month=${selMonth}`)
+    axios.get(`${API_BASE}/admin/api/monthly_report.php?year=${selYear}&month=${selMonth}`)
       .then((res) => {
         if (res.data?.success) setData(res.data);
         else setError("Failed to load report data.");
@@ -79,7 +80,7 @@ const MonthlyReport = () => {
   const [emailDebug, setEmailDebug] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost/admin/api/admin.php")
+    axios.get(`${API_BASE}/admin/api/admin.php`)
       .then((res) => {
         if (res.data?.email) setEmail(res.data.email);
       })
@@ -110,7 +111,7 @@ const MonthlyReport = () => {
     setEmailMsg("");
     setEmailStatus("");
     setEmailDebug([]);
-    axios.post("http://localhost/admin/api/send_report_email.php", {
+    axios.post(`${API_BASE}/admin/api/send_report_email.php`, {
       email,
       year: selYear,
       month: selMonth

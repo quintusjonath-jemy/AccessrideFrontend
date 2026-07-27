@@ -12,6 +12,7 @@ import {
   ArrowUpRight, 
   Ban 
 } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const Payments = () => {
   const [payments, setPayments] = useState([]);
@@ -46,7 +47,7 @@ const Payments = () => {
     else setLoading(true);
     
     try {
-      const res = await axios.get("http://localhost/admin/api/payments.php");
+      const res = await axios.get(`${API_BASE}/admin/api/payments.php`);
       if (res.data?.success) {
         setPayments(res.data.payments || []);
         setStats(res.data.stats || {
@@ -100,7 +101,7 @@ const Payments = () => {
   const handleUpdateStatus = async (paymentId, newStatus) => {
     setUpdatingStatusId(paymentId);
     try {
-      const res = await axios.put("http://localhost/admin/api/payments.php", {
+      const res = await axios.put(`${API_BASE}/admin/api/payments.php`, {
         id: paymentId,
         status: newStatus
       });

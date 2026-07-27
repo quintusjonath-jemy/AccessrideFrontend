@@ -12,6 +12,7 @@ import {
   Check,
   Search,
 } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const getPageIcon = (type) => {
   switch (type) {
@@ -80,7 +81,7 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("http://localhost/admin/api/notifications.php");
+      const res = await axios.get(`${API_BASE}/admin/api/notifications.php`);
       setNotifications(Array.isArray(res.data) ? res.data : []);
       setLoading(false);
     } catch (err) {
@@ -97,7 +98,7 @@ const Notifications = () => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.put(`http://localhost/admin/api/notifications.php?id=${id}`);
+      await axios.put(`${API_BASE}/admin/api/notifications.php?id=${id}`);
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, is_read: "1" } : n))
       );
@@ -108,7 +109,7 @@ const Notifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      await axios.put("http://localhost/admin/api/notifications.php?read_all=1");
+      await axios.put(`${API_BASE}/admin/api/notifications.php?read_all=1`);
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: "1" })));
     } catch (err) {
       console.log(err);
@@ -117,7 +118,7 @@ const Notifications = () => {
 
   const deleteNotification = async (id) => {
     try {
-      await axios.delete(`http://localhost/admin/api/notifications.php?id=${id}`);
+      await axios.delete(`${API_BASE}/admin/api/notifications.php?id=${id}`);
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.log(err);

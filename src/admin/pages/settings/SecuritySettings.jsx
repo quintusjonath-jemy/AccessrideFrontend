@@ -7,6 +7,7 @@ import {
   Lock,
   KeyRound,
 } from "lucide-react";
+import API_BASE from "../../../config/api";
 
 const SecuritySettings = () => {
   const [security, setSecurity] = useState({
@@ -71,7 +72,7 @@ const SecuritySettings = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost/admin/api/admin.php?action=security",
+        `${API_BASE}/admin/api/admin.php?action=security`,
         formData
       );
 

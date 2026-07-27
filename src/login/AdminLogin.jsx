@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, CarTaxiFront } from "lucide-react";
+import API_BASE from "../config/api";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const AdminLogin = () => {
 
     try {
       const response = await fetch(
-        "http://localhost/login/api/admin_login.php",
+        `${API_BASE}/login/api/admin_login.php`,
         {
           method: "POST",
           headers: {

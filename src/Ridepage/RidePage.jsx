@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import API_BASE from "../config/api";
 
 const COLOMBO_LNG = 79.8612;
 const COLOMBO_LAT = 6.9271;
@@ -44,7 +45,7 @@ const RidePage = () => {
       return;
     }
 
-    fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
+    fetch(`${API_BASE}/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then(async (res) => {
         if (res.success && res.data && res.data.active_ride) {
@@ -259,7 +260,7 @@ const RidePage = () => {
     setOtpLoading(true);
     setOtpError("");
 
-    fetch("http://localhost/Driverdashboard/api/arrive.php", {
+    fetch(`${API_BASE}/Driverdashboard/api/arrive.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ride_id: rideInfo.id, otp: enteredOtp, driver_id: parseInt(driverId) })
@@ -284,7 +285,7 @@ const RidePage = () => {
 
   const completeRide = () => {
     if (!rideInfo.id) return;
-    fetch("http://localhost/Driverdashboard/api/complete.php", {
+    fetch(`${API_BASE}/Driverdashboard/api/complete.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ride_id: rideInfo.id })
@@ -306,7 +307,7 @@ const RidePage = () => {
 
   const cancelRide = () => {
     if (!rideInfo.id) return;
-    fetch("http://localhost/Driverdashboard/api/cancel.php", {
+    fetch(`${API_BASE}/Driverdashboard/api/cancel.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ride_id: rideInfo.id })

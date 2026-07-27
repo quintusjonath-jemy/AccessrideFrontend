@@ -22,6 +22,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import LiveClock from "./LiveClock";
 import { useCallback } from "react";
+import API_BASE from "../../config/api";
 
 const adminPages = [
   { name: "Dashboard Overview", path: "/", icon: "Dashboard", keywords: ["dashboard", "home", "stats", "analytics"] },
@@ -74,7 +75,7 @@ const Navbar = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/admin.php")
+      .get(`${API_BASE}/admin/api/admin.php`)
       .then((res) => {
         setAdmin(res.data);
       })
@@ -90,7 +91,7 @@ const Navbar = () => {
     const delay = setTimeout(async () => {
       try {
         const res = await axios.get(
-          `http://localhost/admin/api/search.php?q=${search}`,
+          `${API_BASE}/admin/api/search.php?q=${search}`,
         );
 
         setResults(res.data);
@@ -105,7 +106,7 @@ const Navbar = () => {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost/admin/api/notifications.php");
+      const res = await axios.get(`${API_BASE}/admin/api/notifications.php`);
       setNotifications(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.log(err);
@@ -114,7 +115,7 @@ const Navbar = () => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.put(`http://localhost/admin/api/notifications.php?id=${id}`);
+      await axios.put(`${API_BASE}/admin/api/notifications.php?id=${id}`);
       setNotifications((prev) =>
         prev.filter((n) => n.id !== id)
       );
@@ -125,7 +126,7 @@ const Navbar = () => {
 
   const markAllAsRead = async () => {
     try {
-      await axios.put("http://localhost/admin/api/notifications.php?read_all=1");
+      await axios.put(`${API_BASE}/admin/api/notifications.php?read_all=1`);
       setNotifications([]);
     } catch (err) {
       console.log(err);
@@ -134,7 +135,7 @@ const Navbar = () => {
 
   const deleteNotification = async (id) => {
     try {
-      await axios.delete(`http://localhost/admin/api/notifications.php?id=${id}`);
+      await axios.delete(`${API_BASE}/admin/api/notifications.php?id=${id}`);
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.log(err);
@@ -532,7 +533,7 @@ const Navbar = () => {
               <img
                 src={
                   admin.profile_image
-                    ? `http://localhost/admin/uploads/${admin.profile_image}`
+                    ? `${API_BASE}/admin/uploads/${admin.profile_image}`
                     : "https://via.placeholder.com/150"
                 }
                 alt="Admin"

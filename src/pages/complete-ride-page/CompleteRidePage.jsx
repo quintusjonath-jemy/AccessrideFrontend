@@ -7,6 +7,7 @@ import DashboardHeader from '../../UserDashboard/components/DashboardHeader';
 import RideSummary from './components/RideSummary';
 import RatingSection from './components/RatingSection';
 import { rideDetails } from './data/rideDetails';
+import API_BASE from "../../config/api";
 
 const CompleteRidePage = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const CompleteRidePage = () => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
     
     // Fetch profile
-    fetch(`http://localhost/history_and_profile/profile/get_profile.php?user_id=${userId}`)
+    fetch(`${API_BASE}/history_and_profile/profile/get_profile.php?user_id=${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
@@ -35,7 +36,7 @@ const CompleteRidePage = () => {
       .catch(err => console.error("Error fetching profile:", err));
 
     // Fetch latest completed ride
-    axios.get(`http://localhost/UserDashboard/api/latest_completed_ride.php?user_id=${userId}`)
+    axios.get(`${API_BASE}/UserDashboard/api/latest_completed_ride.php?user_id=${userId}`)
       .then(res => {
         if (res.data?.success && res.data.ride) {
           setRide(res.data.ride);
@@ -59,7 +60,7 @@ const CompleteRidePage = () => {
   const handleRating = (value) => {
     setRating(value);
     if (ride && ride.id) {
-      axios.post("http://localhost/UserDashboard/api/rate_ride.php", {
+      axios.post(`${API_BASE}/UserDashboard/api/rate_ride.php`, {
         ride_id: ride.id,
         rating: value
       })

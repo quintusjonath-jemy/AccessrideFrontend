@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Car, Phone, Lock } from "lucide-react";
+import API_BASE from "../config/api";
 
 const DriverLogin = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const DriverLogin = () => {
       return;
     }
 
-    const backendBase = "http://localhost/login";
+    const backendBase = `${API_BASE}/login`;
 
     try {
       const response = await fetch(`${backendBase}/api/driver_login.php`, {

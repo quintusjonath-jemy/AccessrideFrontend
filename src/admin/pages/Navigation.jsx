@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import LiveMap from "../components/LiveMap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MapPinned, Navigation, Car, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const NavigationPage = () => {
   const [rides, setRides] = useState([]);
@@ -22,7 +23,7 @@ const NavigationPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=rides");
+    const eventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=rides`);
 
     eventSource.onmessage = (event) => {
       try {
@@ -50,7 +51,7 @@ const NavigationPage = () => {
     if (!trackedAlertId) return;
 
     const checkAlertStatus = () => {
-      axios.get("http://localhost/admin/api/alerts.php")
+      axios.get(`${API_BASE}/admin/api/alerts.php`)
         .then((res) => {
           const alertsList = Array.isArray(res.data) ? res.data : [];
           const currentAlert = alertsList.find((a) => a.id == trackedAlertId);

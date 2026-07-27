@@ -10,6 +10,7 @@ import {
   Accessibility,
 } from "lucide-react";
 import { speakWithFallback } from "../UserDashboard/components/voiceassistant/VoiceAssistant";
+import API_BASE from "../config/api";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -54,7 +55,7 @@ const Login = () => {
       return;
     }
 
-    const backendBase = "http://localhost/login";
+    const backendBase = `${API_BASE}/login`;
 
     try {
       const response = await fetch(`${backendBase}/api/login.php`, {

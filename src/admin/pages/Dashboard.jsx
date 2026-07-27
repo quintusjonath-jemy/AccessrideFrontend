@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import WeeklyGrowthChart from "../components/WeeklyGrowthChart";
 import { Users, Car, Route, Activity } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -22,7 +23,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://localhost/admin/api/users.php")
+    axios.get(`${API_BASE}/admin/api/users.php`)
       .then((res) => {
         setUsers(Array.isArray(res.data) ? res.data : []);
         setLoading(false);
@@ -32,10 +33,10 @@ const Dashboard = () => {
         setLoading(false);
       });
 
-    axios.get("http://localhost/admin/api/dashboard_stats.php")
+    axios.get(`${API_BASE}/admin/api/dashboard_stats.php`)
       .then((res) => setStats(res.data));
 
-    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=all");
+    const eventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=all`);
 
     const handleAlerts = (event) => {
       try {

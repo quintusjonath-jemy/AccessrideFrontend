@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiTruck, FiCreditCard, FiCheckCircle, FiLock, FiLoader } from "react-icons/fi";
 import DriverHeader from "./components/DriverHeader";
+import API_BASE from "../config/api";
 
 const DriverDashboard = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const DriverDashboard = () => {
     
     try {
       // 1. Fetch secure PayHere configuration and MD5 hash from backend
-      const response = await fetch("http://localhost/Driverdashboard/api/initiate_payment.php", {
+      const response = await fetch(`${API_BASE}/Driverdashboard/api/initiate_payment.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -78,7 +79,7 @@ const DriverDashboard = () => {
         }));
         
         // Localhost development fallback: trigger local subscription renewal since webhook cannot reach localhost
-        fetch("http://localhost/Driverdashboard/api/renew_subscription.php", {
+        fetch(`${API_BASE}/Driverdashboard/api/renew_subscription.php`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -133,7 +134,7 @@ const DriverDashboard = () => {
       return;
     }
 
-    fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
+    fetch(`${API_BASE}/Driverdashboard/api/dashboard.php?driver_id=${driverId}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.data) {
@@ -163,7 +164,7 @@ const DriverDashboard = () => {
                     }
 
                     // Update DB with GPS location name
-                    await fetch("http://localhost/Driverdashboard/api/update_location.php", {
+                    await fetch(`${API_BASE}/Driverdashboard/api/update_location.php`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -176,7 +177,7 @@ const DriverDashboard = () => {
                   } catch (err) {
                     console.error("Error geocoding or updating location:", err);
                     try {
-                      await fetch("http://localhost/Driverdashboard/api/update_location.php", {
+                      await fetch(`${API_BASE}/Driverdashboard/api/update_location.php`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -194,7 +195,7 @@ const DriverDashboard = () => {
                 async (error) => {
                   console.error("GPS blocked/failed, falling back to registered town:", error);
                   try {
-                    await fetch("http://localhost/Driverdashboard/api/update_location.php", {
+                    await fetch(`${API_BASE}/Driverdashboard/api/update_location.php`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -264,7 +265,7 @@ const DriverDashboard = () => {
     setIsOnline(newStatus);
     const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (driverId) {
-      fetch("http://localhost/Driverdashboard/api/update_status.php", {
+      fetch(`${API_BASE}/Driverdashboard/api/update_status.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -277,7 +278,7 @@ const DriverDashboard = () => {
 
   const acceptRide = () => {
     const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
-    fetch("http://localhost/Driverdashboard/api/accept.php", {
+    fetch(`${API_BASE}/Driverdashboard/api/accept.php`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -296,7 +297,7 @@ const DriverDashboard = () => {
 
   const rejectRide = () => {
     const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
-    fetch("http://localhost/Driverdashboard/api/reject.php", {
+    fetch(`${API_BASE}/Driverdashboard/api/reject.php`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

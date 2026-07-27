@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import { Eye, EyeClosed, Pencil, Trash2, UserPlus, User } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const Users = () => {
   const location = useLocation();
@@ -17,7 +18,7 @@ const Users = () => {
   const handleShowUserDetails = async (userId) => {
     setFetchingUserId(userId);
     try {
-      const res = await axios.get(`http://localhost/admin/api/users.php?id=${userId}`);
+      const res = await axios.get(`${API_BASE}/admin/api/users.php?id=${userId}`);
       if (res.data) {
         setDetailedUser(res.data);
         setShowDetailsModal(true);
@@ -78,7 +79,7 @@ const Users = () => {
   // Fetch users from backend
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/users.php")
+      .get(`${API_BASE}/admin/api/users.php`)
 
       .then((res) => {
         setUsers(res.data);
@@ -111,12 +112,12 @@ const Users = () => {
   const addUser = async () => {
     try {
       const res = await axios.post(
-        "http://localhost/admin/api/users.php",
+        `${API_BASE}/admin/api/users.php`,
         newUser,
       );
 
       if (res.data.success) {
-        const refresh = await axios.get("http://localhost/admin/api/users.php");
+        const refresh = await axios.get(`${API_BASE}/admin/api/users.php`);
 
         setUsers(refresh.data);
 
@@ -144,12 +145,12 @@ const Users = () => {
   const updateUser = async () => {
     try {
       const res = await axios.put(
-        "http://localhost/admin/api/users.php",
+        `${API_BASE}/admin/api/users.php`,
         selectedUser,
       );
 
       if (res.data.success) {
-        const refresh = await axios.get("http://localhost/admin/api/users.php");
+        const refresh = await axios.get(`${API_BASE}/admin/api/users.php`);
 
         setUsers(refresh.data);
 
@@ -170,7 +171,7 @@ const Users = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost/admin/api/users.php?id=${id}`);
+      await axios.delete(`${API_BASE}/admin/api/users.php?id=${id}`);
 
       // Remove deleted user from UI
       setUsers(users.filter((user) => user.id !== id));
@@ -189,9 +190,9 @@ const Users = () => {
 
     if (!confirmAction) return;
 
-    await axios.get(`http://localhost/admin/api/users.php?hide=${user.id}`);
+    await axios.get(`${API_BASE}/admin/api/users.php?hide=${user.id}`);
 
-    const refresh = await axios.get("http://localhost/admin/api/users.php");
+    const refresh = await axios.get(`${API_BASE}/admin/api/users.php`);
 
     setUsers(refresh.data);
   };

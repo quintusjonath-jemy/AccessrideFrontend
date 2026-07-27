@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiBell, FiAlertTriangle, FiCheckCircle, FiInfo, FiCreditCard, FiTruck, FiSettings, FiLoader, FiArrowLeft } from "react-icons/fi";
 import DriverHeader from "./components/DriverHeader";
+import API_BASE from "../config/api";
 
 const TYPE_CONFIG = {
   payment: {
@@ -78,8 +79,8 @@ const DriverNotifications = () => {
     if (!driverId) { navigate("/driver-login"); return; }
 
     Promise.all([
-      fetch(`http://localhost/Driverdashboard/api/notifications.php?driver_id=${driverId}`).then(r => r.json()),
-      fetch(`http://localhost/Driverdashboard/api/dashboard.php?driver_id=${driverId}`).then(r => r.json())
+      fetch(`${API_BASE}/Driverdashboard/api/notifications.php?driver_id=${driverId}`).then(r => r.json()),
+      fetch(`${API_BASE}/Driverdashboard/api/dashboard.php?driver_id=${driverId}`).then(r => r.json())
     ]).then(([notifData, dashData]) => {
       if (notifData.success) {
         setNotifications(notifData.notifications || []);
@@ -99,7 +100,7 @@ const DriverNotifications = () => {
     setNotifications(prev =>
       prev.map(n => n.id === id ? { ...n, is_read: 1 } : n)
     );
-    await fetch("http://localhost/Driverdashboard/api/notifications.php", {
+    await fetch(`${API_BASE}/Driverdashboard/api/notifications.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ driver_id: driverId, action: "mark_read", notification_id: id })
@@ -108,7 +109,7 @@ const DriverNotifications = () => {
 
   const markAllRead = async () => {
     setMarkingAll(true);
-    await fetch("http://localhost/Driverdashboard/api/notifications.php", {
+    await fetch(`${API_BASE}/Driverdashboard/api/notifications.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ driver_id: driverId, action: "mark_all_read" })

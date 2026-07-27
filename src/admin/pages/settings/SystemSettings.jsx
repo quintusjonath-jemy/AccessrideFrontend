@@ -10,6 +10,7 @@ import {
   Save,
   Mail,
 } from "lucide-react";
+import API_BASE from "../../../config/api";
 
 function SystemSettings() {
   const [settings, setSettings] = useState({
@@ -29,7 +30,7 @@ function SystemSettings() {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/settings.php?action=system")
+      .get(`${API_BASE}/admin/api/settings.php?action=system`)
       .then((res) => {
         setSettings({
           id: 1,
@@ -68,7 +69,7 @@ function SystemSettings() {
       formData.append("smtp_secure", settings.smtp_secure || "ssl");
 
       await axios.post(
-        "http://localhost/admin/api/settings.php?action=system",
+        `${API_BASE}/admin/api/settings.php?action=system`,
         formData
       );
 

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { Car, Trash2, Plus, Pencil } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const Rides = () => {
   const location = useLocation();
@@ -48,17 +49,17 @@ const Rides = () => {
 
   // FETCH RIDES
   useEffect(() => {
-    axios.get("http://localhost/admin/api/rides.php").then((res) => {
+    axios.get(`${API_BASE}/admin/api/rides.php`).then((res) => {
       setRides(Array.isArray(res.data) ? res.data : []);
 
       setLoading(false);
     });
 
-    axios.get("http://localhost/admin/api/users.php").then((res) => {
+    axios.get(`${API_BASE}/admin/api/users.php`).then((res) => {
       setUsers(res.data);
     });
 
-    axios.get("http://localhost/admin/api/drivers.php").then((res) => {
+    axios.get(`${API_BASE}/admin/api/drivers.php`).then((res) => {
       setDrivers(res.data);
     });
   }, []);
@@ -82,9 +83,9 @@ const Rides = () => {
     }
 
     try {
-      await axios.post("http://localhost/admin/api/rides.php", rideForm);
+      await axios.post(`${API_BASE}/admin/api/rides.php`, rideForm);
 
-      const res = await axios.get("http://localhost/admin/api/rides.php");
+      const res = await axios.get(`${API_BASE}/admin/api/rides.php`);
 
       setRides(res.data);
 
@@ -96,9 +97,9 @@ const Rides = () => {
 
   const updateRide = async () => {
     try {
-      await axios.put("http://localhost/admin/api/rides.php", selectedRide);
+      await axios.put(`${API_BASE}/admin/api/rides.php`, selectedRide);
 
-      const res = await axios.get("http://localhost/admin/api/rides.php");
+      const res = await axios.get(`${API_BASE}/admin/api/rides.php`);
 
       setRides(res.data);
 
@@ -111,7 +112,7 @@ const Rides = () => {
   const deleteRide = async (id) => {
     if (!window.confirm("Delete this ride?")) return;
 
-    await axios.delete(`http://localhost/admin/api/rides.php?id=${id}`);
+    await axios.delete(`${API_BASE}/admin/api/rides.php?id=${id}`);
 
     setRides(rides.filter((ride) => ride.id !== id));
   };
