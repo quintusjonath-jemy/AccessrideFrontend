@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Bell, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import API_BASE from "../../config/api";
 
 const getWhatsAppLink = (phone, riderName) => {
   if (!phone) return "#";
@@ -35,7 +36,7 @@ const Alerts = () => {
   };
 
   useEffect(() => {
-    const eventSource = new EventSource("http://localhost/admin/api/stream.php?type=alerts");
+    const eventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=alerts`);
 
     eventSource.onmessage = (event) => {
       try {
@@ -83,7 +84,7 @@ const Alerts = () => {
   const resolveAlert = async (id) => {
     try {
       await axios.put(
-        `http://localhost/admin/api/alerts.php?id=${id}`
+        `${API_BASE}/admin/api/alerts.php?id=${id}`
       );
 
       setAlerts((prev) =>

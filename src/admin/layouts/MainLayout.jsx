@@ -4,6 +4,7 @@ import VoiceCallReceiver from "../components/VoiceCallReceiver";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
+import API_BASE from "../../config/api";
 
 const MainLayout = ({ children }) => {
   const location = useLocation();
@@ -17,7 +18,7 @@ const MainLayout = ({ children }) => {
     }
 
     axios
-      .get("http://localhost/admin/api/settings.php?action=system")
+      .get(`${API_BASE}/admin/api/settings.php?action=system`)
       .then((res) => {
         if (res.data?.theme === "dark") {
           document.body.classList.add("dark");

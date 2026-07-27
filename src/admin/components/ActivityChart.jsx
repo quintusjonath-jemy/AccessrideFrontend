@@ -13,6 +13,7 @@ import { Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Activity, CreditCard } from "lucide-react";
+import API_BASE from "../../config/api";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler);
 
@@ -101,7 +102,7 @@ const ActivityChart = () => {
     setLoading(true);
     const apiName = chartType === "activity" ? "chart_stats.php" : "payment_chart.php";
     axios
-      .get(`http://localhost/admin/api/${apiName}?${buildQuery()}`)
+      .get(`${API_BASE}/admin/api/${apiName}?${buildQuery()}`)
       .then((res) => setChartData(Array.isArray(res.data) ? res.data : []))
       .catch(() => setChartData([]))
       .finally(() => setLoading(false));

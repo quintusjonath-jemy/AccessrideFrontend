@@ -11,6 +11,7 @@ import {
   RefreshCw,
   SlidersHorizontal
 } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const Earnings = () => {
   const [platform, setPlatform] = useState({
@@ -35,7 +36,7 @@ const Earnings = () => {
     else setLoading(true);
 
     axios
-      .get("http://localhost/admin/api/earnings.php")
+      .get(`${API_BASE}/admin/api/earnings.php`)
       .then((res) => {
         if (res.data.success) {
           setPlatform(res.data.platform || {

@@ -10,6 +10,7 @@ import {
   Save,
   CheckCircle,
 } from "lucide-react";
+import API_BASE from "../../../config/api";
 
 const SettingCard = ({
   icon,
@@ -61,7 +62,7 @@ const NotificationSettings = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/settings.php?action=notifications")
+      .get(`${API_BASE}/admin/api/settings.php?action=notifications`)
       .then((res) => {
         setSettings({
           id: 1,
@@ -91,7 +92,7 @@ const NotificationSettings = () => {
       formData.append("email_notifications", settings.email_notifications);
 
       const res = await axios.post(
-        "http://localhost/admin/api/settings.php?action=notifications",
+        `${API_BASE}/admin/api/settings.php?action=notifications`,
         formData,
       );
 

@@ -14,6 +14,7 @@ import {
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import API_BASE from "../../config/api";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/admin.php")
+      .get(`${API_BASE}/admin/api/admin.php`)
       .then((res) => {
         setAdmin(res.data);
       })
@@ -32,7 +33,7 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchAlerts = () => {
       axios
-        .get("http://localhost/admin/api/alerts.php")
+        .get(`${API_BASE}/admin/api/alerts.php`)
         .then((res) => {
           const alerts = Array.isArray(res.data) ? res.data : [];
           const activeCount = alerts.filter(
@@ -178,7 +179,7 @@ const Sidebar = () => {
           <img
             src={
               admin.profile_image
-                ? `http://localhost/admin/uploads/${admin.profile_image}`
+                ? `${API_BASE}/admin/uploads/${admin.profile_image}`
                 : "https://via.placeholder.com/150"
             }
             alt="Admin"

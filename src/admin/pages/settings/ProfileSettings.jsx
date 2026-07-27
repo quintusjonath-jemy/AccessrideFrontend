@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import API_BASE from "../../../config/api";
 
 const ProfileSettings = () => {
   const [admin, setAdmin] = useState({
@@ -19,7 +20,7 @@ const ProfileSettings = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/admin.php")
+      .get(`${API_BASE}/admin/api/admin.php`)
 
       .then((res) => {
         setAdmin(res.data);
@@ -57,7 +58,7 @@ const ProfileSettings = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost/admin/api/admin.php?action=profile",
+        `${API_BASE}/admin/api/admin.php?action=profile`,
         formData,
       );
 
@@ -96,7 +97,7 @@ const ProfileSettings = () => {
                   image
                     ? URL.createObjectURL(image)
                     : admin.profile_image
-                      ? `http://localhost/admin/uploads/${admin.profile_image}`
+                      ? `${API_BASE}/admin/uploads/${admin.profile_image}`
                       : "https://via.placeholder.com/200"
                 }
                 alt="Profile"

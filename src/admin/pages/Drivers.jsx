@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Car, Eye, Trash2, UserPlus, Pencil, EyeClosed, ShieldCheck, ShieldAlert, CreditCard } from "lucide-react";
+import API_BASE from "../../config/api";
 
 const Drivers = () => {
   const location = useLocation();
@@ -23,7 +24,7 @@ const Drivers = () => {
   const handleShowDriverDetails = async (driverId) => {
     setFetchingDriverId(driverId);
     try {
-      const res = await axios.get(`http://localhost/admin/api/drivers.php?id=${driverId}`);
+      const res = await axios.get(`${API_BASE}/admin/api/drivers.php?id=${driverId}`);
       if (res.data) {
         setDetailedDriver(res.data);
         setShowDetailsModal(true);
@@ -68,7 +69,7 @@ const Drivers = () => {
   // FETCH DRIVERS
   useEffect(() => {
     axios
-      .get("http://localhost/admin/api/drivers.php")
+      .get(`${API_BASE}/admin/api/drivers.php`)
 
       .then((res) => {
         setDrivers(Array.isArray(res.data) ? res.data : []);
@@ -126,13 +127,13 @@ const Drivers = () => {
   const addDriver = async () => {
     try {
       const res = await axios.post(
-        "http://localhost/admin/api/drivers.php",
+        `${API_BASE}/admin/api/drivers.php`,
         newDriver,
       );
 
       if (res.data.success) {
         const refresh = await axios.get(
-          "http://localhost/admin/api/drivers.php",
+          `${API_BASE}/admin/api/drivers.php`,
         );
 
         setDrivers(refresh.data);
@@ -170,13 +171,13 @@ const Drivers = () => {
   const updateDriver = async () => {
     try {
       const res = await axios.put(
-        "http://localhost/admin/api/drivers.php",
+        `${API_BASE}/admin/api/drivers.php`,
         selectedDriver,
       );
 
       if (res.data.success) {
         const refresh = await axios.get(
-          "http://localhost/admin/api/drivers.php",
+          `${API_BASE}/admin/api/drivers.php`,
         );
 
         setDrivers(refresh.data);
@@ -198,12 +199,12 @@ const Drivers = () => {
 
     try {
       const res = await axios.delete(
-        `http://localhost/admin/api/drivers.php?id=${id}`,
+        `${API_BASE}/admin/api/drivers.php?id=${id}`,
       );
 
       if (res.data.success) {
         const refresh = await axios.get(
-          "http://localhost/admin/api/drivers.php",
+          `${API_BASE}/admin/api/drivers.php`,
         );
 
         setDrivers(refresh.data);
@@ -226,10 +227,10 @@ const Drivers = () => {
     if (!confirmAction) return;
 
     await axios.get(
-      `http://localhost/admin/api/drivers.php?block=${driver.id}`,
+      `${API_BASE}/admin/api/drivers.php?block=${driver.id}`,
     );
 
-    const refresh = await axios.get("http://localhost/admin/api/drivers.php");
+    const refresh = await axios.get(`${API_BASE}/admin/api/drivers.php`);
 
     setDrivers(refresh.data);
   };

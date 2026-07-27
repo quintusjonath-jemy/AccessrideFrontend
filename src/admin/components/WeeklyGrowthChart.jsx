@@ -15,6 +15,7 @@ import { Line, Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { TrendingUp, DollarSign } from "lucide-react";
+import API_BASE from "../../config/api";
 
 ChartJS.register(
   CategoryScale,
@@ -105,7 +106,7 @@ const WeeklyGrowthChart = () => {
 
     if (chartType === "growth") {
       axios
-        .get(`http://localhost/admin/api/weekly_growth.php?${query}`)
+        .get(`${API_BASE}/admin/api/weekly_growth.php?${query}`)
         .then((res) => {
           setUsers(Array.isArray(res.data?.users)    ? res.data.users    : []);
           setDrivers(Array.isArray(res.data?.drivers)? res.data.drivers  : []);
@@ -114,7 +115,7 @@ const WeeklyGrowthChart = () => {
         .finally(() => setLoading(false));
     } else {
       axios
-        .get(`http://localhost/admin/api/earnings_chart.php?${query}`)
+        .get(`${API_BASE}/admin/api/earnings_chart.php?${query}`)
         .then((res) => {
           setEarnings(Array.isArray(res.data) ? res.data : []);
         })
