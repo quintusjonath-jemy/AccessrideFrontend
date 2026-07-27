@@ -245,14 +245,15 @@ const BookingPage = () => {
       }
       // Programmatically select the vehicle (same as clicking it)
       handleSelectVehicle(v);
-      // Move to step 2 visually & auto-detect current location
+      // Move to step 2 visually & auto-detect current GPS location for pickup
       setStep(2);
       stepRef.current = 2;
       requestGPS();
-      setVState(VSTATE.PICKUP);
-      vStateRef.current = VSTATE.PICKUP;
-      setVStatus("What is your pickup location?");
-      vSpeak(`${v} selected. Locating your pickup address. What is your pickup location, or say current location?`);
+      // Go straight to asking for destination
+      setVState(VSTATE.DROPOFF);
+      vStateRef.current = VSTATE.DROPOFF;
+      setVStatus("Where are you going?");
+      vSpeak(`${v} selected. Using your current location for pickup. Where are you going?`);
       return;
     }
 
@@ -704,10 +705,9 @@ const BookingPage = () => {
             {/* Step label + status */}
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-                {vState === VSTATE.VEHICLE    ? "Step 1 — Choose vehicle"  :
-                 vState === VSTATE.PICKUP     ? "Step 2 — Pickup location" :
-                 vState === VSTATE.DROPOFF    ? "Step 3 — Destination"     :
-                 vState === VSTATE.CONFIRMING ? "Step 4 — Confirm booking" : "Voice Guide"}
+                {vState === VSTATE.VEHICLE    ? "Step 1 — Choose vehicle"     :
+                 vState === VSTATE.DROPOFF    ? "Step 2 — Choose destination" :
+                 vState === VSTATE.CONFIRMING ? "Step 3 — Confirm booking"    : "Voice Guide"}
               </p>
               <p className="text-xs font-semibold text-white truncate mt-0.5">{vStatus || "Listening…"}</p>
             </div>
