@@ -644,6 +644,40 @@ const BookingPage = () => {
           </button>
         </header>
 
+        {/* Voice Guide Banner — only visible in voiceMode */}
+        {voiceModeActive && vState !== VSTATE.IDLE && (
+          <div className="mx-4 mb-3 bg-[#0B2F89] text-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
+            {/* Mic pulse indicator */}
+            <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${vListening ? "bg-red-500 animate-pulse" : "bg-white/20"}`}>
+              {vListening ? <Mic size={16} /> : <MicOff size={16} />}
+            </div>
+            {/* Step label + status */}
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                {vState === VSTATE.VEHICLE    ? "Step 1 — Choose vehicle"  :
+                 vState === VSTATE.PICKUP     ? "Step 2 — Pickup location" :
+                 vState === VSTATE.DROPOFF    ? "Step 3 — Destination"     :
+                 vState === VSTATE.CONFIRMING ? "Step 4 — Confirm booking" : "Voice Guide"}
+              </p>
+              <p className="text-xs font-semibold text-white truncate mt-0.5">{vStatus || "Listening…"}</p>
+            </div>
+            {/* Stop guide button */}
+            <button
+              onClick={() => {
+                vStopRef.current = true;
+                vRecRef.current?.abort();
+                setVState(VSTATE.IDLE);
+                setVListening(false);
+                setVStatus("");
+              }}
+              className="shrink-0 text-white/60 hover:text-white text-xs font-bold cursor-pointer"
+              title="Stop voice guide"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Multi-step Flow */}
         <div className="px-5 space-y-6">
           {step === 1 ? (
