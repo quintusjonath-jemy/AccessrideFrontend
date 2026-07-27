@@ -7,6 +7,7 @@ import ProfileCard from './components/ProfileCard';
 import AccessibilityCard from './components/AccessibilityCard';
 import VoiceSettingsCard from './components/VoiceSettingsCard';
 import { userData } from './data/userData';
+import API_BASE from "../../config/api";
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const UserProfilePage = () => {
 
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
-    fetch(`http://localhost/history_and_profile/profile/get_profile.php?user_id=${userId}`)
+    fetch(`${API_BASE}/history_and_profile/profile/get_profile.php?user_id=${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
@@ -50,7 +51,7 @@ const UserProfilePage = () => {
       
       if (newName !== null && newPhone !== null && newLocation !== null) {
         const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
-        fetch(`http://localhost/history_and_profile/profile/update_profile.php`, {
+        fetch(`${API_BASE}/history_and_profile/profile/update_profile.php`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

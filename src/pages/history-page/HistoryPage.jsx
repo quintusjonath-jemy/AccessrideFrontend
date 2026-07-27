@@ -5,6 +5,7 @@ import './HistoryPage.css';
 import DashboardHeader from '../../UserDashboard/components/DashboardHeader';
 import HistoryFilters from './components/HistoryFilters';
 import RideCard from './components/RideCard';
+import API_BASE from "../../config/api";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const HistoryPage = () => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
     
     // Fetch profile for header
-    fetch(`http://localhost/history_and_profile/profile/get_profile.php?user_id=${userId}`)
+    fetch(`${API_BASE}/history_and_profile/profile/get_profile.php?user_id=${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
@@ -27,7 +28,7 @@ const HistoryPage = () => {
       .catch(err => console.error("Error fetching profile", err));
 
     // Fetch ride history
-    fetch(`http://localhost/history_and_profile/history/get_history.php?user_id=${userId}`)
+    fetch(`${API_BASE}/history_and_profile/history/get_history.php?user_id=${userId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
