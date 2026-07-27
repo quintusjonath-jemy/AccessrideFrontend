@@ -90,11 +90,19 @@ const calculateDistance = async (pickup, dropoff) => {
 // ─── Vehicle keyword → BookingPage vehicle id ────────────────────────────────
 const matchVehicleFromSpeech = (text) => {
   const t = text.toLowerCase();
-  if (t.includes("van"))                                       return "van";
-  if (t.includes("three wheeler") || t.includes("three-wheeler") ||
-      t.includes("tuk") || t.includes("auto"))                 return "three wheeler";
-  if (t.includes("bike") || t.includes("motor") || t.includes("moto")) return "bike";
-  if (t.includes("car") || t.includes("sedan") || t.includes("cab"))   return "car";
+  if (t.includes("van")) {
+    return "van";
+  }
+  if (t.includes("three wheeler") || t.includes("three-wheeler") || t.includes("three") ||
+      t.includes("tuk") || t.includes("auto") || t.includes("rickshaw") || t.includes("wheeler")) {
+    return "three wheeler";
+  }
+  if (t.includes("bike") || t.includes("motor") || t.includes("moto") || t.includes("cycle")) {
+    return "bike";
+  }
+  if (t.includes("car") || t.includes("sedan") || t.includes("cab") || t.includes("uber") || t.includes("taxi") || t.includes("vehicle") || t.includes("ride")) {
+    return "car";
+  }
   return null;
 };
 
@@ -177,6 +185,39 @@ const BookingPage = () => {
       })
       .catch(err => console.error("Error fetching rates:", err));
   }, []);
+  // ── Vehicle selection handler ──────────────────────────────────────────────
+  const handleSelectVehicle = useCallback((type) => {
+    setVehicleType(type);
+    vTypeRef.current = type;
+    // Auto-select corresponding tier class
+    if (type === "car") {
+      setRideClass("eco");
+    } else if (type === "van") {
+      setRideClass("assist");
+    } else if (type === "three wheeler") {
+      setRideClass("auto");
+    } else if (type === "bike") {
+      setRideClass("moto");
+    }
+  }, []);
+
+  // ── Helper to speak TTS and pause mic while speaking to avoid feedback loop ────
+  const vSpeak = useCallback((text) => {
+    if (vRecRef.current) {
+      try { vRecRef.current.stop(); } catch (_) {}
+    }
+    speakWithFallback(
+      text,
+      () => setVListening(false),
+      () => {
+        if (!vStopRef.current && vRecRef.current) {
+          setTimeout(() => {
+            try { vRecRef.current.start(); } catch (_) {}
+          }, 300);
+        }
+      }
+    );
+  }, []);
 
   // ── Voice Guide: full step-by-step when voiceModeActive ─────────────────────
   // handleVCommand processes each spoken phrase and moves the booking forward
@@ -184,10 +225,13 @@ const BookingPage = () => {
     const text = rawText.toLowerCase().trim();
     const cur  = vStateRef.current;
 
+    console.log(`[VoiceGuide] State: ${cur} | Heard: "${text}"`);
+
     // Cancel at any point
     if (text.includes("cancel") || text.includes("never mind") || text.includes("stop")) {
-      speakWithFallback("Cancelled. You can fill in the details manually.");
+      vSpeak("Cancelled. You can fill in the details manually.");
       setVState(VSTATE.IDLE);
+      vStateRef.current = VSTATE.IDLE;
       setVStatus("Voice guide stopped");
       return;
     }
@@ -196,34 +240,46 @@ const BookingPage = () => {
     if (cur === VSTATE.VEHICLE) {
       const v = matchVehicleFromSpeech(text);
       if (!v) {
-        speakWithFallback("Sorry, I didn't catch that. Please say car, van, bike, or three wheeler.");
+        vSpeak("Sorry, I didn't catch that. Please say car, van, bike, or three wheeler.");
         return;
       }
       // Programmatically select the vehicle (same as clicking it)
       handleSelectVehicle(v);
-      // Move to step 2
+      // Move to step 2 visually & auto-detect current location
       setStep(2);
+      stepRef.current = 2;
+      requestGPS();
       setVState(VSTATE.PICKUP);
+      vStateRef.current = VSTATE.PICKUP;
       setVStatus("What is your pickup location?");
-      setTimeout(() => {
-        speakWithFallback(`${v} selected. Now, what is your pickup location?`);
-      }, 400);
+      vSpeak(`${v} selected. Locating your pickup address. What is your pickup location, or say current location?`);
       return;
     }
 
     // ── PICKUP step ──────────────────────────────────────────────────────────
     if (cur === VSTATE.PICKUP) {
+      if (text.includes("my location") || text.includes("current location") || text.includes("here") || text.includes("gps")) {
+        vSpeak("Locating your current position...");
+        requestGPS();
+        setVState(VSTATE.DROPOFF);
+        vStateRef.current = VSTATE.DROPOFF;
+        setVStatus("Where are you going?");
+        setTimeout(() => {
+          vSpeak("Pickup set to your location. Now, where are you going?");
+        }, 1200);
+        return;
+      }
       const cleaned = text.replace(/^(from|at|my pickup is|pickup|starting from)\s+/i, "").trim();
       if (!cleaned || cleaned.length < 2) {
-        speakWithFallback("I didn't catch that. Please say your pickup location.");
+        vSpeak("I didn't catch that. Please say your pickup location, or say current location.");
         return;
       }
       setPickup(cleaned);
+      pickupRef.current = cleaned;
       setVState(VSTATE.DROPOFF);
+      vStateRef.current = VSTATE.DROPOFF;
       setVStatus("Where are you going?");
-      setTimeout(() => {
-        speakWithFallback(`Pickup set to ${cleaned}. Now, where are you going?`);
-      }, 400);
+      vSpeak(`Pickup set to ${cleaned}. Now, where are you going?`);
       return;
     }
 
@@ -231,36 +287,36 @@ const BookingPage = () => {
     if (cur === VSTATE.DROPOFF) {
       const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff)\s+/i, "").trim();
       if (!cleaned || cleaned.length < 2) {
-        speakWithFallback("I didn't catch that. Please say your destination.");
+        vSpeak("I didn't catch that. Please say your destination.");
         return;
       }
       setDropoff(cleaned);
+      dropoffRef.current = cleaned;
       setVState(VSTATE.CONFIRMING);
+      vStateRef.current = VSTATE.CONFIRMING;
       setVStatus("Say confirm to book or cancel");
       const vehicle = vTypeRef.current;
-      setTimeout(() => {
-        speakWithFallback(
-          `Great! Booking a ${vehicle} from ${pickupRef.current || cleaned} to ${cleaned}. Say confirm to book, or cancel to start over.`
-        );
-      }, 400);
+      vSpeak(
+        `Great! Booking a ${vehicle} from ${pickupRef.current || cleaned} to ${cleaned}. Say confirm to book, or cancel to start over.`
+      );
       return;
     }
 
     // ── CONFIRMING step ──────────────────────────────────────────────────────
     if (cur === VSTATE.CONFIRMING) {
       if (text.includes("yes") || text.includes("confirm") || text.includes("okay") || text.includes("book")) {
-        speakWithFallback("Booking your ride now. Please wait.");
+        vSpeak("Booking your ride now. Please wait.");
         setVState(VSTATE.IDLE);
+        vStateRef.current = VSTATE.IDLE;
         setVStatus("Booking…");
         // Trigger the existing confirm handler (needs pickup + dropoff ready in state)
         setTimeout(() => handleConfirmBooking(), 1200);
         return;
       }
-      speakWithFallback("Say confirm to book, or cancel to start over.");
+      vSpeak("Say confirm to book, or cancel to start over.");
       return;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [handleSelectVehicle, vSpeak]);
 
   // ── Set up voice recognition for the booking guide ───────────────────────
   useEffect(() => {
@@ -296,9 +352,9 @@ const BookingPage = () => {
     // Start the guide: announce and begin listening
     vStopRef.current = false;
     setVState(VSTATE.VEHICLE);
+    vStateRef.current = VSTATE.VEHICLE;
     setVStatus("Which vehicle would you like?");
-    speakWithFallback("Which vehicle would you like? Car, van, bike, or three wheeler?");
-    setTimeout(() => { try { rec.start(); } catch (_) {} }, 1800);
+    vSpeak("Which vehicle would you like? Car, van, bike, or three wheeler?");
 
     return () => {
       vStopRef.current = true;
@@ -385,6 +441,14 @@ const BookingPage = () => {
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
+
+  // Auto-request GPS location when entering Step 2 (location choose part) if pickup is empty
+  useEffect(() => {
+    if (step === 2 && !pickup) {
+      requestGPS();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   useEffect(() => {
     if (pickup && dropoff) {
@@ -547,20 +611,6 @@ const BookingPage = () => {
       map.once("load", drawOnMap);
     }
   }, [map, pickupCoords, dropoffCoords, routeGeoJSON]);
-
-  const handleSelectVehicle = (type) => {
-    setVehicleType(type);
-    // Auto-select corresponding tier class
-    if (type === "car") {
-      setRideClass("eco");
-    } else if (type === "van") {
-      setRideClass("assist");
-    } else if (type === "three wheeler") {
-      setRideClass("auto");
-    } else if (type === "bike") {
-      setRideClass("moto");
-    }
-  };
 
   const handleSwapLocations = () => {
     // 1. Swap display text
