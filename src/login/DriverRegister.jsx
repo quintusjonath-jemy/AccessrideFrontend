@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UploadCard from "../login/UploadCard";
+import API_BASE from "../config/api";
 
 const DriverRegister = () => {
     const navigate = useNavigate();
@@ -370,7 +371,7 @@ const DriverRegister = () => {
         try {
 
             const response = await fetch(
-                "http://localhost/login/api/driver_register.php",
+                `${API_BASE}/login/api/driver_register.php`,
                 {
                     method: "POST",
                     body: form

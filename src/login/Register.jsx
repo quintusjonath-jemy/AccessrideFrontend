@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { UserPlus, Mic, MicOff } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { speakWithFallback } from "../UserDashboard/components/voiceassistant/VoiceAssistant";
+import API_BASE from "../config/api";
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 function Register() {
   const navigate = useNavigate();
   const location = useLocation();
-  const backendBase = "http://localhost/login";
+  const backendBase = `${API_BASE}/login`;
 
   const [formData, setFormData] = useState({
     firstName: "",
