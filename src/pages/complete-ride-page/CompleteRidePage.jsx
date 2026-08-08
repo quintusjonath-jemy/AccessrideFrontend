@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Bell, Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,6 +8,18 @@ import RideSummary from './components/RideSummary';
 import RatingSection from './components/RatingSection';
 import { rideDetails } from './data/rideDetails';
 import API_BASE from "../../config/api";
+import { speakWithFallback } from "../../UserDashboard/components/voiceassistant/VoiceAssistant";
+
+// Helper to parse spoken star ratings
+const parseRatingFromSpeech = (text) => {
+  const t = text.toLowerCase();
+  if (t.includes("5") || t.includes("five") || t.includes("excellent") || t.includes("great")) return 5;
+  if (t.includes("4") || t.includes("four") || t.includes("good")) return 4;
+  if (t.includes("3") || t.includes("three") || t.includes("okay") || t.includes("average")) return 3;
+  if (t.includes("2") || t.includes("two") || t.includes("bad") || t.includes("poor")) return 2;
+  if (t.includes("1") || t.includes("one") || t.includes("terrible") || t.includes("worst")) return 1;
+  return null;
+};
 
 const CompleteRidePage = () => {
   const navigate = useNavigate();
@@ -48,6 +60,48 @@ const CompleteRidePage = () => {
         setLoading(false);
       });
   }, []);
+
+  // Voice Assistant Rating Prompt Effect on Ride Completion
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const rec = new SpeechRecognition();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    rec.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      const stars = parseRatingFromSpeech(transcript);
+      if (stars) {
+        handleRating(stars);
+        speakWithFallback(`Thank you! You rated your driver ${stars} ${stars === 1 ? "star" : "stars"}.`);
+      } else {
+        speakWithFallback("Please say a rating from 1 to 5 stars.");
+      }
+    };
+
+    rec.onerror = (e) => {
+      if (e.error === "no-speech" || e.error === "aborted") return;
+    };
+
+    // Prompt user for rating after arrival
+    const timer = setTimeout(() => {
+      speakWithFallback(
+        "Thank you for riding with AccessRide! Your trip is complete. Please rate your driver from 1 to 5 stars.",
+        null,
+        () => {
+          try { rec.start(); } catch (_) {}
+        }
+      );
+    }, 1200);
+
+    return () => {
+      clearTimeout(timer);
+      rec.abort();
+    };
+  }, [ride?.id]);
 
   const handleMicClick = () => {
     setIsListening(true);
