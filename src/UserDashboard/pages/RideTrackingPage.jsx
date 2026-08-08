@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Phone, MessageSquare, ShieldAlert, Navigation, Car, Star } from "lucide-react";
+import { ArrowLeft, Phone, MessageSquare, ShieldAlert, Navigation, Car, Star, Mic, MicOff, Sparkles } from "lucide-react";
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import API_BASE from "../../config/api";
+import { speakWithFallback } from "../components/voiceassistant/VoiceAssistant";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
@@ -74,11 +75,170 @@ const RideTrackingPage = () => {
   const [displayDistance, setDisplayDistance] = useState(null);
   const [userLiveCoords, setUserLiveCoords] = useState(null);
 
+  // Voice Assistant Tracking States & Announcement Refs
+  const [vaStatus, setVaStatus] = useState("Voice Active");
+  const [isVaListening, setIsVaListening] = useState(false);
+  const vaRecRef = useRef(null);
+  const vaManualStopRef = useRef(false);
+
+  const hasAnnouncedAcceptedRef = useRef(false);
+  const hasAnnouncedDriverArrivedRef = useRef(false);
+  const lastAnnouncedKmRef = useRef(null);
+  const hasAnnouncedArrivalRef = useRef(false);
+
+  // Helper to speak TTS and handle speech recognition pausing
+  const vaSpeak = (text) => {
+    setVaStatus(text.length > 35 ? text.slice(0, 32) + "..." : text);
+    if (vaRecRef.current) {
+      try { vaRecRef.current.stop(); } catch (_) {}
+    }
+    speakWithFallback(
+      text,
+      () => setIsVaListening(false),
+      () => {
+        if (!vaManualStopRef.current && vaRecRef.current) {
+          setTimeout(() => {
+            try { vaRecRef.current.start(); } catch (_) {}
+          }, 400);
+        }
+      }
+    );
+  };
+
   // Keep a ref of the ride state to prevent closure issue inside the polling interval
   const rideRef = useRef(null);
   useEffect(() => {
     rideRef.current = ride;
   }, [ride]);
+
+  // Voice Command Handler for Tracking Page
+  const handleVoiceTrackingCommand = (rawText) => {
+    const text = rawText.toLowerCase().trim();
+    console.log(`[TrackingVoice] Heard: "${text}"`);
+    const currentRide = rideRef.current;
+    if (!currentRide) return;
+
+    // 1. OTP Query
+    if (text.includes("otp") || text.includes("pin") || text.includes("code")) {
+      const otp = (currentRide.id * 127 + 3571) % 9000 + 1000;
+      const spokenOtp = otp.toString().split("").join(" ");
+      vaSpeak(`Your trip OTP code is ${spokenOtp}. Share this code with your driver to start your ride.`);
+      return;
+    }
+
+    // 2. Payment / Fare Query
+    if (text.includes("payment") || text.includes("fare") || text.includes("cost") || text.includes("amount") || text.includes("charge") || text.includes("how much")) {
+      const fare = currentRide.fare ? parseFloat(currentRide.fare).toFixed(2) : "0.00";
+      const mode = currentRide.payment_method || "cash";
+      vaSpeak(`Your total fare is ${fare} Rupees, payable by ${mode}.`);
+      return;
+    }
+
+    // 3. Driver Info Query
+    if (text.includes("driver") || text.includes("who") || text.includes("vehicle") || text.includes("number")) {
+      const dName = currentRide.driver_name || "Assigned driver";
+      const dNum = currentRide.driver_vehicle_number ? `vehicle number ${currentRide.driver_vehicle_number}` : "";
+      vaSpeak(`Your driver is ${dName}. ${dNum}.`);
+      return;
+    }
+
+    // 4. Distance / Location Query
+    if (text.includes("distance") || text.includes("how far") || text.includes("where")) {
+      if (currentRide.status === "active") {
+        const distStr = displayDistance !== null ? `${displayDistance.toFixed(1)} kilometers` : "short distance";
+        vaSpeak(`You are ${distStr} away from your destination.`);
+      } else {
+        const distStr = displayDistance !== null ? `${displayDistance.toFixed(1)} kilometers` : "nearby";
+        vaSpeak(`Your driver is ${distStr} away from your location.`);
+      }
+      return;
+    }
+
+    // 5. Help
+    if (text.includes("help") || text.includes("what can you do")) {
+      vaSpeak("You can ask: What is my OTP, How much is the fare, Who is my driver, or How far is the destination.");
+      return;
+    }
+  };
+
+  // Reactive Speech Announcements for Tracking Events
+  useEffect(() => {
+    if (!ride) return;
+
+    // 1. Driver Accepted & Vehicle Number Announcement
+    if ((ride.status === "accepted" || (ride.status === "pending" && ride.driver_name)) && !hasAnnouncedAcceptedRef.current) {
+      hasAnnouncedAcceptedRef.current = true;
+      const dName = ride.driver_name || "a driver";
+      const dNum = ride.driver_vehicle_number ? `vehicle number ${ride.driver_vehicle_number}` : "";
+      const dist = displayDistance !== null ? `They are ${displayDistance.toFixed(1)} kilometers away.` : "";
+      vaSpeak(`Driver ${dName} has accepted your request. ${dNum}. ${dist}`);
+    }
+
+    // 2. Driver Reached Proximity Alert (< 0.2 km)
+    if (ride.status === "accepted" && displayDistance !== null && displayDistance <= 0.2 && !hasAnnouncedDriverArrivedRef.current) {
+      hasAnnouncedDriverArrivedRef.current = true;
+      const dName = ride.driver_name || "Your driver";
+      vaSpeak(`Your driver ${dName} has reached your location! Please share your OTP code.`);
+    }
+
+    // 3. In-transit 1km Distance Milestone Updates
+    if (ride.status === "active" && displayDistance !== null && displayDistance > 0) {
+      const currentKm = Math.floor(displayDistance);
+      if (currentKm > 0 && (lastAnnouncedKmRef.current === null || currentKm < lastAnnouncedKmRef.current)) {
+        lastAnnouncedKmRef.current = currentKm;
+        vaSpeak(`${currentKm} ${currentKm === 1 ? "kilometer" : "kilometers"} remaining to your destination.`);
+      }
+    }
+
+    // 4. Destination Arrival Announcement
+    if (ride.status === "completed" && !hasAnnouncedArrivalRef.current) {
+      hasAnnouncedArrivalRef.current = true;
+      const dest = ride.dropoff_location ? ride.dropoff_location.replace(/\s*\(Vehicle:[^\)]+\)/i, "") : "your destination";
+      vaSpeak(`You have reached your destination, ${dest}.`);
+    }
+  }, [ride?.status, ride?.driver_name, ride?.driver_vehicle_number, displayDistance]);
+
+  // Set up Web Speech Recognition for RideTrackingPage
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const rec = new SpeechRecognition();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    vaRecRef.current = rec;
+
+    rec.onstart = () => setIsVaListening(true);
+    rec.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setVaStatus(`"${transcript}"`);
+      handleVoiceTrackingCommand(transcript);
+    };
+    rec.onerror = (e) => {
+      if (e.error === "no-speech" || e.error === "aborted") return;
+      setIsVaListening(false);
+    };
+    rec.onend = () => {
+      if (!vaManualStopRef.current) {
+        setTimeout(() => {
+          try { rec.start(); } catch (_) {}
+        }, 500);
+      } else {
+        setIsVaListening(false);
+      }
+    };
+
+    vaManualStopRef.current = false;
+    setTimeout(() => {
+      try { rec.start(); } catch (_) {}
+    }, 1500);
+
+    return () => {
+      vaManualStopRef.current = true;
+      rec.abort();
+    };
+  }, []);
 
   const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
@@ -491,6 +651,37 @@ const RideTrackingPage = () => {
           className="flex items-center justify-center p-3 bg-white hover:bg-slate-50 rounded-full shadow-lg border border-slate-100 text-[#0B2F89] transition cursor-pointer"
         >
           <ArrowLeft size={20} />
+        </button>
+      </div>
+
+      {/* Voice Assistant Mic Pill (Top Right) */}
+      <div className="absolute top-4 right-4 z-20">
+        <button
+          onClick={() => {
+            if (isVaListening) {
+              vaManualStopRef.current = true;
+              try { vaRecRef.current?.abort(); } catch (_) {}
+              setIsVaListening(false);
+              setVaStatus("Voice Paused");
+            } else {
+              vaManualStopRef.current = false;
+              try { vaRecRef.current?.start(); } catch (_) {}
+              setIsVaListening(true);
+              setVaStatus("Voice Active");
+            }
+          }}
+          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-full shadow-xl border text-xs font-extrabold transition-all cursor-pointer ${
+            isVaListening
+              ? "bg-[#0B2F89] text-white border-blue-200 shadow-blue-900/20"
+              : "bg-white/95 backdrop-blur-md text-slate-600 border-slate-200 hover:bg-slate-50"
+          }`}
+          title="Toggle Voice Assistant"
+        >
+          <Sparkles size={14} className="text-[#FEC329] animate-pulse" />
+          <span>{vaStatus}</span>
+          <div className={`p-1 rounded-full ${isVaListening ? "bg-red-500 text-white animate-pulse" : "bg-slate-100 text-slate-500"}`}>
+            {isVaListening ? <Mic size={14} /> : <MicOff size={14} />}
+          </div>
         </button>
       </div>
 
