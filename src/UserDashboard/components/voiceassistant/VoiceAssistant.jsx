@@ -162,7 +162,7 @@ export const VoiceAssistantButton = ({
 
   const recognitionRef = useRef(null);
   const agentStateRef = useRef(STATE.IDLE); // always up-to-date in callbacks
-  const manualStopRef = useRef(false);      // true when user tapped mic to stop
+  const manualStopRef = useRef(true);       // true by default; set false when user taps mic
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -174,13 +174,25 @@ export const VoiceAssistantButton = ({
     sessionStorage.getItem("user_id") ||
     "0";
 
-  // ── Speak helper that updates UI ──────────────────────────────────────────
+  // ── Speak helper that pauses mic while speaking then resumes ───────────────
   const speak = useCallback((text) => {
     setStatusText(text.length > 50 ? text.slice(0, 47) + "…" : text);
+    // Pause recognition while assistant speaks so mic doesn't hear computer speaker
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (_) {}
+    }
     speakWithFallback(
       text,
       () => setIsSpeaking(true),
-      () => setIsSpeaking(false)
+      () => {
+        setIsSpeaking(false);
+        // Resume listening after TTS finishes if user hasn't manually stopped
+        if (!manualStopRef.current && recognitionRef.current) {
+          setTimeout(() => {
+            try { recognitionRef.current.start(); } catch (_) {}
+          }, 300);
+        }
+      }
     );
   }, []);
 
@@ -321,42 +333,23 @@ export const VoiceAssistantButton = ({
           return;
         }
 
-        // ── BOOK IT — open booking page with guided voice flow ──────────────
-        if (
-          text === "book it" ||
-          text === "book now" ||
-          text.includes("open booking") ||
-          text.includes("go to booking")
-        ) {
-          speak("Opening the booking page. Please choose your vehicle.");
-          setTimeout(() =>
-            navigate("/user/booking", { state: { voiceMode: true } })
-          , 1200);
-          resetToIdle();
-          return;
-        }
-
-        // ── BOOK A RIDE ────────────────────────────────────────────────
+        // ── BOOK A RIDE / BOOK IT ──────────────────────────────────────
         if (
           text.includes("book") ||
           text.includes("i want a ride") ||
           text.includes("i need a ride") ||
-          text.includes("get me a ride")
+          text.includes("get me a ride") ||
+          text.includes("ride")
         ) {
-          // Check if destination is already in the command
-          const toMatch = text.match(/(?:to|for|going to|drop me at|drop me to|i want to go to)\s+(.+)/);
-          if (toMatch) {
-            // Inline destination — skip to vehicle selection
-            const destination = toMatch[1].trim();
-            Memory.sessionSet("pending_destination", destination);
-            speak(
-              `Got it, going to ${destination}. Which vehicle? Bike, three-wheeler, car, or van?`
-            );
-            transition(STATE.WAITING_VEHICLE, "Which vehicle?");
-          } else {
-            speak("Sure! Where would you like to go?");
-            transition(STATE.WAITING_DESTINATION, "Where to?");
+          manualStopRef.current = true;
+          if (recognitionRef.current) {
+            try { recognitionRef.current.abort(); } catch (_) {}
           }
+          speak("Opening booking page. Please choose your vehicle.");
+          setTimeout(() =>
+            navigate("/user/booking", { state: { voiceMode: true } })
+          , 1000);
+          resetToIdle();
           return;
         }
 
