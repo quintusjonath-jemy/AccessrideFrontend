@@ -8,6 +8,8 @@ import {
   Shield,
   Headphones,
   Accessibility,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { speakWithFallback } from "../UserDashboard/components/voiceassistant/VoiceAssistant";
 import API_BASE from "../config/api";
@@ -19,6 +21,7 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [userError, setUserError] = useState("");
 
   // Refs to prevent stale closures in voice event handlers
@@ -72,10 +75,19 @@ const Login = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        const errMsg = result.error || "Login failed";
+        let errMsg = result.error || "Login failed";
+        if (
+          errMsg.toLowerCase().includes("incorrect password") ||
+          errMsg.toLowerCase().includes("invalid password") ||
+          errMsg.toLowerCase().includes("user not found") ||
+          errMsg.toLowerCase().includes("invalid phone") ||
+          errMsg.toLowerCase().includes("login failed")
+        ) {
+          errMsg = "Username or password invalid";
+        }
         setUserError(errMsg);
         speakWithFallback(
-          `Login failed. ${errMsg}. Please check your credentials and try saying login again.`,
+          `Login failed. ${errMsg}. Please check your credentials and try again.`,
           null,
           () => {
             voiceStepRef.current = "confirm";
@@ -369,10 +381,10 @@ const Login = () => {
                 </label>
 
                 <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-3 focus-within:border-blue-900">
-                  <Lock className="text-gray-400" size={20} />
+                  <Lock className="text-gray-400 shrink-0" size={20} />
 
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     className="w-full ml-3 outline-none"
                     value={password}
@@ -381,6 +393,15 @@ const Login = () => {
                       passwordRef.current = e.target.value;
                     }}
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-400 hover:text-blue-900 focus:outline-none ml-2 cursor-pointer shrink-0"
+                    title={showPassword ? "Hide Password" : "Show Password"}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
               </div>
 
