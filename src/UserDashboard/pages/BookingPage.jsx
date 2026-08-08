@@ -643,18 +643,29 @@ const BookingPage = () => {
   };
 
   const handleConfirmBooking = () => {
+    // Ensure pickup and dropoff locations are non-empty before sending payload
+    const effectivePickup = pickup.trim() || lastGeocodedPickupRef.current || "Current Location";
+    const effectiveDropoff = dropoff.trim();
+
+    if (!effectiveDropoff) {
+      const msg = "Please specify a destination before confirming your ride.";
+      alert(msg);
+      speakWithFallback(msg);
+      return;
+    }
+
     setIsBookingInProgress(true);
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
 
     const payload = {
       user_id: userId,
-      pickup_location: pickup,
-      dropoff_location: dropoff,
-      vehicle_type: vehicleType,
-      distance_km: distance,
-      payment_method: paymentMethod,
-      pickup_lat: pickupCoords ? pickupCoords[1] : null,
-      pickup_lng: pickupCoords ? pickupCoords[0] : null
+      pickup_location: effectivePickup,
+      dropoff_location: effectiveDropoff,
+      vehicle_type: vehicleType || "car",
+      distance_km: distance > 0 ? distance : 1.0,
+      payment_method: paymentMethod || "cash",
+      pickup_lat: pickupCoords ? pickupCoords[1] : 6.9271,
+      pickup_lng: pickupCoords ? pickupCoords[0] : 79.8612
     };
 
     axios.post(`${API_BASE}/UserDashboard/api/book_ride.php`, payload)
@@ -663,13 +674,17 @@ const BookingPage = () => {
         if (res.data.success) {
           navigate("/user/ride");
         } else {
-          alert(res.data.message || "Failed to book ride");
+          const errMsg = res.data.message || "Failed to book ride";
+          alert(errMsg);
+          speakWithFallback(errMsg);
         }
       })
       .catch(err => {
         setIsBookingInProgress(false);
         console.error("Booking error:", err);
-        alert("An error occurred while confirming booking.");
+        const errMsg = err.response?.data?.message || err.message || "An error occurred while confirming booking.";
+        alert(errMsg);
+        speakWithFallback(errMsg);
       });
   };
 
