@@ -8,6 +8,8 @@ import {
   Shield,
   Headphones,
   Accessibility,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { speakWithFallback } from "../UserDashboard/components/voiceassistant/VoiceAssistant";
 import API_BASE from "../config/api";
@@ -19,6 +21,7 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [userError, setUserError] = useState("");
 
   // Refs to prevent stale closures in voice event handlers
@@ -40,8 +43,8 @@ const Login = () => {
   }, []);
 
   const loginUser = async () => {
-    const currentEmail = emailRef.current;
-    const currentPassword = passwordRef.current;
+    const currentEmail = (emailRef.current || email).trim();
+    const currentPassword = (passwordRef.current || password).trim();
 
     if (!currentEmail || !currentPassword) {
       speakWithFallback("Please enter both email and password.");
@@ -72,15 +75,24 @@ const Login = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        const errMsg = result.error || "Login failed";
+        let errMsg = result.error || "Login failed";
+        if (
+          errMsg.toLowerCase().includes("incorrect password") ||
+          errMsg.toLowerCase().includes("invalid password") ||
+          errMsg.toLowerCase().includes("user not found") ||
+          errMsg.toLowerCase().includes("invalid phone") ||
+          errMsg.toLowerCase().includes("login failed")
+        ) {
+          errMsg = "Username or password invalid";
+        }
         setUserError(errMsg);
         speakWithFallback(
-          `Login failed. ${errMsg}. Let's try again. Please state your email address.`,
+          `Login failed. ${errMsg}. Please check your credentials and try again.`,
           null,
           () => {
-            voiceStepRef.current = "email";
-            setVoiceStep("email");
-            startListeningForStep("email");
+            voiceStepRef.current = "confirm";
+            setVoiceStep("confirm");
+            startListeningForStep("confirm");
           }
         );
         return;
@@ -100,13 +112,7 @@ const Login = () => {
     } catch (error) {
       setUserError("Unable to connect to server. Please try again.");
       speakWithFallback(
-        "Server error. Let's try again. Please state your email address.",
-        null,
-        () => {
-          voiceStepRef.current = "email";
-          setVoiceStep("email");
-          startListeningForStep("email");
-        }
+        "Server connection error. Please try again."
       );
     }
   };
@@ -125,13 +131,42 @@ const Login = () => {
   const handleVoiceInput = (text) => {
     const cleanText = text.toLowerCase().trim();
     const currentStep = voiceStepRef.current;
+    const currentEmail = (emailRef.current || email).trim();
+    const currentPassword = (passwordRef.current || password).trim();
+
+    console.log(`[VoiceLogin] Step: ${currentStep} | Heard: "${cleanText}" | Email: "${currentEmail}" | Password len: ${currentPassword.length}`);
+
+    const isLoginIntent =
+      cleanText.includes("login") ||
+      cleanText.includes("log in") ||
+      cleanText.includes("sign in") ||
+      cleanText.includes("submit") ||
+      cleanText.includes("go") ||
+      cleanText.includes("yes");
+
+    // Global override: If both email and password exist and user says "login" or similar, log in immediately
+    if (currentEmail && currentPassword && isLoginIntent) {
+      voiceStepRef.current = "idle";
+      setVoiceStep("idle");
+      loginUser();
+      return;
+    }
 
     if (currentStep === "mode") {
-      if (
-        cleanText.includes("login") ||
-        cleanText.includes("log in") ||
-        cleanText.includes("sign")
-      ) {
+      if (isLoginIntent) {
+        if (currentEmail && currentPassword) {
+          voiceStepRef.current = "idle";
+          setVoiceStep("idle");
+          loginUser();
+          return;
+        } else if (currentEmail && !currentPassword) {
+          voiceStepRef.current = "password";
+          setVoiceStep("password");
+          speakWithFallback("Please state your password.", null, () => {
+            startListeningForStep("password");
+          });
+          return;
+        }
         voiceStepRef.current = "email";
         setVoiceStep("email");
         speakWithFallback("Please state your email address.", null, () => {
@@ -190,17 +225,15 @@ const Login = () => {
           startListeningForStep("confirm");
         }
       );
-    } else if (currentStep === "confirm") {
-      console.log("Voice Confirmation Input:", cleanText);
-      if (
-        cleanText.includes("login") ||
-        cleanText.includes("log in") ||
-        cleanText.includes("sign") ||
-        cleanText.includes("yes")
-      ) {
-        voiceStepRef.current = "idle";
-        setVoiceStep("idle");
-        loginUser();
+    } else if (currentStep === "confirm" || currentStep === "idle") {
+      if (isLoginIntent) {
+        if (currentEmail && currentPassword) {
+          voiceStepRef.current = "idle";
+          setVoiceStep("idle");
+          loginUser();
+        } else {
+          speakWithFallback("Please enter both email and password before logging in.");
+        }
       } else if (
         cleanText.includes("clear") ||
         cleanText.includes("reset") ||
@@ -242,7 +275,7 @@ const Login = () => {
             ? "Say your email..." 
             : step === "password" 
               ? "Say your password..." 
-              : "Say login..."
+              : "Say login to sign in..."
       );
     };
 
@@ -268,6 +301,28 @@ const Login = () => {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
+
+    const currentEmail = (emailRef.current || email).trim();
+    const currentPassword = (passwordRef.current || password).trim();
+
+    if (currentEmail && currentPassword) {
+      voiceStepRef.current = "confirm";
+      setVoiceStep("confirm");
+      speakWithFallback("Credentials filled. Say login to sign in.", null, () => {
+        startListeningForStep("confirm");
+      });
+      return;
+    }
+
+    if (currentEmail && !currentPassword) {
+      voiceStepRef.current = "password";
+      setVoiceStep("password");
+      speakWithFallback(`Email set. Please state your password.`, null, () => {
+        startListeningForStep("password");
+      });
+      return;
+    }
+
     voiceStepRef.current = "mode";
     setVoiceStep("mode");
     speakWithFallback("Would you like to login or register?", null, () => {
@@ -326,10 +381,10 @@ const Login = () => {
                 </label>
 
                 <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-3 focus-within:border-blue-900">
-                  <Lock className="text-gray-400" size={20} />
+                  <Lock className="text-gray-400 shrink-0" size={20} />
 
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     className="w-full ml-3 outline-none"
                     value={password}
@@ -338,6 +393,15 @@ const Login = () => {
                       passwordRef.current = e.target.value;
                     }}
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-400 hover:text-blue-900 focus:outline-none ml-2 cursor-pointer shrink-0"
+                    title={showPassword ? "Hide Password" : "Show Password"}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
               </div>
 
