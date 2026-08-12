@@ -40,7 +40,8 @@ const UserDashboard = () => {
           try {
             // Reverse geocode to get a readable address using Mapbox
             const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&limit=1`;
+            const mapboxApiUrl = import.meta.env.VITE_MAPBOX_API_URL || "https://api.mapbox.com";
+            const url = `${mapboxApiUrl}/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&limit=1`;
             const response = await fetch(url);
             const data = await response.json();
 
