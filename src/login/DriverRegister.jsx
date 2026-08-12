@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import UploadCard from "../login/UploadCard";
 import API_BASE from "../config/api";
+import { auth } from "../config/firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const DriverRegister = () => {
     const navigate = useNavigate();
@@ -85,10 +88,36 @@ const DriverRegister = () => {
     });
 
     const [otpSent, setOtpSent] = useState(false);
-
     const [otpVerified, setOtpVerified] = useState(false);
-
     const [errors, setErrors] = useState({});
+
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
+    const confirmationResultRef = useRef(null);
+    const recaptchaVerifierRef = useRef(null);
+
+    const setupRecaptcha = () => {
+        if (recaptchaVerifierRef.current) return recaptchaVerifierRef.current;
+        recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            size: 'invisible',
+            callback: () => {
+                console.log("Firebase reCAPTCHA verified");
+            }
+        });
+        return recaptchaVerifierRef.current;
+    };
+
+    const formatE164Phone = (phone) => {
+        let clean = phone.replace(/[\s\-]/g, "").trim();
+        if (clean.startsWith("0")) {
+            return "+94" + clean.substring(1);
+        }
+        if (!clean.startsWith("+")) {
+            return "+94" + clean;
+        }
+        return clean;
+    };
 
     const handleChange = (e) => {
 
@@ -116,11 +145,9 @@ const DriverRegister = () => {
         });
 
     };
-    const sendOTP = () => {
 
-
+    const sendOTP = async () => {
         const phone = formData.phone.trim();
-
         const phoneRegex = /^(?:\+94|0)7[01245678]\d{7}$/;
 
         if (!phone) {
@@ -128,34 +155,54 @@ const DriverRegister = () => {
             return;
         }
 
-        // Check phone number format
         if (!phoneRegex.test(phone)) {
-            alert("Please enter a valid Sri Lankan mobile number.");
+            alert("Please enter a valid Sri Lankan mobile number (e.g. 0771234567).");
             return;
         }
 
-        // Demo OTP
-        alert(" OTP Sent: 1234");
+        setIsSendingOtp(true);
+        try {
+            const formattedPhone = formatE164Phone(phone);
+            const appVerifier = setupRecaptcha();
 
-        setOtpSent(true);
+            const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+            confirmationResultRef.current = confirmationResult;
+
+            setIsSendingOtp(false);
+            setOtpSent(true);
+            alert(`Firebase SMS verification code sent to ${formattedPhone}!`);
+        } catch (err) {
+            setIsSendingOtp(false);
+            console.error("Firebase Phone Auth error:", err);
+            alert(err.message || "Failed to send OTP via Firebase Authentication.");
+        }
     };
 
-    const verifyOTP = () => {
+    const verifyOTP = async () => {
+        const otp = formData.otp.trim();
 
-        if (formData.otp === "1234") {
-
-            setOtpVerified(true);
-
-            alert("Phone Number Verified");
-
-            setStep(2);
-
-        } else {
-
-            alert("Invalid OTP");
-
+        if (!otp || otp.length < 4) {
+            alert("Please enter the verification OTP code.");
+            return;
         }
 
+        if (!confirmationResultRef.current) {
+            alert("Please request an OTP first.");
+            return;
+        }
+
+        setIsVerifyingOtp(true);
+        try {
+            await confirmationResultRef.current.confirm(otp);
+            setIsVerifyingOtp(false);
+            setOtpVerified(true);
+            alert("Phone Number Verified Successfully via Firebase Authentication!");
+            setStep(2);
+        } catch (err) {
+            setIsVerifyingOtp(false);
+            console.error("Firebase OTP verification failed:", err);
+            alert(err.message || "Invalid or expired OTP code.");
+        }
     };
 
     const validateStep2 = () => {
@@ -426,65 +473,78 @@ const DriverRegister = () => {
     );
 
     const renderPhoneVerification = () => (
-
         <div>
-
-            <h2 className="text-2xl font-bold mb-2">
-                Phone Verification
-            </h2>
-
+            <div id="recaptcha-container"></div>
+            <h2 className="text-2xl font-bold mb-2">Phone Verification</h2>
             <p className="text-gray-600 mb-6">
-                Enter your mobile number to receive a verification code.
+                Enter your mobile number to receive a 4-digit verification code.
             </p>
 
+            <label className="block mb-1.5 font-semibold text-slate-700">Mobile Phone Number</label>
             <input
                 type="text"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="+94 77 1234567"
-                className="w-full border p-3 rounded-lg mb-4"
+                placeholder="0771234567"
+                disabled={otpVerified || otpSent}
+                className="w-full border-2 border-slate-200 focus:border-blue-900 outline-none p-3.5 rounded-xl mb-4 text-base font-medium disabled:bg-slate-100 disabled:text-slate-500"
             />
 
             {!otpSent && (
-
                 <button
                     type="button"
                     onClick={sendOTP}
-                    className="bg-blue-900 text-white px-6 py-3 rounded-lg"
+                    disabled={isSendingOtp}
+                    className="w-full sm:w-auto bg-[#0B2F89] hover:bg-blue-900 text-white font-bold px-8 py-3.5 rounded-xl shadow transition cursor-pointer disabled:opacity-50"
                 >
-                    Send OTP
+                    {isSendingOtp ? "Sending OTP..." : "Send Verification Code (OTP)"}
                 </button>
-
             )}
 
-            {otpSent && (
+            {otpSent && !otpVerified && (
+                <div className="mt-4 bg-slate-50 border-2 border-blue-100 rounded-2xl p-5 space-y-4">
+                    <div>
+                        <label className="block mb-1.5 font-semibold text-slate-700 text-sm">Enter Verification OTP Code</label>
+                        <input
+                            type="text"
+                            name="otp"
+                            maxLength={4}
+                            value={formData.otp}
+                            onChange={handleChange}
+                            placeholder="e.g. 1234"
+                            className="w-full border-2 border-slate-200 focus:border-blue-900 outline-none p-3.5 rounded-xl text-center text-2xl font-mono font-bold tracking-widest bg-white"
+                        />
+                    </div>
 
-                <div className="mt-6">
-
-                    <input
-                        type="text"
-                        name="otp"
-                        value={formData.otp}
-                        onChange={handleChange}
-                        placeholder="Enter 4 Digit OTP"
-                        className="w-full border p-3 rounded-lg mb-4"
-                    />
-
-                    <button
-                        type="button"
-                        onClick={verifyOTP}
-                        className="bg-green-600 text-white px-6 py-3 rounded-lg"
-                    >
-                        Verify OTP
-                    </button>
-
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={verifyOTP}
+                            disabled={isVerifyingOtp}
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow transition cursor-pointer disabled:opacity-50"
+                        >
+                            {isVerifyingOtp ? "Verifying..." : "Verify OTP & Continue →"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={sendOTP}
+                            disabled={isSendingOtp}
+                            className="px-4 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-xl transition cursor-pointer text-xs"
+                        >
+                            Resend OTP
+                        </button>
+                    </div>
                 </div>
-
             )}
 
+            {otpVerified && (
+                <div className="mt-4 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl text-emerald-800 font-bold flex items-center gap-2">
+                    <span className="text-xl">✅</span>
+                    <span>Phone number verified successfully! You can proceed to the next step.</span>
+                </div>
+            )}
         </div>
-
     );
 
     const renderPersonalInfo = () => (

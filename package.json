@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup": "npm install"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",
     "axios": "^1.16.1",
     "chart.js": "^4.5.1",
+    "firebase": "^12.17.1",
     "lucide-react": "^1.16.0",
     "mapbox-gl": "^3.24.0",
     "pdfkit": "^0.19.1",
