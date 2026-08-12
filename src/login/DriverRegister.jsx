@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import UploadCard from "../login/UploadCard";
 import API_BASE from "../config/api";
-import { auth } from "../config/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const DriverRegister = () => {
     const navigate = useNavigate();
@@ -91,6 +89,7 @@ const DriverRegister = () => {
     const [otpVerified, setOtpVerified] = useState(false);
     const [errors, setErrors] = useState({});
 
+    const [sentOtpCode, setSentOtpCode] = useState("");
     const [isSendingOtp, setIsSendingOtp] = useState(false);
     const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
@@ -162,46 +161,46 @@ const DriverRegister = () => {
 
         setIsSendingOtp(true);
         try {
-            const formattedPhone = formatE164Phone(phone);
-            const appVerifier = setupRecaptcha();
-
-            const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-            confirmationResultRef.current = confirmationResult;
-
+            const res = await axios.post(`${API_BASE}/login/api/send_otp.php`, { phone });
             setIsSendingOtp(false);
-            setOtpSent(true);
-            alert(`Firebase SMS verification code sent to ${formattedPhone}!`);
+            if (res.data?.success) {
+                setOtpSent(true);
+                setSentOtpCode(res.data.otp || "");
+                alert(res.data.message || `SMS verification code dispatched to ${phone}!`);
+            } else {
+                alert(res.data?.message || "Failed to send OTP.");
+            }
         } catch (err) {
             setIsSendingOtp(false);
-            console.error("Firebase Phone Auth error:", err);
-            alert(err.message || "Failed to send OTP via Firebase Authentication.");
+            console.error("Error sending OTP:", err);
+            alert(err.response?.data?.message || "Failed to send SMS OTP code.");
         }
     };
 
     const verifyOTP = async () => {
+        const phone = formData.phone.trim();
         const otp = formData.otp.trim();
 
-        if (!otp || otp.length < 4) {
-            alert("Please enter the verification OTP code.");
-            return;
-        }
-
-        if (!confirmationResultRef.current) {
-            alert("Please request an OTP first.");
+        if (!otp || otp.length < 6) {
+            alert("Please enter the 6-digit OTP verification code.");
             return;
         }
 
         setIsVerifyingOtp(true);
         try {
-            await confirmationResultRef.current.confirm(otp);
+            const res = await axios.post(`${API_BASE}/login/api/verify_otp.php`, { phone, otp });
             setIsVerifyingOtp(false);
-            setOtpVerified(true);
-            alert("Phone Number Verified Successfully via Firebase Authentication!");
-            setStep(2);
+            if (res.data?.success) {
+                setOtpVerified(true);
+                alert("Phone Number Verified Successfully!");
+                setStep(2);
+            } else {
+                alert(res.data?.message || "Invalid or expired 6-digit OTP code.");
+            }
         } catch (err) {
             setIsVerifyingOtp(false);
-            console.error("Firebase OTP verification failed:", err);
-            alert(err.message || "Invalid or expired OTP code.");
+            console.error("Error verifying OTP:", err);
+            alert(err.response?.data?.message || "Invalid 6-digit OTP code.");
         }
     };
 
@@ -474,10 +473,9 @@ const DriverRegister = () => {
 
     const renderPhoneVerification = () => (
         <div>
-            <div id="recaptcha-container"></div>
             <h2 className="text-2xl font-bold mb-2">Phone Verification</h2>
             <p className="text-gray-600 mb-6">
-                Enter your mobile number to receive a 4-digit verification code.
+                Enter your mobile number to receive a 6-digit verification code.
             </p>
 
             <label className="block mb-1.5 font-semibold text-slate-700">Mobile Phone Number</label>
@@ -505,14 +503,14 @@ const DriverRegister = () => {
             {otpSent && !otpVerified && (
                 <div className="mt-4 bg-slate-50 border-2 border-blue-100 rounded-2xl p-5 space-y-4">
                     <div>
-                        <label className="block mb-1.5 font-semibold text-slate-700 text-sm">Enter Verification OTP Code</label>
+                        <label className="block mb-1.5 font-semibold text-slate-700 text-sm">Enter 6-Digit Verification OTP Code</label>
                         <input
                             type="text"
                             name="otp"
-                            maxLength={4}
+                            maxLength={6}
                             value={formData.otp}
                             onChange={handleChange}
-                            placeholder="e.g. 1234"
+                            placeholder="e.g. 123456"
                             className="w-full border-2 border-slate-200 focus:border-blue-900 outline-none p-3.5 rounded-xl text-center text-2xl font-mono font-bold tracking-widest bg-white"
                         />
                     </div>
