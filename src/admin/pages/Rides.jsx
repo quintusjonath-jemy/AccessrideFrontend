@@ -5,6 +5,79 @@ import { useEffect, useState } from "react";
 import { Car, Trash2, Plus, Pencil } from "lucide-react";
 import API_BASE from "../../config/api";
 
+const AdminLocationInput = ({ placeholder, value, onChange, icon }) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [showList, setShowList] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (!value || value.trim().length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+        const mapboxApiUrl = import.meta.env.VITE_MAPBOX_API_URL || "https://api.mapbox.com";
+        const url = `${mapboxApiUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(value)}.json?access_token=${MAPBOX_TOKEN}&country=lk&autocomplete=true&limit=5`;
+        const res = await axios.get(url);
+        setIsSearching(false);
+        if (res.data?.features) {
+          setSuggestions(res.data.features.map((f) => f.place_name));
+        }
+      } catch (err) {
+        setIsSearching(false);
+        console.error("Autocomplete error:", err);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value || ""}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setShowList(true);
+        }}
+        onFocus={() => setShowList(true)}
+        onBlur={() => setTimeout(() => setShowList(false), 250)}
+        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-800 dark:text-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition"
+      />
+      {showList && (suggestions.length > 0 || isSearching) && (
+        <div className="absolute left-0 right-0 top-13 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800">
+          {isSearching && (
+            <div className="px-4 py-2 text-xs text-gray-400 dark:text-slate-450 italic flex items-center gap-2">
+              <span className="w-3 h-3 border border-yellow-500 border-t-transparent rounded-full animate-spin"></span>
+              Searching Sri Lanka locations...
+            </div>
+          )}
+          {suggestions.map((sug, idx) => (
+            <div
+              key={idx}
+              onMouseDown={() => {
+                onChange(sug);
+                setSuggestions([]);
+                setShowList(false);
+              }}
+              className="px-4 py-2.5 hover:bg-yellow-50 dark:hover:bg-slate-800 text-xs text-gray-700 dark:text-slate-200 cursor-pointer transition flex items-center gap-2"
+            >
+              <span>{icon}</span>
+              <span className="truncate">{sug}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Rides = () => {
   const location = useLocation();
   const [rides, setRides] = useState([]);
@@ -63,6 +136,84 @@ const Rides = () => {
       setDrivers(res.data);
     });
   }, []);
+
+  // Auto distance and fare calculation for Add Ride modal
+  useEffect(() => {
+    if (!rideForm.pickup_location || !rideForm.dropoff_location || rideForm.pickup_location.trim().length < 2 || rideForm.dropoff_location.trim().length < 2) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+        const mapboxApiUrl = import.meta.env.VITE_MAPBOX_API_URL || "https://api.mapbox.com";
+
+        const pRes = await axios.get(`${mapboxApiUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(rideForm.pickup_location)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`);
+        const pCoords = pRes.data?.features?.[0]?.center;
+
+        const dRes = await axios.get(`${mapboxApiUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(rideForm.dropoff_location)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`);
+        const dCoords = dRes.data?.features?.[0]?.center;
+
+        if (pCoords && dCoords) {
+          const dirRes = await axios.get(`${mapboxApiUrl}/directions/v5/mapbox/driving/${pCoords[0]},${pCoords[1]};${dCoords[0]},${dCoords[1]}.json?access_token=${MAPBOX_TOKEN}&geometries=geojson`);
+          if (dirRes.data?.routes?.[0]) {
+            const distKm = parseFloat((dirRes.data.routes[0].distance / 1000).toFixed(1));
+            const calculatedFare = (distKm * 80).toFixed(2);
+            setRideForm((prev) => ({
+              ...prev,
+              distance_km: distKm > 0 ? distKm : 1,
+              fare: calculatedFare,
+            }));
+          }
+        }
+      } catch (err) {
+        console.error("Auto distance calculation error (Add Ride):", err);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [rideForm.pickup_location, rideForm.dropoff_location]);
+
+  // Auto distance and fare calculation for Edit Ride modal
+  useEffect(() => {
+    if (!selectedRide || !selectedRide.pickup_location || !selectedRide.dropoff_location || selectedRide.pickup_location.trim().length < 2 || selectedRide.dropoff_location.trim().length < 2) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+        const mapboxApiUrl = import.meta.env.VITE_MAPBOX_API_URL || "https://api.mapbox.com";
+
+        const pRes = await axios.get(`${mapboxApiUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(selectedRide.pickup_location)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`);
+        const pCoords = pRes.data?.features?.[0]?.center;
+
+        const dRes = await axios.get(`${mapboxApiUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(selectedRide.dropoff_location)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`);
+        const dCoords = dRes.data?.features?.[0]?.center;
+
+        if (pCoords && dCoords) {
+          const dirRes = await axios.get(`${mapboxApiUrl}/directions/v5/mapbox/driving/${pCoords[0]},${pCoords[1]};${dCoords[0]},${dCoords[1]}.json?access_token=${MAPBOX_TOKEN}&geometries=geojson`);
+          if (dirRes.data?.routes?.[0]) {
+            const distKm = parseFloat((dirRes.data.routes[0].distance / 1000).toFixed(1));
+            const calculatedFare = (distKm * 80).toFixed(2);
+            setSelectedRide((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    distance_km: distKm > 0 ? distKm : 1,
+                    fare: calculatedFare,
+                  }
+                : prev
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Auto distance calculation error (Edit Ride):", err);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [selectedRide?.pickup_location, selectedRide?.dropoff_location]);
 
   // STATUS COLORS
   const statusStyles = {
@@ -498,27 +649,27 @@ const Rides = () => {
               </select>
 
               {/* PICKUP */}
-              <input
+              <AdminLocationInput
                 placeholder="📍 Pickup Location"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-800 dark:text-slate-100 shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition"
-                onChange={(e) =>
+                value={rideForm.pickup_location}
+                icon="📍"
+                onChange={(val) =>
                   setRideForm({
                     ...rideForm,
-                    pickup_location: e.target.value,
+                    pickup_location: val,
                   })
                 }
               />
 
               {/* DROPOFF */}
-              <input
+              <AdminLocationInput
                 placeholder="🏁 Destination"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-800 dark:text-slate-100 shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-yellow-200 dark:focus:ring-yellow-500/20 focus:border-yellow-400 dark:focus:border-yellow-500 transition"
-                onChange={(e) =>
+                value={rideForm.dropoff_location}
+                icon="🏁"
+                onChange={(val) =>
                   setRideForm({
                     ...rideForm,
-                    dropoff_location: e.target.value,
+                    dropoff_location: val,
                   })
                 }
               />
@@ -639,31 +790,29 @@ const Rides = () => {
               </select>
 
               {/* PICKUP */}
-              <input
+              <AdminLocationInput
+                placeholder="📍 Pickup Location"
                 value={selectedRide.pickup_location}
-                onChange={(e) =>
+                icon="📍"
+                onChange={(val) =>
                   setSelectedRide({
                     ...selectedRide,
-                    pickup_location: e.target.value,
+                    pickup_location: val,
                   })
                 }
-                placeholder="📍 Pickup Location"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-800 dark:text-slate-100 shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:border-blue-400 dark:focus:border-blue-500 transition"
               />
 
               {/* DROPOFF */}
-              <input
+              <AdminLocationInput
+                placeholder="🏁 Destination"
                 value={selectedRide.dropoff_location}
-                onChange={(e) =>
+                icon="🏁"
+                onChange={(val) =>
                   setSelectedRide({
                     ...selectedRide,
-                    dropoff_location: e.target.value,
+                    dropoff_location: val,
                   })
                 }
-                placeholder="🏁 Destination"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-800 dark:text-slate-100 shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:border-blue-400 dark:focus:border-blue-500 transition"
               />
 
               {/* DISTANCE */}

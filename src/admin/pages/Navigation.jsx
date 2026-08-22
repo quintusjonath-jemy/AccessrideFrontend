@@ -7,6 +7,7 @@ import API_BASE from "../../config/api";
 
 const NavigationPage = () => {
   const [rides, setRides] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,9 +24,10 @@ const NavigationPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const eventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=rides`);
+    const ridesEventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=rides`);
+    const driversEventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=drivers`);
 
-    eventSource.onmessage = (event) => {
+    ridesEventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         setRides(Array.isArray(data) ? data : []);
@@ -36,13 +38,18 @@ const NavigationPage = () => {
       }
     };
 
-    eventSource.onerror = (err) => {
-      console.error("Navigation SSE connection error:", err);
-      setLoading(false);
+    driversEventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setDrivers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to parse drivers stream data:", err);
+      }
     };
 
     return () => {
-      eventSource.close();
+      ridesEventSource.close();
+      driversEventSource.close();
     };
   }, []);
 
@@ -154,6 +161,7 @@ const NavigationPage = () => {
         {/* MAP */}
         <LiveMap 
           rides={filteredRides} 
+          allDrivers={drivers}
           center={mapCenter} 
           driversOnly={showDriversOnly} 
           trackedLocation={trackedLat && trackedLng ? [parseFloat(trackedLng), parseFloat(trackedLat)] : null}
