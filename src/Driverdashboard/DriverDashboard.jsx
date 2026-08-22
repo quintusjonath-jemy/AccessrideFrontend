@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiTruck, FiCreditCard, FiCheckCircle, FiLock, FiLoader } from "react-icons/fi";
 import DriverHeader from "./components/DriverHeader";
@@ -41,93 +41,7 @@ const DriverDashboard = () => {
   const [checkoutError, setCheckoutError] = useState("");
   const [txnId, setTxnId] = useState("");
 
-  const submitPayment = async (e) => {
-    if (e) e.preventDefault();
-    setCheckoutStep("processing");
-    setCheckoutError("");
-
-    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
-    
-    try {
-      // 1. Fetch secure PayHere configuration and MD5 hash from backend
-      const response = await fetch(`${API_BASE}/Driverdashboard/api/initiate_payment.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          driver_id: driverId
-        })
-      });
-
-      const res = await response.json();
-      if (!res.success || !res.payhere_config) {
-        setCheckoutError(res.message || "Failed to initialize payment gateway.");
-        setCheckoutStep("error");
-        return;
-      }
-
-      const config = res.payhere_config;
-
-      // 2. Configure PayHere callbacks
-      window.payhere.onCompleted = function onCompleted(orderId) {
-        console.log("PayHere Payment completed. OrderID:" + orderId);
-        setTxnId(orderId);
-        
-        // Live update the UI state instantly to active (avoids background webhook race condition delays)
-        setStatistics(prev => ({
-          ...prev,
-          subscription_status: 'active'
-        }));
-        
-        // Localhost development fallback: trigger local subscription renewal since webhook cannot reach localhost
-        fetch(`${API_BASE}/Driverdashboard/api/renew_subscription.php`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            driver_id: driverId,
-            amount: 1500.00
-          })
-        })
-        .then(() => {
-          setCheckoutStep("success");
-          setTimeout(() => {
-            setShowCheckoutModal(false);
-            setCheckoutStep("form");
-            fetchDashboardData();
-          }, 3000);
-        })
-        .catch(err => {
-          console.error("Local database update failed:", err);
-          setCheckoutStep("success");
-          setTimeout(() => {
-            setShowCheckoutModal(false);
-            setCheckoutStep("form");
-            fetchDashboardData();
-          }, 3000);
-        });
-      };
-
-      window.payhere.onDismissed = function onDismissed() {
-        console.log("PayHere Payment dismissed");
-        setCheckoutStep("form");
-      };
-
-      window.payhere.onError = function onError(error) {
-        console.error("PayHere Error:", error);
-        setCheckoutError("Payment gateway error: " + error);
-        setCheckoutStep("error");
-      };
-
-      // 3. Initiate payment modal
-      window.payhere.startPayment(config);
-
-    } catch (err) {
-      console.error("Payment API Error:", err);
-      setCheckoutError("Unable to connect to payment gateway. Please check connection.");
-      setCheckoutStep("error");
-    }
-  };
-
-  const fetchDashboardData = () => {
+  const fetchDashboardData = useCallback(() => {
     let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (!driverId) {
       navigate("/driver-login");
@@ -246,6 +160,97 @@ const DriverDashboard = () => {
       .catch(() => {
         // ignore fetch errors
       });
+  }, [navigate]);
+
+  // Configure PayHere global callbacks inside useEffect
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.payhere) return;
+
+    window.payhere.onCompleted = function onCompleted(orderId) {
+      console.log("PayHere Payment completed. OrderID:" + orderId);
+      setTxnId(orderId);
+      
+      // Live update the UI state instantly to active
+      setStatistics(prev => ({
+        ...prev,
+        subscription_status: 'active'
+      }));
+      
+      const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+      fetch(`${API_BASE}/Driverdashboard/api/renew_subscription.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          driver_id: driverId,
+          amount: 1500.00
+        })
+      })
+      .then(() => {
+        setCheckoutStep("success");
+        setTimeout(() => {
+          setShowCheckoutModal(false);
+          setCheckoutStep("form");
+          fetchDashboardData();
+        }, 3000);
+      })
+      .catch(err => {
+        console.error("Local database update failed:", err);
+        setCheckoutStep("success");
+        setTimeout(() => {
+          setShowCheckoutModal(false);
+          setCheckoutStep("form");
+          fetchDashboardData();
+        }, 3000);
+      });
+    };
+
+    window.payhere.onDismissed = function onDismissed() {
+      console.log("PayHere Payment dismissed");
+      setCheckoutStep("form");
+    };
+
+    window.payhere.onError = function onError(error) {
+      console.error("PayHere Error:", error);
+      setCheckoutError("Payment gateway error: " + error);
+      setCheckoutStep("error");
+    };
+  }, [fetchDashboardData]);
+
+  const submitPayment = async (e) => {
+    if (e) e.preventDefault();
+    setCheckoutStep("processing");
+    setCheckoutError("");
+
+    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    
+    try {
+      // 1. Fetch secure PayHere configuration and MD5 hash from backend
+      const response = await fetch(`${API_BASE}/Driverdashboard/api/initiate_payment.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          driver_id: driverId
+        })
+      });
+
+      const res = await response.json();
+      if (!res.success || !res.payhere_config) {
+        setCheckoutError(res.message || "Failed to initialize payment gateway.");
+        setCheckoutStep("error");
+        return;
+      }
+
+      if (window.payhere && typeof window.payhere.startPayment === "function") {
+        window.payhere.startPayment(res.payhere_config);
+      } else {
+        setCheckoutError("Payment gateway SDK is loading. Please try again.");
+        setCheckoutStep("error");
+      }
+    } catch (err) {
+      console.error("Payment API Error:", err);
+      setCheckoutError("Unable to connect to payment gateway. Please check connection.");
+      setCheckoutStep("error");
+    }
   };
 
   useEffect(() => {
@@ -254,7 +259,7 @@ const DriverDashboard = () => {
     // Poll every 4 seconds to check for new request card overlays
     const interval = setInterval(fetchDashboardData, 4000);
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, [fetchDashboardData]);
 
   useEffect(() => {
     localStorage.setItem("driverOnlineStatus", JSON.stringify(isOnline));

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Bell, Mic } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './CompleteRidePage.css';
@@ -30,9 +30,34 @@ const CompleteRidePage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [ride, setRide] = useState(null);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   const tabs = ['All', 'Upcoming', 'Completed', 'Cancelled'];
+
+  const handleRating = useCallback((value) => {
+    setRating(value);
+    if (ride && ride.id) {
+      axios.post(`${API_BASE}/UserDashboard/api/rate_ride.php`, {
+        ride_id: ride.id,
+        rating: value
+      })
+      .then(res => {
+        if (res.data?.success) {
+          setIsRated(true);
+        } else {
+          alert(res.data.message || "Failed to submit rating");
+        }
+      })
+      .catch(err => {
+        console.error("Error submitting rating:", err);
+        alert("An error occurred while submitting your rating.");
+      });
+    } else {
+      setTimeout(() => {
+        setIsRated(true);
+      }, 500);
+    }
+  }, [ride]);
 
   useEffect(() => {
     const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
@@ -92,7 +117,7 @@ const CompleteRidePage = () => {
         "Thank you for riding with AccessRide! Your trip is complete. Please rate your driver from 1 to 5 stars.",
         null,
         () => {
-          try { rec.start(); } catch (_) {}
+          try { rec.start(); } catch { /* ignore */ }
         }
       );
     }, 1200);
@@ -101,7 +126,7 @@ const CompleteRidePage = () => {
       clearTimeout(timer);
       rec.abort();
     };
-  }, [ride?.id]);
+  }, [ride?.id, handleRating]);
 
   const handleMicClick = () => {
     setIsListening(true);
@@ -109,31 +134,6 @@ const CompleteRidePage = () => {
       setIsListening(false);
       alert("Voice command recorded! Searching for your next ride...");
     }, 3000);
-  };
-
-  const handleRating = (value) => {
-    setRating(value);
-    if (ride && ride.id) {
-      axios.post(`${API_BASE}/UserDashboard/api/rate_ride.php`, {
-        ride_id: ride.id,
-        rating: value
-      })
-      .then(res => {
-        if (res.data?.success) {
-          setIsRated(true);
-        } else {
-          alert(res.data.message || "Failed to submit rating");
-        }
-      })
-      .catch(err => {
-        console.error("Error submitting rating:", err);
-        alert("An error occurred while submitting your rating.");
-      });
-    } else {
-      setTimeout(() => {
-        setIsRated(true);
-      }, 500);
-    }
   };
 
   const handleDone = () => {

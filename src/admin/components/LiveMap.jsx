@@ -39,21 +39,63 @@ const getMinDistanceToRoute = (driverCoords, geometry) => {
   return minDistance;
 };
 
+const SRI_LANKA_CITIES = {
+  "mannar": [79.9071, 8.9810],
+  "vavuniya": [80.4971, 8.7514],
+  "colombo": [79.8612, 6.9271],
+  "kandy": [80.6337, 7.2906],
+  "galle": [80.2170, 6.0535],
+  "jaffna": [80.0093, 9.6615],
+  "trincomalee": [81.2335, 8.5874],
+  "tringomalee": [81.2335, 8.5874],
+  "batticaloa": [81.6924, 7.7170],
+  "matara": [80.5488, 5.9496],
+  "badulla": [81.0550, 6.9934],
+  "glen alpin": [81.0757, 6.9819],
+  "kurunegala": [80.3647, 7.4863],
+  "anuradhapura": [80.4037, 8.3114],
+  "polonnaruwa": [81.0003, 7.9403],
+  "ratnapura": [80.3992, 6.6828],
+  "negombo": [79.8358, 7.2008],
+  "kalutara": [79.9593, 6.5854],
+  "nuwara eliya": [80.7829, 6.9497],
+  "hambantota": [81.1185, 6.1246],
+  "dambulla": [80.6517, 7.8731],
+  "wellampitiya": [79.8885, 6.9442],
+  "central library": [79.8612, 6.9271],
+  "central medical plaza": [79.8732, 6.9012],
+  "hospital": [79.8732, 6.9012],
+  "medical": [79.8732, 6.9012],
+  "plaza": [79.8501, 6.9321],
+  "market": [79.8501, 6.9321]
+};
+
 // Geocode a location query to [longitude, latitude] coordinates
 const geocodeLocation = async (query) => {
-  if (!query) return null;
-  const lowerQuery = query.toLowerCase();
+  if (!query) return [79.8612, 6.9271];
+  const lowerQuery = query.toLowerCase().trim();
   
-  if (lowerQuery.includes("my current location") || lowerQuery.includes("central library")) {
-    return [79.8612, 6.9271];
-  } else if (lowerQuery.includes("hospital") || lowerQuery.includes("medical")) {
-    return [79.8732, 6.9012];
-  } else if (lowerQuery.includes("plaza") || lowerQuery.includes("market")) {
-    return [79.8501, 6.9321];
+  for (const [cityName, coords] of Object.entries(SRI_LANKA_CITIES)) {
+    if (lowerQuery.includes(cityName)) {
+      return coords;
+    }
+  }
+
+  // Parse raw latitude, longitude strings e.g. "6.9271, 79.8612"
+  if (lowerQuery.includes(",")) {
+    const parts = lowerQuery.split(",");
+    if (parts.length === 2) {
+      const lat = parseFloat(parts[0]);
+      const lng = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return [lng, lat];
+      }
+    }
   }
 
   try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
+    const mapboxApiUrl = import.meta.env.VITE_MAPBOX_API_URL || "https://api.mapbox.com";
+    const url = `${mapboxApiUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=lk&limit=1`;
     const res = await axios.get(url);
     if (res.data?.features && res.data.features.length > 0) {
       return res.data.features[0].center; // [lng, lat]
@@ -61,10 +103,11 @@ const geocodeLocation = async (query) => {
   } catch (err) {
     console.error("Geocoding error in LiveMap:", err);
   }
-  return null;
+
+  return [79.8612, 6.9271];
 };
 
-const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, trackedLocation = null }) => {
+const LiveMap = ({ rides = [], allDrivers = [], center = [79.8612, 6.9271], driversOnly = false, trackedLocation = null }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersRef = useRef([]);
@@ -151,7 +194,8 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, 
           let geometry = null;
           if (start && end) {
             try {
-              const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}.json?access_token=${MAPBOX_TOKEN}&geometries=geojson`;
+              const mapboxApiUrl = import.meta.env.VITE_MAPBOX_API_URL || "https://api.mapbox.com";
+              const url = `${mapboxApiUrl}/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}.json?access_token=${MAPBOX_TOKEN}&geometries=geojson`;
               const res = await axios.get(url);
               if (res.data?.routes && res.data.routes.length > 0) {
                 geometry = res.data.routes[0].geometry;
@@ -206,7 +250,57 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, 
       });
       routeLayersRef.current = [];
 
+      if (driversOnly) {
+        const driversList = allDrivers.length > 0 ? allDrivers : rides;
+        driversList.forEach((d) => {
+          const dStatus = (d.status || d.driver_status || "").toLowerCase().trim();
+          if (dStatus === "offline" || dStatus === "blocked") {
+            return;
+          }
 
+          let dLng = parseFloat(d.longitude);
+          let dLat = parseFloat(d.latitude);
+          let dCoords = dLng && dLat ? [dLng, dLat] : null;
+
+          if (!dCoords && d.current_location) {
+            const locKey = d.current_location.toLowerCase();
+            for (const [cityName, coords] of Object.entries(SRI_LANKA_CITIES)) {
+              if (locKey.includes(cityName)) {
+                dCoords = coords;
+                break;
+              }
+            }
+          }
+
+          if (dCoords) {
+            const el = document.createElement("div");
+            el.className = "w-8 h-8 bg-blue-600 rounded-full border-2 border-white shadow-xl flex items-center justify-center text-white text-base animate-pulse cursor-pointer";
+            
+            const getEmoji = (vType) => {
+              const t = (vType || "car").toLowerCase();
+              if (t.includes("bike") || t.includes("motorcycle")) return "🏍️";
+              if (t.includes("van") || t.includes("suv")) return "🚐";
+              if (t.includes("three") || t.includes("rickshaw") || t.includes("auto") || t.includes("tuk")) return "🛺";
+              return "🚗";
+            };
+            el.innerHTML = getEmoji(d.vehicle_type);
+
+            const dMarker = new mapboxgl.Marker(el)
+              .setLngLat(dCoords)
+              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                <div style="padding:5px; font-family:sans-serif; font-size:12px; min-width: 155px;">
+                  <strong style="color:#2563eb; font-size:13px;">🚗 Live Active Driver</strong>
+                  <p style="margin:4px 0 2px 0;">👤 Driver: <strong>${d.name || d.driver_name || ("Driver #" + (d.id || d.driver_id))}</strong></p>
+                  <p style="margin:2px 0; color:#059669;">🟢 Status: <strong>${dStatus.toUpperCase()}</strong></p>
+                  <p style="margin:2px 0; color:#4b5563; font-size:11px;">📍 ${d.current_location || "Live GPS"}</p>
+                </div>
+              `))
+              .addTo(map.current);
+            markersRef.current.push(dMarker);
+          }
+        });
+        return;
+      }
 
       rides.forEach((ride) => {
         const status = ride.status?.toLowerCase().trim();
@@ -225,67 +319,6 @@ const LiveMap = ({ rides = [], center = [79.8612, 6.9271], driversOnly = false, 
 
         if (!driverCoords && rData && rData.resolvedDriverCoords) {
           driverCoords = rData.resolvedDriverCoords;
-        }
-
-        if (driversOnly) {
-          const dStatus = (ride.driver_status || "").toLowerCase().replace(/[\r\n]/g, "").trim();
-          if (dStatus === "offline" || dStatus === "blocked") {
-            return;
-          }
-
-          if (driverCoords && (status === "emergency" || status === "accepted" || status === "active")) {
-            if (status === "emergency") {
-              const dEl = document.createElement("div");
-              dEl.className = "w-9 h-9 bg-red-700 rounded-full border-4 border-red-200 shadow-2xl flex items-center justify-center text-white text-base animate-pulse cursor-pointer";
-              dEl.innerHTML = "🚨";
-
-              const dMarker = new mapboxgl.Marker(dEl)
-                .setLngLat(driverCoords)
-                .setPopup(new mapboxgl.Popup({ offset: 20 }).setHTML(`
-                  <div style="padding:5px; font-family:sans-serif; font-size:12px; min-width: 150px;">
-                    <strong style="color:#dc2626;">🚨 Emergency Driver</strong>
-                    <p style="margin:4px 0 2px 0;">🚗 Driver: ${ride.driver_name || "Unknown"}</p>
-                    <p style="margin:2px 0; font-size:11px; color:#4b5563;">🚨 Action required immediately</p>
-                  </div>
-                `))
-                .addTo(map.current);
-              markersRef.current.push(dMarker);
-            } else if (status === "accepted") {
-              const dEl = document.createElement("div");
-              dEl.className = "w-7 h-7 bg-indigo-600 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white text-xs cursor-pointer";
-              dEl.innerHTML = "🚗";
-
-              const dMarker = new mapboxgl.Marker(dEl)
-                .setLngLat(driverCoords)
-                .addTo(map.current);
-              markersRef.current.push(dMarker);
-            } else if (status === "active") {
-              const el = document.createElement("div");
-              el.className = "w-8 h-8 bg-blue-600 rounded-full border-2 border-white shadow-xl flex items-center justify-center text-white text-base animate-pulse cursor-pointer";
-              
-              const getEmoji = (vType) => {
-                const t = (vType || "car").toLowerCase();
-                if (t.includes("bike") || t.includes("motorcycle")) return "🏍️";
-                if (t.includes("van") || t.includes("suv")) return "🚐";
-                if (t.includes("three") || t.includes("rickshaw") || t.includes("auto") || t.includes("tuk")) return "🛺";
-                return "🚗";
-              };
-              el.innerHTML = getEmoji(ride.vehicle_type);
-
-              const dMarker = new mapboxgl.Marker(el)
-                .setLngLat(driverCoords)
-                .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
-                  <div style="padding:5px; font-family:sans-serif; font-size:12px; min-width: 155px;">
-                    <strong style="color:#2563eb; font-size:13px;">🚗 Live Vehicle Position</strong>
-                    <p style="margin:4px 0 2px 0;">👤 User: <strong>${ride.user_name || "Unknown"}</strong></p>
-                    <p style="margin:2px 0;">🚗 Driver: <strong>${ride.driver_name || "Unknown"}</strong></p>
-                  </div>
-                `))
-                .addTo(map.current);
-              markersRef.current.push(dMarker);
-            }
-          }
-          return;
         }
 
         // 1. PENDING: Show user location with yellow location symbol

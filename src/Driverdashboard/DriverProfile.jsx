@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiUser, FiLogOut, FiStar, FiAward, FiShield, FiPhone, FiMail,
@@ -7,6 +7,20 @@ import {
 } from "react-icons/fi";
 import DriverHeader from "./components/DriverHeader";
 import API_BASE from "../config/api";
+
+const InfoRow = ({ icon: Icon, label, value, highlight = false }) => (
+  <div className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
+    <div className={`p-2 rounded-lg ${highlight ? "bg-blue-50 text-[#0B2F89]" : "bg-slate-100 text-slate-500"}`}>
+      <Icon className="w-4 h-4" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+      <p className={`text-sm font-extrabold truncate ${highlight ? "text-[#0B2F89]" : "text-slate-700"}`}>
+        {value || <span className="text-slate-300 font-medium italic">Not set</span>}
+      </p>
+    </div>
+  </div>
+);
 
 const DriverProfile = () => {
   const navigate = useNavigate();
@@ -47,7 +61,7 @@ const DriverProfile = () => {
   const [editError, setEditError] = useState("");
   const [editSuccess, setEditSuccess] = useState(false);
 
-  const fetchProfile = () => {
+  const fetchProfile = useCallback(() => {
     let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
     if (!driverId) {
       navigate("/driver-login");
@@ -83,11 +97,11 @@ const DriverProfile = () => {
         console.error("Error loading profile:", err);
         setLoading(false);
       });
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchProfile();
-  }, [navigate]);
+  }, [fetchProfile]);
 
   const handleLogout = () => {
     localStorage.removeItem("driver_id");
@@ -126,26 +140,12 @@ const DriverProfile = () => {
       } else {
         setEditError(res.message || "Failed to update profile.");
       }
-    } catch (err) {
+    } catch {
       setEditError("Network error. Please try again.");
     } finally {
       setEditSaving(false);
     }
   };
-
-  const InfoRow = ({ icon: Icon, label, value, highlight = false }) => (
-    <div className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
-      <div className={`p-2 rounded-lg ${highlight ? "bg-blue-50 text-[#0B2F89]" : "bg-slate-100 text-slate-500"}`}>
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-        <p className={`text-sm font-extrabold truncate ${highlight ? "text-[#0B2F89]" : "text-slate-700"}`}>
-          {value || <span className="text-slate-300 font-medium italic">Not set</span>}
-        </p>
-      </div>
-    </div>
-  );
 
   if (loading) {
     return (
