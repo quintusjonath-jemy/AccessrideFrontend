@@ -43,6 +43,145 @@ function Register() {
   const [voiceStatus, setVoiceStatus] = useState("Tap to use Voice Registration");
   const recognitionRef = useRef(null);
 
+  function cleanSpokenEmail(text) {
+    return text
+      .toLowerCase()
+      .replace(/\s+/g, "") // remove all spaces
+      .replace(/at/g, "@")
+      .replace(/and/g, "@") // replace common transcription errors
+      .replace(/an/g, "@")
+      .replace(/dot/g, ".");
+  }
+
+  function handleVoiceInput(text) {
+    const cleanText = text.toLowerCase().trim();
+    const currentStep = voiceStepRef.current;
+
+    const updateField = (name, value) => {
+      setFormData((prev) => {
+        const next = { ...prev, [name]: value };
+        formDataRef.current = next;
+        return next;
+      });
+    };
+
+    if (currentStep === "firstName") {
+      const name = text.trim();
+      updateField("firstName", name);
+      speakWithFallback(`First name set to ${name}. What is your last name?`, null, () => {
+        voiceStepRef.current = "lastName";
+        setVoiceStep("lastName");
+        startListeningForStep("lastName");
+      });
+    } else if (currentStep === "lastName") {
+      const name = text.trim();
+      updateField("lastName", name);
+      speakWithFallback(`Last name set to ${name}. What is your email address?`, null, () => {
+        voiceStepRef.current = "email";
+        setVoiceStep("email");
+        startListeningForStep("email");
+      });
+    } else if (currentStep === "email") {
+      const emailVal = cleanSpokenEmail(text);
+      updateField("email", emailVal);
+      speakWithFallback(`Email set to ${emailVal.split("").join(" ")}. What is your phone number?`, null, () => {
+        voiceStepRef.current = "phone";
+        setVoiceStep("phone");
+        startListeningForStep("phone");
+      });
+    } else if (currentStep === "phone") {
+      const phoneVal = cleanText.replace(/\s+/g, ""); // remove spaces
+      updateField("phone", phoneVal);
+      speakWithFallback(`Phone number set to ${phoneVal.split("").join(" ")}. What is your emergency contact's name?`, null, () => {
+        voiceStepRef.current = "guardianName";
+        setVoiceStep("guardianName");
+        startListeningForStep("guardianName");
+      });
+    } else if (currentStep === "guardianName") {
+      const gName = text.trim();
+      updateField("guardianName", gName);
+      speakWithFallback(`Emergency contact set to ${gName}. What is their phone number?`, null, () => {
+        voiceStepRef.current = "guardianNumber";
+        setVoiceStep("guardianNumber");
+        startListeningForStep("guardianNumber");
+      });
+    } else if (currentStep === "guardianNumber") {
+      const gPhone = cleanText.replace(/\s+/g, ""); // remove spaces
+      updateField("guardianNumber", gPhone);
+      speakWithFallback("Great. Choose a password of 8 or more characters.", null, () => {
+        voiceStepRef.current = "password";
+        setVoiceStep("password");
+        startListeningForStep("password");
+      });
+    } else if (currentStep === "password") {
+      const pass = cleanText.replace(/\s+/g, ""); // remove spaces
+      if (pass.length < 8) {
+        speakWithFallback("Password must be at least 8 characters. Please state your password again.", null, () => {
+          startListeningForStep("password");
+        });
+        return;
+      }
+      updateField("password", pass);
+      speakWithFallback("Please repeat your password to confirm.", null, () => {
+        voiceStepRef.current = "confirmPassword";
+        setVoiceStep("confirmPassword");
+        startListeningForStep("confirmPassword");
+      });
+    } else if (currentStep === "confirmPassword") {
+      const confirmPass = cleanText.replace(/\s+/g, ""); // remove spaces
+      const originalPass = formDataRef.current.password;
+      if (confirmPass !== originalPass) {
+        speakWithFallback("Passwords do not match. Please choose a password again.", null, () => {
+          voiceStepRef.current = "password";
+          setVoiceStep("password");
+          startListeningForStep("password");
+        });
+        return;
+      }
+      updateField("confirmPassword", confirmPass);
+      updateField("agree", true); // Auto agree on voice registration!
+      speakWithFallback("Passwords match. Say register to complete registration, or clear to reset.", null, () => {
+        voiceStepRef.current = "confirm";
+        setVoiceStep("confirm");
+        startListeningForStep("confirm");
+      });
+    } else if (currentStep === "confirm") {
+      if (cleanText.includes("register") || cleanText.includes("submit") || cleanText.includes("yes")) {
+        voiceStepRef.current = "idle";
+        setVoiceStep("idle");
+        handleRegister();
+      } else if (cleanText.includes("clear") || cleanText.includes("reset") || cleanText.includes("start over")) {
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: "",
+          guardianName: "",
+          guardianNumber: "",
+          agree: false,
+        });
+        formDataRef.current = {
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: "",
+          guardianName: "",
+          guardianNumber: "",
+          agree: false,
+        };
+        voiceStepRef.current = "idle";
+        setVoiceStep("idle");
+        speakWithFallback("Form cleared. Tap the mic button to start over.");
+      } else {
+        speakWithFallback("Say register to complete registration, or clear to reset.");
+      }
+    }
+  }
+
   function startListeningForStep(step) {
     if (!SpeechRecognition) return;
 
@@ -202,145 +341,6 @@ function Register() {
       alert(errMsg);
     }
   }
-
-  function cleanSpokenEmail(text) {
-    return text
-      .toLowerCase()
-      .replace(/\s+/g, "") // remove all spaces
-      .replace(/at/g, "@")
-      .replace(/and/g, "@") // replace common transcription errors
-      .replace(/an/g, "@")
-      .replace(/dot/g, ".");
-  }
-
-  function handleVoiceInput(text) {
-    const cleanText = text.toLowerCase().trim();
-    const currentStep = voiceStepRef.current;
-
-    const updateField = (name, value) => {
-      setFormData((prev) => {
-        const next = { ...prev, [name]: value };
-        formDataRef.current = next;
-        return next;
-      });
-    };
-
-    if (currentStep === "firstName") {
-      const name = text.trim();
-      updateField("firstName", name);
-      speakWithFallback(`First name set to ${name}. What is your last name?`, null, () => {
-        voiceStepRef.current = "lastName";
-        setVoiceStep("lastName");
-        startListeningForStep("lastName");
-      });
-    } else if (currentStep === "lastName") {
-      const name = text.trim();
-      updateField("lastName", name);
-      speakWithFallback(`Last name set to ${name}. What is your email address?`, null, () => {
-        voiceStepRef.current = "email";
-        setVoiceStep("email");
-        startListeningForStep("email");
-      });
-    } else if (currentStep === "email") {
-      const emailVal = cleanSpokenEmail(text);
-      updateField("email", emailVal);
-      speakWithFallback(`Email set to ${emailVal.split("").join(" ")}. What is your phone number?`, null, () => {
-        voiceStepRef.current = "phone";
-        setVoiceStep("phone");
-        startListeningForStep("phone");
-      });
-    } else if (currentStep === "phone") {
-      const phoneVal = cleanText.replace(/\s+/g, ""); // remove spaces
-      updateField("phone", phoneVal);
-      speakWithFallback(`Phone number set to ${phoneVal.split("").join(" ")}. What is your emergency contact's name?`, null, () => {
-        voiceStepRef.current = "guardianName";
-        setVoiceStep("guardianName");
-        startListeningForStep("guardianName");
-      });
-    } else if (currentStep === "guardianName") {
-      const gName = text.trim();
-      updateField("guardianName", gName);
-      speakWithFallback(`Emergency contact set to ${gName}. What is their phone number?`, null, () => {
-        voiceStepRef.current = "guardianNumber";
-        setVoiceStep("guardianNumber");
-        startListeningForStep("guardianNumber");
-      });
-    } else if (currentStep === "guardianNumber") {
-      const gPhone = cleanText.replace(/\s+/g, ""); // remove spaces
-      updateField("guardianNumber", gPhone);
-      speakWithFallback("Great. Choose a password of 8 or more characters.", null, () => {
-        voiceStepRef.current = "password";
-        setVoiceStep("password");
-        startListeningForStep("password");
-      });
-    } else if (currentStep === "password") {
-      const pass = cleanText.replace(/\s+/g, ""); // remove spaces
-      if (pass.length < 8) {
-        speakWithFallback("Password must be at least 8 characters. Please state your password again.", null, () => {
-          startListeningForStep("password");
-        });
-        return;
-      }
-      updateField("password", pass);
-      speakWithFallback("Please repeat your password to confirm.", null, () => {
-        voiceStepRef.current = "confirmPassword";
-        setVoiceStep("confirmPassword");
-        startListeningForStep("confirmPassword");
-      });
-    } else if (currentStep === "confirmPassword") {
-      const confirmPass = cleanText.replace(/\s+/g, ""); // remove spaces
-      const originalPass = formDataRef.current.password;
-      if (confirmPass !== originalPass) {
-        speakWithFallback("Passwords do not match. Please choose a password again.", null, () => {
-          voiceStepRef.current = "password";
-          setVoiceStep("password");
-          startListeningForStep("password");
-        });
-        return;
-      }
-      updateField("confirmPassword", confirmPass);
-      updateField("agree", true); // Auto agree on voice registration!
-      speakWithFallback("Passwords match. Say register to complete registration, or clear to reset.", null, () => {
-        voiceStepRef.current = "confirm";
-        setVoiceStep("confirm");
-        startListeningForStep("confirm");
-      });
-    } else if (currentStep === "confirm") {
-      if (cleanText.includes("register") || cleanText.includes("submit") || cleanText.includes("yes")) {
-        voiceStepRef.current = "idle";
-        setVoiceStep("idle");
-        handleRegister();
-      } else if (cleanText.includes("clear") || cleanText.includes("reset") || cleanText.includes("start over")) {
-        setFormData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          password: "",
-          confirmPassword: "",
-          guardianName: "",
-          guardianNumber: "",
-          agree: false,
-        });
-        formDataRef.current = {
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          password: "",
-          confirmPassword: "",
-          guardianName: "",
-          guardianNumber: "",
-          agree: false,
-        };
-        voiceStepRef.current = "idle";
-        setVoiceStep("idle");
-        speakWithFallback("Form cleared. Tap the mic button to start over.");
-      } else {
-        speakWithFallback("Say register to complete registration, or clear to reset.");
-      }
-    }
-  };
 
   const startVoiceRegistrationWizard = () => {
     if ("speechSynthesis" in window) {
