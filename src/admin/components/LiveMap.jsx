@@ -117,15 +117,22 @@ const LiveMap = ({ rides = [], allDrivers = [], center = [79.8612, 6.9271], driv
 
   // CREATE MAP
   useEffect(() => {
-    if (map.current) return;
+    if (!map.current && mapContainer.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center,
+        zoom: 11,
+      });
+    }
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center,
-      zoom: 11,
-    });
-  }, [center]);
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!map.current || !center || center.length !== 2) return;
