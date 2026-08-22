@@ -440,7 +440,7 @@ const DriverRegister = () => {
         }
     };
 
-    const ProgressBar = () => (
+    const renderProgressBar = () => (
 
         <div className="mb-8">
 
@@ -1392,7 +1392,7 @@ const DriverRegister = () => {
                 </div>
 
 
-                <ProgressBar />
+                {renderProgressBar()}
 
                 {step === 1 && renderPhoneVerification()}
 

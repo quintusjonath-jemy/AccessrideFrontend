@@ -43,6 +43,51 @@ function Register() {
   const [voiceStatus, setVoiceStatus] = useState("Tap to use Voice Registration");
   const recognitionRef = useRef(null);
 
+  function startListeningForStep(step) {
+    if (!SpeechRecognition) return;
+
+    if (recognitionRef.current) {
+      recognitionRef.current.abort();
+    }
+
+    const rec = new SpeechRecognition();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    rec.onstart = () => {
+      setIsListening(true);
+      setVoiceStatus(
+        step === "firstName" ? "Say your first name..." :
+        step === "lastName" ? "Say your last name..." :
+        step === "email" ? "Say your email..." :
+        step === "phone" ? "Say your phone number..." :
+        step === "guardianName" ? "Say emergency contact name..." :
+        step === "guardianNumber" ? "Say emergency contact number..." :
+        step === "password" ? "Say password..." :
+        step === "confirmPassword" ? "Say password again..." :
+        "Say register..."
+      );
+    };
+
+    rec.onresult = (event) => {
+      const spokenText = event.results[0][0].transcript;
+      handleVoiceInput(spokenText);
+    };
+
+    rec.onerror = () => {
+      setIsListening(false);
+      setVoiceStatus("Voice error. Tap mic to retry.");
+    };
+
+    rec.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = rec;
+    rec.start();
+  }
+
   // Trigger voice registration on redirect or mount
   useEffect(() => {
     if (location.state?.voiceStart) {
@@ -77,7 +122,7 @@ function Register() {
     });
   };
 
-  const handleRegister = async () => {
+  async function handleRegister() {
     const data = formDataRef.current;
     const {
       firstName,
@@ -156,9 +201,9 @@ function Register() {
       });
       alert(errMsg);
     }
-  };
+  }
 
-  const cleanSpokenEmail = (text) => {
+  function cleanSpokenEmail(text) {
     return text
       .toLowerCase()
       .replace(/\s+/g, "") // remove all spaces
@@ -166,9 +211,9 @@ function Register() {
       .replace(/and/g, "@") // replace common transcription errors
       .replace(/an/g, "@")
       .replace(/dot/g, ".");
-  };
+  }
 
-  const handleVoiceInput = (text) => {
+  function handleVoiceInput(text) {
     const cleanText = text.toLowerCase().trim();
     const currentStep = voiceStepRef.current;
 
@@ -295,51 +340,6 @@ function Register() {
         speakWithFallback("Say register to complete registration, or clear to reset.");
       }
     }
-  };
-
-  const startListeningForStep = (step) => {
-    if (!SpeechRecognition) return;
-
-    if (recognitionRef.current) {
-      recognitionRef.current.abort();
-    }
-
-    const rec = new SpeechRecognition();
-    rec.lang = "en-US";
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-
-    rec.onstart = () => {
-      setIsListening(true);
-      setVoiceStatus(
-        step === "firstName" ? "Say your first name..." :
-        step === "lastName" ? "Say your last name..." :
-        step === "email" ? "Say your email..." :
-        step === "phone" ? "Say your phone number..." :
-        step === "guardianName" ? "Say emergency contact name..." :
-        step === "guardianNumber" ? "Say emergency contact number..." :
-        step === "password" ? "Say password..." :
-        step === "confirmPassword" ? "Say password again..." :
-        "Say register..."
-      );
-    };
-
-    rec.onresult = (event) => {
-      const spokenText = event.results[0][0].transcript;
-      handleVoiceInput(spokenText);
-    };
-
-    rec.onerror = () => {
-      setIsListening(false);
-      setVoiceStatus("Voice error. Tap mic to retry.");
-    };
-
-    rec.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = rec;
-    rec.start();
   };
 
   const startVoiceRegistrationWizard = () => {
