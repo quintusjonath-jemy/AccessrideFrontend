@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { FiPhoneCall, FiMapPin, FiUsers, FiX, FiArrowLeft, FiUser } from "react-icons/fi";
 import LiveMap from "../admin/components/LiveMap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Peer } from "peerjs";
 import API_BASE from "../config/api";
 
 const EmergencySOS = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sosActivated, setSOSActivated] = useState(false);
   const [showLiveMap, setShowLiveMap] = useState(false);
   const sosTriggeredRef = useRef(false);
@@ -179,11 +180,12 @@ const EmergencySOS = () => {
   };
 
   useEffect(() => {
-    if (sosTriggeredRef.current) return;
-    sosTriggeredRef.current = true;
-    activateSOS();
-    startWebRtcCall();
-  }, []);
+    if (location.state?.autoTrigger && !sosTriggeredRef.current) {
+      sosTriggeredRef.current = true;
+      activateSOS();
+      startWebRtcCall();
+    }
+  }, [location.state]);
 
   const callDriver = () => {
     if (driverInfo && driverInfo.phone) {
