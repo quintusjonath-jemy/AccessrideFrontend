@@ -10,7 +10,7 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+  const userId = sessionStorage.getItem("user_id") || "1";
 
   const fetchNotifications = async () => {
     try {

@@ -240,7 +240,7 @@ const RideTrackingPage = () => {
     };
   }, []);
 
-  const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+  const userId = sessionStorage.getItem("user_id") || "1";
 
   // Function to fetch the active ride from backend
   const fetchActiveRide = async (isFirstLoad = false) => {
