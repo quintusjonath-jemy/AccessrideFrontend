@@ -43,10 +43,10 @@ const AdminLogin = () => {
 
       setError("");
 
-      // Store admin details
-      localStorage.setItem("admin_id", result.admin.id);
-      localStorage.setItem("admin_email", result.admin.email);
-      localStorage.setItem("admin_name", result.admin.name);
+      // Store admin details strictly in sessionStorage (auto-clears on browser/tab close)
+      localStorage.removeItem("admin_id");
+      localStorage.removeItem("admin_email");
+      localStorage.removeItem("admin_name");
       sessionStorage.setItem("admin_id", result.admin.id);
       sessionStorage.setItem("admin_email", result.admin.email);
       sessionStorage.setItem("admin_name", result.admin.name);

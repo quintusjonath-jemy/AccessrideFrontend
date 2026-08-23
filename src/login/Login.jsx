@@ -100,7 +100,7 @@ const Login = () => {
 
       setUserError("");
       speakWithFallback("Login successful. Opening your dashboard.");
-      localStorage.setItem("user_id", result.user.id);
+      localStorage.removeItem("user_id");
       sessionStorage.setItem("user_id", result.user.id);
       
       setEmail("");
