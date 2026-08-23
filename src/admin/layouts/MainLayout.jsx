@@ -11,7 +11,7 @@ const MainLayout = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const adminId = localStorage.getItem("admin_id") || sessionStorage.getItem("admin_id");
+    const adminId = sessionStorage.getItem("admin_id");
     if (!adminId) {
       navigate("/admin-login");
       return;
