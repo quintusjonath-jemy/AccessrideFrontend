@@ -4,7 +4,6 @@ import axios from "axios";
 
 import DashboardHeader from "../components/DashboardHeader";
 import WelcomeSection from "../components/WelcomeSection";
-import { VoiceAssistantButton } from "../components/voiceassistant/VoiceAssistant";
 import QuickActions from "../components/QuickActions";
 import UpcomingRideCard from "../components/UpcomingRideCard";
 import RecentRides from "../components/RecentRides";
@@ -115,11 +114,19 @@ const UserDashboard = () => {
           {/* 3. Pass user object instead of name */}
           <WelcomeSection user={dashboard?.user} />
 
-          <div className="mx-5 mt-5">
-            <VoiceAssistantButton
-              pageName="AccessRide"
-              welcomePrompt={`Welcome back${dashboard?.user?.first_name ? ', ' + dashboard.user.first_name : ''}. Say book a ride, take me home, same as last time, track my driver, or SOS.`}
-            />
+          <div className="mx-5 mt-4 p-4 bg-gradient-to-r from-amber-400 via-amber-500 to-[#0B2F89] text-white rounded-3xl shadow-lg flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl animate-pulse">
+                🎙️
+              </div>
+              <div>
+                <h4 className="text-sm font-extrabold tracking-tight">Always-On Voice Mode Active</h4>
+                <p className="text-[11px] text-amber-100 font-medium">Say &quot;Book a ride&quot;, &quot;Take me home&quot;, or &quot;SOS&quot; anytime</p>
+              </div>
+            </div>
+            <span className="px-2.5 py-1 text-[10px] font-black bg-emerald-400 text-slate-900 rounded-full animate-pulse shadow">
+              MIC ON
+            </span>
           </div>
 
           {/* 4. Pass statistics to QuickActions */}
