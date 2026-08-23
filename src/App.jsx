@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Outlet, Navigate } from "react-router-dom";
 
 import MainLayout from "./admin/layouts/MainLayout";
 import UserLayout from "./UserDashboard/layouts/UserLayout";
@@ -61,6 +61,31 @@ const PageLoader = () => (
   </div>
 );
 
+// ── Strict Session-Only Route Guards (Auto-invalidated on tab/browser close) ──
+const UserProtectedRoute = () => {
+  const userId = sessionStorage.getItem("user_id");
+  if (!userId || userId === "0" || userId === "undefined" || userId === "null") {
+    return <Navigate to="/login" replace />;
+  }
+  return <Outlet />;
+};
+
+const AdminProtectedRoute = () => {
+  const adminId = sessionStorage.getItem("admin_id");
+  if (!adminId || adminId === "undefined" || adminId === "null") {
+    return <Navigate to="/admin-login" replace />;
+  }
+  return <Outlet />;
+};
+
+const DriverProtectedRoute = () => {
+  const driverId = sessionStorage.getItem("driver_id");
+  if (!driverId || driverId === "0" || driverId === "undefined" || driverId === "null") {
+    return <Navigate to="/driver-login" replace />;
+  }
+  return <Outlet />;
+};
+
 const AdminLayout = () => {
   return (
     <MainLayout>
@@ -74,58 +99,7 @@ const App = () => {
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* admin routes under /admin prefix */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="navigation" element={<Navigation />} />
-            <Route path="users" element={<Users />} />
-            <Route path="alerts" element={<Alerts />} />
-            <Route path="drivers" element={<Drivers />} />
-            <Route path="rides" element={<Rides />} />
-            <Route path="payments" element={<Payments />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="settings/profile" element={<ProfileSettings />} />
-            <Route path="settings/security" element={<SecuritySettings />} />
-            <Route path="settings/notifications" element={<NotificationSettings />} />
-            <Route path="settings/system" element={<SystemSettings />} />
-            <Route path="earnings" element={<AdminEarnings />} />
-            <Route path="monthly-report" element={<MonthlyReport />} />
-            <Route path="notifications" element={<AdminNotifications />} />
-          </Route>
-
-          {/* Support non-prefixed settings links from Settings.jsx */}
-          <Route path="/settings" element={<AdminLayout />}>
-            <Route index element={<Settings />} />
-            <Route path="profile" element={<ProfileSettings />} />
-            <Route path="security" element={<SecuritySettings />} />
-            <Route path="notifications" element={<NotificationSettings />} />
-            <Route path="system" element={<SystemSettings />} />
-          </Route>
-
-          {/* user routes */}
-          <Route path="/user" element={<UserLayout />}>
-            <Route index element={<UserDashboard />} />
-            <Route path="dashboard" element={<UserDashboard />} />
-            <Route path="booking" element={<BookingPage />} />
-            <Route path="schedule" element={<SchedulePage />} />
-            <Route path="ride" element={<RideTrackingPage />} />
-            <Route path="sos" element={<EmergencySOS />} />
-            <Route path="history" element={<HistoryPage />} />
-            <Route path="profile" element={<UserProfilePage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-          </Route>
-
-          {/* driver routes */}
-          <Route element={<DriverLayout />}>
-            <Route path="/driver-dashboard" element={<DriverDashboard />} />
-            <Route path="/driver-trips" element={<DriverTrips />} />
-            <Route path="/driver-earnings" element={<Earnings />} />
-            <Route path="/driver-profile" element={<DriverProfile />} />
-            <Route path="/driver-notifications" element={<DriverNotifications />} />
-          </Route>
-
-          {/* login & register routes */}
+          {/* Public Authentication Routes */}
           <Route path="/" element={<LoginSelector />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -133,9 +107,66 @@ const App = () => {
           <Route path="/driver-login" element={<DriverLogin />} />
           <Route path="/driver-register" element={<DriverRegister />} />
 
-          {/* standalone / shared routes */}
-          <Route path="/ride" element={<RidePage />} />
-          <Route path="/complete-ride" element={<CompleteRidePage />} />
+          {/* Protected Admin Routes */}
+          <Route element={<AdminProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="navigation" element={<Navigation />} />
+              <Route path="users" element={<Users />} />
+              <Route path="alerts" element={<Alerts />} />
+              <Route path="drivers" element={<Drivers />} />
+              <Route path="rides" element={<Rides />} />
+              <Route path="payments" element={<Payments />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="settings/profile" element={<ProfileSettings />} />
+              <Route path="settings/security" element={<SecuritySettings />} />
+              <Route path="settings/notifications" element={<NotificationSettings />} />
+              <Route path="settings/system" element={<SystemSettings />} />
+              <Route path="earnings" element={<AdminEarnings />} />
+              <Route path="monthly-report" element={<MonthlyReport />} />
+              <Route path="notifications" element={<AdminNotifications />} />
+            </Route>
+
+            <Route path="/settings" element={<AdminLayout />}>
+              <Route index element={<Settings />} />
+              <Route path="profile" element={<ProfileSettings />} />
+              <Route path="security" element={<SecuritySettings />} />
+              <Route path="notifications" element={<NotificationSettings />} />
+              <Route path="system" element={<SystemSettings />} />
+            </Route>
+          </Route>
+
+          {/* Protected User (Rider) Routes */}
+          <Route element={<UserProtectedRoute />}>
+            <Route path="/user" element={<UserLayout />}>
+              <Route index element={<UserDashboard />} />
+              <Route path="dashboard" element={<UserDashboard />} />
+              <Route path="booking" element={<BookingPage />} />
+              <Route path="schedule" element={<SchedulePage />} />
+              <Route path="ride" element={<RideTrackingPage />} />
+              <Route path="sos" element={<EmergencySOS />} />
+              <Route path="history" element={<HistoryPage />} />
+              <Route path="profile" element={<UserProfilePage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+            </Route>
+            <Route path="/ride" element={<RidePage />} />
+            <Route path="/complete-ride" element={<CompleteRidePage />} />
+          </Route>
+
+          {/* Protected Driver Routes */}
+          <Route element={<DriverProtectedRoute />}>
+            <Route element={<DriverLayout />}>
+              <Route path="/driver-dashboard" element={<DriverDashboard />} />
+              <Route path="/driver-trips" element={<DriverTrips />} />
+              <Route path="/driver-earnings" element={<Earnings />} />
+              <Route path="/driver-profile" element={<DriverProfile />} />
+              <Route path="/driver-notifications" element={<DriverNotifications />} />
+            </Route>
+          </Route>
+
+          {/* Catch-all fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
