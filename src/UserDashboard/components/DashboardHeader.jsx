@@ -22,7 +22,7 @@ const DashboardHeader = ({ user }) => {
   }, []);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    const userId = sessionStorage.getItem("user_id") || "1";
     fetch(`${API_BASE}/UserDashboard/api/notifications.php?user_id=${userId}`)
       .then(res => res.json())
       .then(data => {

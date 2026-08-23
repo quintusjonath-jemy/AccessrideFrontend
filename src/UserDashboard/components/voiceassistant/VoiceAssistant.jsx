@@ -171,7 +171,6 @@ export const VoiceAssistantButton = ({
   }, [agentState]);
 
   const userId =
-    localStorage.getItem("user_id") ||
     sessionStorage.getItem("user_id") ||
     "0";
 
@@ -682,85 +681,41 @@ export const VoiceAssistantButton = ({
     }
   };
 
-  // ── Floating HUD Design (When used as global floating bar) ──────────────────
-  if (floating) {
-    return (
-      <aside aria-label="Always-on Voice Assistant" className="fixed bottom-20 md:bottom-24 right-4 md:right-8 z-50 flex items-center gap-3">
-        <div className="bg-slate-900/90 backdrop-blur-md text-white px-4 py-2 rounded-2xl shadow-xl border border-slate-700/50 flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5">
-            <span className={`w-2.5 h-2.5 rounded-full ${isSpeaking ? "bg-amber-400 animate-ping" : isListening ? "bg-emerald-400 animate-pulse" : "bg-rose-500"}`} />
-            <span className="text-xs font-bold tracking-wide">
-              {isSpeaking ? "Speaking…" : isListening ? "Mic Always ON" : "Mic Paused"}
-            </span>
-          </div>
-          <span className="text-slate-400 text-xs max-w-[140px] truncate">
-            {statusText}
-          </span>
-        </div>
+  // ── Derived state ─────────────────────────────────────────────────────────
+  const isWaitingForInput =
+    agentState !== STATE.IDLE && agentState !== STATE.EXECUTING_BOOKING;
 
-        <button
-          onClick={toggleListen}
-          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 border-2 cursor-pointer focus:outline-none focus:ring-4 focus:ring-amber-400 ${
-            isSpeaking
-              ? "bg-amber-400 border-white text-slate-900 animate-bounce scale-105"
-              : isListening
-              ? "bg-emerald-600 border-emerald-300 text-white animate-pulse scale-105 shadow-emerald-500/50"
-              : "bg-slate-800 border-slate-600 text-slate-400"
-          }`}
-          aria-label={isListening ? "Mic is active (always listening). Tap to mute." : "Mic is muted. Tap to unmute."}
-        >
-          {isSpeaking ? (
-            <Sparkles size={24} className="animate-spin text-slate-900" />
-          ) : isListening ? (
-            <Mic size={24} className="animate-pulse" />
-          ) : (
-            <MicOff size={24} />
-          )}
-        </button>
-      </aside>
-    );
-  }
-
-  // ── Default Embedded Card Design ──────────────────────────────────────────
+  // ── Original Classic Card Design ─────────────────────────────────────────
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white border-2 border-amber-200/70 rounded-3xl shadow-md max-w-sm mx-auto relative overflow-hidden">
-      <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-amber-400 via-emerald-400 to-blue-600" />
-      
+    <div className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-3xl shadow-sm max-w-sm mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Sparkles
-          size={16}
-          className={`text-amber-500 ${isSpeaking ? "animate-spin" : "animate-pulse"}`}
+          size={15}
+          className={`text-yellow-500 ${isSpeaking ? "animate-spin" : "animate-pulse"}`}
         />
         <h4 className="text-xs font-black text-[#0B2F89] uppercase tracking-widest">
-          {pageName} Voice Assistant
+          {pageName} Assistant
         </h4>
-        <span className="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 rounded-full">
-          ALWAYS ON
-        </span>
       </div>
 
       {/* Mic Button */}
       <button
         onClick={toggleListen}
         disabled={agentState === STATE.EXECUTING_BOOKING}
-        className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border-4 cursor-pointer focus:outline-none focus:ring-4 focus:ring-amber-400
-          ${isSpeaking
-            ? "bg-amber-400 border-amber-200 text-slate-900 animate-bounce scale-105"
-            : isListening
-            ? "bg-emerald-600 border-emerald-200 text-white animate-pulse scale-105 shadow-emerald-500/40"
+        className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-4 cursor-pointer focus:outline-none focus:ring-4 focus:ring-yellow-400
+          ${isListening
+            ? "bg-red-500 border-red-200 text-white animate-pulse scale-105"
             : isWaitingForInput
             ? "bg-[#0B2F89] border-blue-200 text-white hover:scale-105"
             : agentState === STATE.EXECUTING_BOOKING
             ? "bg-slate-300 border-slate-200 text-slate-500 cursor-not-allowed"
-            : "bg-amber-400 border-white text-[#0B2F89] hover:scale-105"
+            : "bg-yellow-400 border-white text-[#0B2F89] hover:scale-105"
           }`}
-        aria-label={isListening ? "Mic is active (always listening). Tap to mute." : "Mic is muted. Tap to start."}
+        aria-label={isListening ? "Tap to stop mic" : "Tap to start mic"}
       >
         {agentState === STATE.EXECUTING_BOOKING ? (
           <Loader size={30} className="animate-spin" />
-        ) : isSpeaking ? (
-          <Sparkles size={30} className="animate-spin text-slate-900" />
         ) : isListening ? (
           <Mic size={30} className="animate-pulse" />
         ) : (
@@ -769,7 +724,7 @@ export const VoiceAssistantButton = ({
       </button>
 
       {/* State badge — shown when in a multi-turn flow */}
-      {isWaitingForInput && (
+      {isWaitingForInput && !isListening && (
         <div className="mt-3 px-3 py-1 bg-[#0B2F89]/10 rounded-full">
           <span className="text-xs font-bold text-[#0B2F89]">
             {agentState === STATE.WAITING_SOS_CONFIRM
@@ -790,23 +745,11 @@ export const VoiceAssistantButton = ({
       )}
 
       {/* Status text */}
-      <p className="mt-3 text-xs font-bold text-slate-700 text-center max-w-[240px] leading-relaxed">
-        {isSpeaking
-          ? "Speaking…"
-          : isListening
-          ? "Always listening — speak anytime"
+      <p className="mt-3 text-xs font-semibold text-slate-500 animate-pulse text-center max-w-[200px] leading-relaxed">
+        {isListening
+          ? "Always listening — tap to stop"
           : statusText}
       </p>
     </div>
-  );
-};
-
-// ─── Global User Voice Assistant for UserLayout ──────────────────────────────
-export const GlobalUserVoiceAssistant = ({ pageName = "AccessRide" }) => {
-  return (
-    <VoiceAssistantButton
-      pageName={pageName}
-      floating={true}
-    />
   );
 };
