@@ -148,21 +148,22 @@ const matchVehicle = (text) => {
   return null;
 };
 
-// ─── Main VoiceAssistantButton component ─────────────────────────────────────
+// ─── Main VoiceAssistant Component (Always On for Blind Users) ───────────────────
 export const VoiceAssistantButton = ({
   pageName = "Dashboard",
   welcomePrompt = "",
+  floating = false,
 }) => {
   const navigate = useNavigate();
 
   const [agentState, setAgentState] = useState(STATE.IDLE);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [statusText, setStatusText] = useState("Tap to speak");
+  const [statusText, setStatusText] = useState("Listening for voice commands…");
 
   const recognitionRef = useRef(null);
   const agentStateRef = useRef(STATE.IDLE); // always up-to-date in callbacks
-  const manualStopRef = useRef(true);       // true by default; set false when user taps mic
+  const manualStopRef = useRef(false);      // ALWAYS ON by default for blind users
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -170,7 +171,6 @@ export const VoiceAssistantButton = ({
   }, [agentState]);
 
   const userId =
-    localStorage.getItem("user_id") ||
     sessionStorage.getItem("user_id") ||
     "0";
 
@@ -206,7 +206,7 @@ export const VoiceAssistantButton = ({
   // ── Reset to idle ─────────────────────────────────────────────────────────
   const resetToIdle = useCallback(() => {
     Memory.sessionClear("pending_destination", "pending_vehicle", "pending_date");
-    transition(STATE.IDLE, "Tap to speak");
+    transition(STATE.IDLE, "Listening for voice commands…");
   }, [transition]);
 
   // ── Play welcome prompt on page mount ─────────────────────────────────────
@@ -246,7 +246,7 @@ export const VoiceAssistantButton = ({
         if (
           text.includes("sos") ||
           text.includes("emergency") ||
-          (text.includes("help") && !text.includes("help me book"))
+          (text.includes("help") && !text.includes("help me book") && !text.includes("what can you do") && !text.includes("commands"))
         ) {
           speak(
             "SOS detected. Say YES to confirm emergency, or say cancel."
@@ -259,7 +259,8 @@ export const VoiceAssistantButton = ({
         if (
           text.includes("same as last time") ||
           text.includes("same ride") ||
-          text.includes("book again")
+          text.includes("book again") ||
+          text.includes("rebook")
         ) {
           // 1. Check localStorage first (fastest)
           const lastDest = Memory.get("last_destination");
@@ -313,7 +314,7 @@ export const VoiceAssistantButton = ({
         // ── TAKE ME HOME ───────────────────────────────────────────────
         if (
           text.includes("take me home") ||
-          text.includes("go home") && text.includes("ride") ||
+          (text.includes("go home") && text.includes("ride")) ||
           text.includes("book to home")
         ) {
           speak("Looking up your home address…");
@@ -335,20 +336,15 @@ export const VoiceAssistantButton = ({
 
         // ── BOOK A RIDE / BOOK IT ──────────────────────────────────────
         if (
-          text.includes("book") ||
+          text.includes("book a ride") ||
+          text.includes("book ride") ||
           text.includes("i want a ride") ||
           text.includes("i need a ride") ||
           text.includes("get me a ride") ||
-          text.includes("ride")
+          text.includes("go to booking")
         ) {
-          manualStopRef.current = true;
-          if (recognitionRef.current) {
-            try { recognitionRef.current.abort(); } catch (_) {}
-          }
-          speak("Opening booking page. Please choose your vehicle.");
-          setTimeout(() =>
-            navigate("/user/booking", { state: { voiceMode: true } })
-          , 1000);
+          speak("Opening booking page. Please say where you want to go or choose your vehicle.");
+          navigate("/user/booking", { state: { voiceMode: true } });
           resetToIdle();
           return;
         }
@@ -365,7 +361,8 @@ export const VoiceAssistantButton = ({
           text.includes("track") ||
           text.includes("where is my driver") ||
           text.includes("driver location") ||
-          text.includes("where is the driver")
+          text.includes("where is the driver") ||
+          text.includes("ride status")
         ) {
           speak("Opening live ride tracking.");
           navigate("/user/ride");
@@ -395,7 +392,7 @@ export const VoiceAssistantButton = ({
         }
 
         // ── PROFILE ────────────────────────────────────────────────────
-        if (text.includes("profile") || text.includes("account") || text.includes("settings")) {
+        if (text.includes("profile") || text.includes("account") || text.includes("my profile")) {
           speak("Opening your profile settings.");
           navigate("/user/profile");
           resetToIdle();
@@ -404,7 +401,7 @@ export const VoiceAssistantButton = ({
 
         // ── DASHBOARD / HOME (navigation, not ride) ────────────────────
         if (
-          (text.includes("go home") || text.includes("dashboard") || text.includes("main menu")) &&
+          (text.includes("go home") || text.includes("dashboard") || text.includes("main menu") || text.includes("home page")) &&
           !text.includes("ride")
         ) {
           speak("Heading back to the dashboard.");
@@ -413,17 +410,25 @@ export const VoiceAssistantButton = ({
           return;
         }
 
+        // ── WHERE AM I / SCREEN INFO ────────────────────────────────────
+        if (text.includes("where am i") || text.includes("current page") || text.includes("what screen")) {
+          speak(
+            `You are currently on the ${pageName} screen. You can say: Book a ride, Take me home, Schedule a ride, Track driver, History, Profile, or SOS.`
+          );
+          return;
+        }
+
         // ── HELP ───────────────────────────────────────────────────────
         if (text.includes("help") || text.includes("what can you do") || text.includes("commands")) {
           speak(
-            "I can help you with: Book a ride, Take me home, Same as last time, Schedule a ride, Track my driver, View history, Notifications, Profile, and SOS."
+            "I am always listening to help you. You can say: Book a ride, Take me home, Same as last time, Schedule a ride, Track driver, History, Notifications, Profile, or SOS."
           );
           return;
         }
 
         // ── UNRECOGNIZED ───────────────────────────────────────────────
         speak(
-          "Sorry, I didn't catch that. Say help to hear what I can do."
+          "I am listening. Say book a ride, take me home, track driver, or help."
         );
         return;
       }
@@ -457,20 +462,19 @@ export const VoiceAssistantButton = ({
         const vehicle = matchVehicle(text);
 
         if (!vehicle) {
-          speak(
-            "I didn't catch the vehicle type. Please say bike, three-wheeler, car, or van."
-          );
+          speak("Please say bike, three-wheeler, car, or van.");
           return;
         }
 
-        const destination = Memory.sessionGet("pending_destination");
+        const dest = Memory.sessionGet("pending_destination");
         Memory.sessionSet("pending_vehicle", vehicle);
+
         speak(
-          `Booking a ${vehicle} to ${destination}. Say yes to confirm or cancel.`
+          `You've selected a ${vehicle} to ${dest}. Shall I confirm this ride? Say yes or cancel.`
         );
         transition(
           STATE.CONFIRMING_BOOKING,
-          `Confirm: ${vehicle} to ${destination}`
+          `Confirm: ${vehicle} to ${dest}?`
         );
         return;
       }
@@ -479,44 +483,79 @@ export const VoiceAssistantButton = ({
       // STATE: CONFIRMING_BOOKING
       // ══════════════════════════════════════════════════════════════════
       if (currentState === STATE.CONFIRMING_BOOKING) {
+        if (
+          text.includes("yes") ||
+          text.includes("confirm") ||
+          text.includes("book") ||
+          text.includes("sure") ||
+          text.includes("okay") ||
+          text.includes("ok")
+        ) {
+          const dest = Memory.sessionGet("pending_destination");
+          const vehicle = Memory.sessionGet("pending_vehicle") || "car";
 
-        if (text.includes("yes") || text.includes("confirm") || text.includes("okay") || text.includes("ok") || text.includes("sure")) {
-          const destination = Memory.sessionGet("pending_destination");
-          const vehicle = Memory.sessionGet("pending_vehicle");
+          transition(STATE.EXECUTING_BOOKING, "Booking ride…");
+          speak("Booking your ride now. Please wait a moment.");
 
-          // Save to persistent memory
-          Memory.set("last_destination", destination);
-          Memory.set("last_vehicle", vehicle);
+          try {
+            const userLat = sessionStorage.getItem("user_latitude") || "6.9271";
+            const userLng = sessionStorage.getItem("user_longitude") || "79.8612";
+            const pickupName =
+              sessionStorage.getItem("user_location_name") || "Current Location";
 
-          speak(`Great! Booking your ${vehicle} to ${destination}. Please wait.`);
-          transition(STATE.EXECUTING_BOOKING, "Booking your ride…");
+            const res = await fetch(`${API_BASE}/UserDashboard/api/book_ride.php`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                user_id: parseInt(userId, 10),
+                pickup_location: pickupName,
+                dropoff_location: dest,
+                pickup_lat: parseFloat(userLat),
+                pickup_lng: parseFloat(userLng),
+                vehicle_type: vehicle,
+                payment_method: "cash",
+                notes: "Voice booked ride for blind passenger",
+              }),
+            });
 
-          // Navigate to booking page with voice pre-fill state
-          setTimeout(() => {
+            const data = await res.json();
+
+            if (data.status === "success" || data.success) {
+              Memory.set("last_destination", dest);
+              Memory.set("last_vehicle", vehicle);
+              Memory.sessionClear("pending_destination", "pending_vehicle");
+
+              speak(
+                `Your ${vehicle} to ${dest} is booked! Finding a driver for you. Opening live ride tracking.`
+              );
+              transition(STATE.IDLE);
+              navigate("/user/ride", {
+                state: { rideId: data.ride_id, autoTracking: true },
+              });
+            } else {
+              speak(
+                `Could not book the ride: ${data.message || "Unknown error"}. Opening booking page.`
+              );
+              navigate("/user/booking", {
+                state: { voiceMode: true, pendingDest: dest, pendingVehicle: vehicle },
+              });
+              resetToIdle();
+            }
+          } catch (e) {
+            console.error("Booking failed:", e);
+            speak("There was a connection problem. Opening the booking page for you.");
             navigate("/user/booking", {
-              state: {
-                voiceDestination: destination,
-                voiceVehicle: vehicle,
-              },
+              state: { voiceMode: true, pendingDest: dest, pendingVehicle: vehicle },
             });
             resetToIdle();
-          }, 1800);
+          }
           return;
         }
 
-        if (text.includes("change vehicle") || text.includes("different vehicle") || text.includes("change car")) {
-          speak("Sure, which vehicle? Bike, three-wheeler, car, or van?");
-          transition(STATE.WAITING_VEHICLE, "Which vehicle?");
-          return;
-        }
-
-        if (text.includes("change destination") || text.includes("different place") || text.includes("change location")) {
-          speak("Okay, where would you like to go?");
-          transition(STATE.WAITING_DESTINATION, "Where to?");
-          return;
-        }
-
-        speak("Say yes to confirm, or cancel to start over.");
+        // Did not say yes → treat as cancel
+        speak("Booking cancelled. How else can I help you?");
+        resetToIdle();
         return;
       }
 
@@ -562,13 +601,13 @@ export const VoiceAssistantButton = ({
         return;
       }
     },
-    [navigate, speak, transition, resetToIdle, userId]
+    [navigate, speak, transition, resetToIdle, userId, pageName]
   );
 
-  // ── Set up Web Speech Recognition ─────────────────────────────────────────
+  // ── Set up Web Speech Recognition (Always-On Engine) ──────────────────────
   useEffect(() => {
     if (!SpeechRecognition) {
-      setStatusText("Voice not supported in this browser");
+      setStatusText("Voice recognition not supported in this browser");
       return;
     }
 
@@ -576,8 +615,6 @@ export const VoiceAssistantButton = ({
     rec.lang = "en-US";
     rec.interimResults = false;
     rec.maxAlternatives = 1;
-    // continuous = true would cause issues in some browsers; instead we
-    // auto-restart in onend so the mic stays on after each utterance.
 
     rec.onstart = () => {
       setIsListening(true);
@@ -591,7 +628,7 @@ export const VoiceAssistantButton = ({
     };
 
     rec.onerror = (event) => {
-      // 'no-speech' is normal — just restart quietly
+      // 'no-speech' is expected when user is quiet — restart quietly
       if (event.error === "no-speech") {
         if (!manualStopRef.current) {
           try { rec.start(); } catch (_) {}
@@ -644,9 +681,11 @@ export const VoiceAssistantButton = ({
     }
   };
 
-  // ── Derived button style ──────────────────────────────────────────────────
-  const isWaitingForInput = agentState !== STATE.IDLE && agentState !== STATE.EXECUTING_BOOKING;
+  // ── Derived state ─────────────────────────────────────────────────────────
+  const isWaitingForInput =
+    agentState !== STATE.IDLE && agentState !== STATE.EXECUTING_BOOKING;
 
+  // ── Original Classic Card Design ─────────────────────────────────────────
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-3xl shadow-sm max-w-sm mx-auto">
       {/* Header */}

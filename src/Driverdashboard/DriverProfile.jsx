@@ -62,7 +62,7 @@ const DriverProfile = () => {
   const [editSuccess, setEditSuccess] = useState(false);
 
   const fetchProfile = useCallback(() => {
-    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    let driverId = sessionStorage.getItem("driver_id");
     if (!driverId) {
       navigate("/driver-login");
       return;
@@ -121,7 +121,7 @@ const DriverProfile = () => {
     setEditError("");
     setEditSuccess(false);
 
-    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    const driverId = sessionStorage.getItem("driver_id");
 
     try {
       const response = await fetch(`${API_BASE}/Driverdashboard/api/update_profile.php`, {

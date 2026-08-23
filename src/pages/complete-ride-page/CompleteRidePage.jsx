@@ -60,7 +60,7 @@ const CompleteRidePage = () => {
   }, [ride]);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    const userId = sessionStorage.getItem("user_id") || "1";
     
     // Fetch profile
     fetch(`${API_BASE}/history_and_profile/profile/get_profile.php?user_id=${userId}`)

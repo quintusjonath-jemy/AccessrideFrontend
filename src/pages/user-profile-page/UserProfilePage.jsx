@@ -18,15 +18,16 @@ const UserProfilePage = () => {
   const [user, setUser] = useState(userData);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    const userId = sessionStorage.getItem("user_id") || "1";
+    
     fetch(`${API_BASE}/history_and_profile/profile/get_profile.php?user_id=${userId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && !data.error) {
-          setUser(data);
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.user) {
+          setUser(data.user);
         }
       })
-      .catch(err => console.error("Error fetching profile", err));
+      .catch((err) => console.error("Error fetching profile", err));
   }, []);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ const UserProfilePage = () => {
       const newLocation = prompt("Enter new address:", user.location);
       
       if (newName !== null && newPhone !== null && newLocation !== null) {
-        const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+        const userId = sessionStorage.getItem("user_id") || "1";
         fetch(`${API_BASE}/history_and_profile/profile/update_profile.php`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -83,7 +84,7 @@ const UserProfilePage = () => {
 
     if (action === 'Logout') {
        localStorage.removeItem("user_id");
-       sessionStorage.removeItem("user_id");
+       sessionStorage.clear();
        navigate('/login');
        return;
     }

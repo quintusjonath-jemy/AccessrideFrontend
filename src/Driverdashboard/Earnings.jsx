@@ -16,7 +16,7 @@ const Earnings = () => {
   const [recentRides, setRecentRides] = useState([]);
 
   useEffect(() => {
-    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    const driverId = sessionStorage.getItem("driver_id");
     if (!driverId) {
       navigate("/driver-login");
       return;

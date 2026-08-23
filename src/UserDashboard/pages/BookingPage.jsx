@@ -655,7 +655,7 @@ const BookingPage = () => {
     }
 
     setIsBookingInProgress(true);
-    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    const userId = sessionStorage.getItem("user_id") || "1";
 
     const payload = {
       user_id: userId,

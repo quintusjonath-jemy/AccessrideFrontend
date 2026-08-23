@@ -23,7 +23,7 @@ const UserDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id");
+    const userId = sessionStorage.getItem("user_id");
     if (!userId) {
       navigate("/login");
       return;

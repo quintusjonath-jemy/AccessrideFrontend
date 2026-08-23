@@ -14,7 +14,7 @@ const SchedulePage = () => {
   const [editingRide, setEditingRide] = useState(null);
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+    const userId = sessionStorage.getItem("user_id") || "1";
     axios.get(`${API_BASE}/UserDashboard/api/schedule.php?user_id=${userId}`)
       .then(res => {
         if (res.data.success && res.data.data !== null) {
@@ -41,7 +41,7 @@ const SchedulePage = () => {
 
   const handleCancelSchedule = (rideId) => {
     if (window.confirm("Are you sure you want to cancel this scheduled ride?")) {
-      const userId = localStorage.getItem("user_id") || sessionStorage.getItem("user_id") || "1";
+      const userId = sessionStorage.getItem("user_id") || "1";
       axios.delete(`${API_BASE}/UserDashboard/api/schedule.php?ride_id=${rideId}&user_id=${userId}`)
       .then(res => {
         if (res.data.success) {

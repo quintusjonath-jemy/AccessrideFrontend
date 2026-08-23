@@ -22,7 +22,7 @@ const DriverHeader = ({ driverInfo = {} }) => {
 
   // Fetch unread notification count
   useEffect(() => {
-    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    const driverId = sessionStorage.getItem("driver_id");
     if (!driverId) return;
 
     fetch(`${API_BASE}/Driverdashboard/api/notifications.php?driver_id=${driverId}&count=1`)
@@ -38,7 +38,7 @@ const DriverHeader = ({ driverInfo = {} }) => {
   const handleLogout = () => {
     setOpenMenu(false);
     localStorage.removeItem("driver_id");
-    sessionStorage.removeItem("driver_id");
+    sessionStorage.clear();
     navigate("/driver-login");
   };
 
