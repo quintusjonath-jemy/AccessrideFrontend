@@ -7,7 +7,7 @@ import API_BASE from "../config/api";
 const DriverDashboard = () => {
   const navigate = useNavigate();
   const [isOnline, setIsOnline] = useState(() => {
-    const stored = localStorage.getItem("driverOnlineStatus");
+    const stored = sessionStorage.getItem("driverOnlineStatus");
     return stored ? JSON.parse(stored) : true;
   });
   const [activeRide, setActiveRide] = useState(null);
@@ -42,7 +42,7 @@ const DriverDashboard = () => {
   const [txnId, setTxnId] = useState("");
 
   const fetchDashboardData = useCallback(() => {
-    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    let driverId = sessionStorage.getItem("driver_id");
     if (!driverId) {
       navigate("/driver-login");
       return;
@@ -176,7 +176,7 @@ const DriverDashboard = () => {
         subscription_status: 'active'
       }));
       
-      const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+      const driverId = sessionStorage.getItem("driver_id");
       fetch(`${API_BASE}/Driverdashboard/api/renew_subscription.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -221,7 +221,7 @@ const DriverDashboard = () => {
     setCheckoutStep("processing");
     setCheckoutError("");
 
-    let driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    let driverId = sessionStorage.getItem("driver_id");
     
     try {
       // 1. Fetch secure PayHere configuration and MD5 hash from backend
@@ -262,13 +262,13 @@ const DriverDashboard = () => {
   }, [fetchDashboardData]);
 
   useEffect(() => {
-    localStorage.setItem("driverOnlineStatus", JSON.stringify(isOnline));
+    sessionStorage.setItem("driverOnlineStatus", JSON.stringify(isOnline));
   }, [isOnline]);
 
   const toggleStatus = () => {
     const newStatus = !isOnline;
     setIsOnline(newStatus);
-    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    const driverId = sessionStorage.getItem("driver_id");
     if (driverId) {
       fetch(`${API_BASE}/Driverdashboard/api/update_status.php`, {
         method: "POST",
@@ -282,7 +282,7 @@ const DriverDashboard = () => {
   };
 
   const acceptRide = () => {
-    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    const driverId = sessionStorage.getItem("driver_id");
     fetch(`${API_BASE}/Driverdashboard/api/accept.php`, {
       method: "POST",
       headers: {
@@ -301,7 +301,7 @@ const DriverDashboard = () => {
   };
 
   const rejectRide = () => {
-    const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+    const driverId = sessionStorage.getItem("driver_id");
     fetch(`${API_BASE}/Driverdashboard/api/reject.php`, {
       method: "POST",
       headers: {

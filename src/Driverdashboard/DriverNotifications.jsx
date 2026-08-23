@@ -73,7 +73,7 @@ const DriverNotifications = () => {
   const [markingAll, setMarkingAll] = useState(false);
   const [filter, setFilter] = useState("all"); // all | unread
 
-  const driverId = localStorage.getItem("driver_id") || sessionStorage.getItem("driver_id");
+  const driverId = sessionStorage.getItem("driver_id");
 
   const fetchNotifications = () => {
     if (!driverId) { navigate("/driver-login"); return; }
