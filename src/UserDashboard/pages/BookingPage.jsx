@@ -46,6 +46,28 @@ const geocodeLocation = async (query, proximity = null) => {
   } catch (err) {
     console.error("Geocoding error for: " + query, err);
   }
+};
+
+// Resolve place name to exact Mapbox address and coordinates
+const resolveExactPlace = async (query, proximity = null) => {
+  if (!query || query.trim().length < 2) return null;
+  const [proxLng, proxLat] = proximity || [COLOMBO_LNG, COLOMBO_LAT];
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      query
+    )}.json?access_token=${MAPBOX_TOKEN}&country=lk&proximity=${proxLng},${proxLat}&types=poi,address,neighborhood,locality,place&limit=1`;
+    const res = await axios.get(url);
+    if (res.data?.features && res.data.features.length > 0) {
+      const top = res.data.features[0];
+      return {
+        placeName: top.place_name,
+        shortName: top.text || top.place_name,
+        coordinates: top.geometry.coordinates, // [lng, lat]
+      };
+    }
+  } catch (err) {
+    console.error("Mapbox resolveExactPlace error:", err);
+  }
   return null;
 };
 
@@ -236,6 +258,56 @@ const BookingPage = () => {
       return;
     }
 
+    // ── Global Voice Page Navigation ─────────────────────────────────────────
+    if (
+      text.includes("my ride") ||
+      text.includes("history") ||
+      text.includes("past ride") ||
+      text.includes("previous ride") ||
+      text.includes("my trip") ||
+      text.includes("trips")
+    ) {
+      vSpeak("Opening your ride history.");
+      navigate("/user/history");
+      return;
+    }
+
+    if (text.includes("schedule") || text.includes("later") || text.includes("tomorrow")) {
+      vSpeak("Opening schedule ride page.");
+      navigate("/user/schedule");
+      return;
+    }
+
+    if (text.includes("track") || text.includes("where is my driver") || text.includes("driver location") || text.includes("active ride")) {
+      vSpeak("Opening live ride tracking.");
+      navigate("/user/ride");
+      return;
+    }
+
+    if (text.includes("profile") || text.includes("account") || text.includes("settings")) {
+      vSpeak("Opening your profile settings.");
+      navigate("/user/profile");
+      return;
+    }
+
+    if (text.includes("notification") || text.includes("alerts") || text.includes("messages")) {
+      vSpeak("Opening your notifications.");
+      navigate("/user/notifications");
+      return;
+    }
+
+    if (text.includes("sos") || text.includes("emergency") || text.includes("help me")) {
+      vSpeak("Opening emergency SOS.");
+      navigate("/user/sos");
+      return;
+    }
+
+    if (text.includes("go home") || text.includes("dashboard") || text.includes("main menu") || text === "home") {
+      vSpeak("Heading back to the dashboard.");
+      navigate("/user/dashboard");
+      return;
+    }
+
     // ── VEHICLE step ─────────────────────────────────────────────────────────
     if (cur === VSTATE.VEHICLE) {
       const v = matchVehicleFromSpeech(text);
@@ -249,6 +321,18 @@ const BookingPage = () => {
       setStep(2);
       stepRef.current = 2;
       requestGPS();
+
+      if (voiceDestination) {
+        // Destination was already provided via voice
+        setDropoff(voiceDestination);
+        dropoffRef.current = voiceDestination;
+        setVState(VSTATE.CONFIRMING);
+        vStateRef.current = VSTATE.CONFIRMING;
+        setVStatus("Say confirm to book or cancel");
+        vSpeak(`${v} selected. Booking to ${voiceDestination}. Say confirm to book, or cancel to start over.`);
+        return;
+      }
+
       // Go straight to asking for destination
       setVState(VSTATE.DROPOFF);
       vStateRef.current = VSTATE.DROPOFF;
@@ -286,20 +370,34 @@ const BookingPage = () => {
 
     // ── DROPOFF step ─────────────────────────────────────────────────────────
     if (cur === VSTATE.DROPOFF) {
-      const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff)\s+/i, "").trim();
+      const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff|take me to|take me)\s+/i, "").trim();
       if (!cleaned || cleaned.length < 2) {
         vSpeak("I didn't catch that. Please say your destination.");
         return;
       }
-      setDropoff(cleaned);
-      dropoffRef.current = cleaned;
-      setVState(VSTATE.CONFIRMING);
-      vStateRef.current = VSTATE.CONFIRMING;
-      setVStatus("Say confirm to book or cancel");
-      const vehicle = vTypeRef.current;
-      vSpeak(
-        `Great! Booking a ${vehicle} from ${pickupRef.current || cleaned} to ${cleaned}. Say confirm to book, or cancel to start over.`
-      );
+      
+      vSpeak(`Looking up ${cleaned} on Mapbox…`);
+
+      // Geocode and find exact place
+      const prox = pickupCoords || null;
+      resolveExactPlace(cleaned, prox).then((resolved) => {
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        setDropoff(finalDest);
+        dropoffRef.current = finalDest;
+        if (resolved?.coordinates) {
+          setDropoffCoords(resolved.coordinates);
+        }
+
+        setVState(VSTATE.CONFIRMING);
+        vStateRef.current = VSTATE.CONFIRMING;
+        setVStatus("Say confirm to book or cancel");
+        const vehicle = vTypeRef.current;
+        vSpeak(
+          `Found ${displayName}. Booking a ${vehicle} from ${pickupRef.current || 'your location'} to ${displayName}. Say confirm to book, or cancel to start over.`
+        );
+      });
       return;
     }
 
@@ -325,13 +423,15 @@ const BookingPage = () => {
 
     const rec = new SpeechRecognition();
     rec.lang = "en-US";
+    rec.continuous = true;
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     vRecRef.current = rec;
 
     rec.onstart  = () => setVListening(true);
     rec.onresult = (e) => {
-      const t = e.results[0][0].transcript;
+      const lastIdx = e.results.length - 1;
+      const t = e.results[lastIdx][0].transcript;
       setVStatus(`"${t}"`);
       handleVCommand(t);
     };
