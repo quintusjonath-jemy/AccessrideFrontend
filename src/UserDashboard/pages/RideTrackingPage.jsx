@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Phone, MessageSquare, ShieldAlert, Navigation, Car, Star, Mic, MicOff, Sparkles } from "lucide-react";
 import axios from "axios";
@@ -111,55 +111,85 @@ const RideTrackingPage = () => {
     rideRef.current = ride;
   }, [ride]);
 
+  const handleVoiceTrackingCommandRef = useRef(null);
+
   // Voice Command Handler for Tracking Page
-  const handleVoiceTrackingCommand = (rawText) => {
+  const handleVoiceTrackingCommand = useCallback((rawText) => {
     const text = rawText.toLowerCase().trim();
     console.log(`[TrackingVoice] Heard: "${text}"`);
     const currentRide = rideRef.current;
-    if (!currentRide) return;
 
     // 1. OTP Query
-    if (text.includes("otp") || text.includes("pin") || text.includes("code")) {
-      const otp = (currentRide.id * 127 + 3571) % 9000 + 1000;
-      const spokenOtp = otp.toString().split("").join(" ");
-      vaSpeak(`Your trip OTP code is ${spokenOtp}. Share this code with your driver to start your ride.`);
+    if (
+      text.includes("otp") ||
+      text.includes("pin") ||
+      text.includes("code") ||
+      text.includes("passcode") ||
+      text.includes("tell the otp") ||
+      text.includes("tell me the otp") ||
+      text.includes("what is the otp") ||
+      text.includes("ride code") ||
+      text.includes("confirm the ride") ||
+      text.includes("confirm code")
+    ) {
+      if (currentRide && currentRide.id) {
+        const otp = ((currentRide.id * 127 + 3571) % 9000) + 1000;
+        const spokenOtp = otp.toString().split("").join(", ");
+        vaSpeak(`Your trip confirmation OTP is ${spokenOtp}. Please tell this 4 digit code to your driver to start your ride.`);
+      } else {
+        vaSpeak("Checking your ride details. Please ask for the OTP again in a moment.");
+      }
       return;
     }
 
     // 2. Payment / Fare Query
     if (text.includes("payment") || text.includes("fare") || text.includes("cost") || text.includes("amount") || text.includes("charge") || text.includes("how much")) {
-      const fare = currentRide.fare ? parseFloat(currentRide.fare).toFixed(2) : "0.00";
-      const mode = currentRide.payment_method || "cash";
-      vaSpeak(`Your total fare is ${fare} Rupees, payable by ${mode}.`);
+      if (currentRide) {
+        const fare = currentRide.fare ? parseFloat(currentRide.fare).toFixed(2) : "0.00";
+        const mode = currentRide.payment_method || "cash";
+        vaSpeak(`Your total fare is ${fare} Rupees, payable by ${mode}.`);
+      } else {
+        vaSpeak("Your ride details are still loading.");
+      }
       return;
     }
 
     // 3. Driver Info Query
     if (text.includes("driver") || text.includes("who") || text.includes("vehicle") || text.includes("number")) {
-      const dName = currentRide.driver_name || "Assigned driver";
-      const dNum = currentRide.driver_vehicle_number ? `vehicle number ${currentRide.driver_vehicle_number}` : "";
-      vaSpeak(`Your driver is ${dName}. ${dNum}.`);
+      if (currentRide) {
+        const dName = currentRide.driver_name || "Assigned driver";
+        const dNum = currentRide.driver_vehicle_number ? `vehicle number ${currentRide.driver_vehicle_number}` : "";
+        vaSpeak(`Your driver is ${dName}. ${dNum}.`);
+      } else {
+        vaSpeak("Searching for your driver details.");
+      }
       return;
     }
 
     // 4. Distance / Location Query
     if (text.includes("distance") || text.includes("how far") || text.includes("where")) {
-      if (currentRide.status === "active") {
+      if (currentRide && currentRide.status === "active") {
         const distStr = displayDistance !== null ? `${displayDistance.toFixed(1)} kilometers` : "short distance";
         vaSpeak(`You are ${distStr} away from your destination.`);
-      } else {
+      } else if (currentRide) {
         const distStr = displayDistance !== null ? `${displayDistance.toFixed(1)} kilometers` : "nearby";
         vaSpeak(`Your driver is ${distStr} away from your location.`);
+      } else {
+        vaSpeak("Location details are currently loading.");
       }
       return;
     }
 
     // 5. Help
     if (text.includes("help") || text.includes("what can you do")) {
-      vaSpeak("You can ask: What is my OTP, How much is the fare, Who is my driver, or How far is the destination.");
+      vaSpeak("You can ask: Tell the OTP, How much is the fare, Who is my driver, or Where is my driver.");
       return;
     }
-  };
+  }, [displayDistance]);
+
+  useEffect(() => {
+    handleVoiceTrackingCommandRef.current = handleVoiceTrackingCommand;
+  }, [handleVoiceTrackingCommand]);
 
   // Reactive Speech Announcements for Tracking Events
   useEffect(() => {
@@ -198,22 +228,24 @@ const RideTrackingPage = () => {
     }
   }, [ride?.status, ride?.driver_name, ride?.driver_vehicle_number, displayDistance]);
 
-  // Set up Web Speech Recognition for RideTrackingPage
+  // Set up Web Speech Recognition for RideTrackingPage (Continuous Mode)
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
 
     const rec = new SpeechRecognition();
     rec.lang = "en-US";
+    rec.continuous = true;
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     vaRecRef.current = rec;
 
     rec.onstart = () => setIsVaListening(true);
     rec.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
+      const lastIdx = e.results.length - 1;
+      const transcript = e.results[lastIdx][0].transcript;
       setVaStatus(`"${transcript}"`);
-      handleVoiceTrackingCommand(transcript);
+      handleVoiceTrackingCommandRef.current?.(transcript);
     };
     rec.onerror = (e) => {
       if (e.error === "no-speech" || e.error === "aborted") return;
@@ -222,17 +254,19 @@ const RideTrackingPage = () => {
     rec.onend = () => {
       if (!vaManualStopRef.current) {
         setTimeout(() => {
-          try { rec.start(); } catch (_) {}
-        }, 500);
+          if (!vaManualStopRef.current && vaRecRef.current) {
+            try { vaRecRef.current.start(); } catch (_) {}
+          }
+        }, 400);
       } else {
         setIsVaListening(false);
       }
     };
 
     vaManualStopRef.current = false;
-    setTimeout(() => {
-      try { rec.start(); } catch (_) {}
-    }, 1500);
+    try {
+      rec.start();
+    } catch (_) {}
 
     return () => {
       vaManualStopRef.current = true;

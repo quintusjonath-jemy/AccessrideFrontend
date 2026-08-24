@@ -802,12 +802,39 @@ const BookingPage = () => {
   };
 
   const handleConfirmBooking = () => {
-    // Ensure pickup and dropoff locations are non-empty before sending payload
-    const effectivePickup = pickup.trim() || lastGeocodedPickupRef.current || "Current Location";
-    const effectiveDropoff = dropoff.trim();
+    // 1. Verify pickup, dropoff, and vehicle fields have valid values
+    const effectivePickup = pickup.trim() || lastGeocodedPickupRef.current || pickupRef.current;
+    const effectiveDropoff = dropoff.trim() || dropoffRef.current;
+    const effectiveVehicle = vehicleType || vTypeRef.current || "car";
 
+    // Validate Vehicle Selection
+    if (!effectiveVehicle) {
+      const msg = "Please select a vehicle type first.";
+      setStep(1);
+      speakWithFallback(msg);
+      return;
+    }
+
+    // Validate Pickup Location
+    if (!effectivePickup) {
+      const msg = "Please provide your pickup location.";
+      if (voiceModeActive) {
+        setVState(VSTATE.PICKUP);
+        vStateRef.current = VSTATE.PICKUP;
+        setVStatus("Where should we pick you up?");
+      }
+      speakWithFallback(msg);
+      return;
+    }
+
+    // Validate Destination (Dropoff)
     if (!effectiveDropoff) {
       const msg = "Please specify a destination before confirming your ride.";
+      if (voiceModeActive) {
+        setVState(VSTATE.DROPOFF);
+        vStateRef.current = VSTATE.DROPOFF;
+        setVStatus("Where are you going?");
+      }
       speakWithFallback(msg);
       return;
     }
@@ -819,7 +846,7 @@ const BookingPage = () => {
       user_id: userId,
       pickup_location: effectivePickup,
       dropoff_location: effectiveDropoff,
-      vehicle_type: vehicleType || "car",
+      vehicle_type: effectiveVehicle,
       distance_km: distance > 0 ? distance : 1.0,
       payment_method: paymentMethod || "cash",
       pickup_lat: pickupCoords ? pickupCoords[1] : 6.9271,
@@ -830,6 +857,8 @@ const BookingPage = () => {
       .then(res => {
         setIsBookingInProgress(false);
         if (res.data.success) {
+          speakWithFallback(`Ride confirmed to ${effectiveDropoff}. Finding a nearby driver for you.`);
+          // Move directly to the waiting / live tracking page
           navigate("/user/ride");
         } else {
           const errMsg = res.data.message || "Failed to book ride";

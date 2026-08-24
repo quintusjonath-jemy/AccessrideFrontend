@@ -462,6 +462,28 @@ export const VoiceAssistantButton = ({
           return;
         }
 
+        // ── TELL THE OTP / RIDE CONFIRMATION PIN ───────────────────────
+        if (
+          text.includes("otp") ||
+          text.includes("pin") ||
+          text.includes("code") ||
+          text.includes("passcode") ||
+          text.includes("confirm code") ||
+          text.includes("tell the otp") ||
+          text.includes("ride code")
+        ) {
+          speak("Checking your active ride OTP…");
+          const otpData = await fetchActiveRideOtp(userId);
+          if (otpData) {
+            speak(
+              `Your ride confirmation OTP is ${otpData.spokenOtp}. Please share this 4 digit code with your driver to start your ride.`
+            );
+          } else {
+            speak("You do not have an active ride at the moment. Say book a ride to request a trip.");
+          }
+          return;
+        }
+
         // ── MY RIDES / RIDE HISTORY ────────────────────────────────────
         if (
           text.includes("history") ||
