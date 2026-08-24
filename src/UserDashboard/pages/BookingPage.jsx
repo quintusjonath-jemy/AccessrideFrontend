@@ -130,11 +130,12 @@ const matchVehicleFromSpeech = (text) => {
 
 // ─── Voice guide states ───────────────────────────────────────────────────────
 const VSTATE = {
-  IDLE:       "IDLE",
-  VEHICLE:    "VEHICLE",    // waiting for vehicle type
-  PICKUP:     "PICKUP",     // waiting for pickup location
-  DROPOFF:    "DROPOFF",    // waiting for dropoff location
-  CONFIRMING: "CONFIRMING", // waiting for confirm / cancel
+  IDLE:            "IDLE",
+  VEHICLE:         "VEHICLE",         // waiting for vehicle type
+  PICKUP:          "PICKUP",          // waiting for pickup location
+  DROPOFF:         "DROPOFF",         // waiting for dropoff location
+  CONFIRM_DROPOFF: "CONFIRM_DROPOFF", // verifying first mapbox search result
+  CONFIRMING:      "CONFIRMING",      // waiting for confirm / cancel booking
 };
 
 // ─── Shared SpeechRecognition constructor ────────────────────────────────────
@@ -378,7 +379,7 @@ const BookingPage = () => {
       
       vSpeak(`Looking up ${cleaned} on Mapbox…`);
 
-      // Geocode and find exact place
+      // Geocode and pick first result from Mapbox search
       const prox = pickupCoords || null;
       resolveExactPlace(cleaned, prox).then((resolved) => {
         const finalDest = resolved ? resolved.placeName : cleaned;
@@ -390,12 +391,70 @@ const BookingPage = () => {
           setDropoffCoords(resolved.coordinates);
         }
 
+        setVState(VSTATE.CONFIRM_DROPOFF);
+        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
+        setVStatus(`Destination: ${displayName}?`);
+        vSpeak(
+          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
+        );
+      });
+      return;
+    }
+
+    // ── CONFIRM_DROPOFF step ──────────────────────────────────────────────────
+    if (cur === VSTATE.CONFIRM_DROPOFF) {
+      if (
+        text.includes("yes") ||
+        text.includes("correct") ||
+        text.includes("confirm") ||
+        text.includes("yeah") ||
+        text.includes("sure") ||
+        text.includes("right") ||
+        text.includes("okay") ||
+        text.includes("ok")
+      ) {
         setVState(VSTATE.CONFIRMING);
         vStateRef.current = VSTATE.CONFIRMING;
         setVStatus("Say confirm to book or cancel");
         const vehicle = vTypeRef.current;
+        const dest = dropoffRef.current;
         vSpeak(
-          `Found ${displayName}. Booking a ${vehicle} from ${pickupRef.current || 'your location'} to ${displayName}. Say confirm to book, or cancel to start over.`
+          `Great! Booking a ${vehicle} from ${pickupRef.current || 'your location'} to ${dest}. Say confirm to book, or cancel to start over.`
+        );
+        return;
+      }
+
+      // If user says "no" or provides a new destination directly
+      const cleaned = text
+        .replace(/^(no|not this|wrong|change|different|to|going to|take me to)\s+/i, "")
+        .trim();
+
+      if (!cleaned || cleaned === "no" || cleaned.length < 2) {
+        setVState(VSTATE.DROPOFF);
+        vStateRef.current = VSTATE.DROPOFF;
+        setVStatus("Where are you going?");
+        vSpeak("Okay, please tell me your destination again.");
+        return;
+      }
+
+      // User spoke a new destination name directly
+      vSpeak(`Looking up ${cleaned} on Mapbox…`);
+      const prox = pickupCoords || null;
+      resolveExactPlace(cleaned, prox).then((resolved) => {
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        setDropoff(finalDest);
+        dropoffRef.current = finalDest;
+        if (resolved?.coordinates) {
+          setDropoffCoords(resolved.coordinates);
+        }
+
+        setVState(VSTATE.CONFIRM_DROPOFF);
+        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
+        setVStatus(`Destination: ${displayName}?`);
+        vSpeak(
+          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
         );
       });
       return;
@@ -749,7 +808,6 @@ const BookingPage = () => {
 
     if (!effectiveDropoff) {
       const msg = "Please specify a destination before confirming your ride.";
-      alert(msg);
       speakWithFallback(msg);
       return;
     }
@@ -775,7 +833,6 @@ const BookingPage = () => {
           navigate("/user/ride");
         } else {
           const errMsg = res.data.message || "Failed to book ride";
-          alert(errMsg);
           speakWithFallback(errMsg);
         }
       })
@@ -783,7 +840,6 @@ const BookingPage = () => {
         setIsBookingInProgress(false);
         console.error("Booking error:", err);
         const errMsg = err.response?.data?.message || err.message || "An error occurred while confirming booking.";
-        alert(errMsg);
         speakWithFallback(errMsg);
       });
   };

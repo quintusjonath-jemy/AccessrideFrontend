@@ -19,6 +19,7 @@ const AGENT_BASE = `${API_BASE}/voiceassistant/agent.php`;
 const STATE = {
   IDLE: "IDLE",
   WAITING_DESTINATION: "WAITING_DESTINATION",
+  CONFIRMING_DESTINATION: "CONFIRMING_DESTINATION",
   WAITING_VEHICLE: "WAITING_VEHICLE",
   CONFIRMING_BOOKING: "CONFIRMING_BOOKING",
   EXECUTING_BOOKING: "EXECUTING_BOOKING",
@@ -564,9 +565,57 @@ export const VoiceAssistantButton = ({
         }
 
         speak(
-          `Found ${displayName}. Which vehicle would you like? Bike, three-wheeler, car, or van?`
+          `I found ${displayName}. Is this your destination? Say yes to continue, or tell me your destination again.`
         );
-        transition(STATE.WAITING_VEHICLE, "Which vehicle?");
+        transition(STATE.CONFIRMING_DESTINATION, `Destination: ${displayName}?`);
+        return;
+      }
+
+      // ══════════════════════════════════════════════════════════════════
+      // STATE: CONFIRMING_DESTINATION
+      // ══════════════════════════════════════════════════════════════════
+      if (currentState === STATE.CONFIRMING_DESTINATION) {
+        if (
+          text.includes("yes") ||
+          text.includes("correct") ||
+          text.includes("confirm") ||
+          text.includes("yeah") ||
+          text.includes("sure") ||
+          text.includes("right") ||
+          text.includes("okay") ||
+          text.includes("ok")
+        ) {
+          speak("Great! Which vehicle would you like? Bike, three-wheeler, car, or van?");
+          transition(STATE.WAITING_VEHICLE, "Which vehicle?");
+          return;
+        }
+
+        // If the user says "no" or provides a new destination directly
+        const cleaned = text
+          .replace(/^(no|not this|wrong|change|different|to|going to|take me to)\s+/i, "")
+          .trim();
+
+        if (!cleaned || cleaned === "no" || cleaned.length < 2) {
+          speak("Okay, please tell me your destination again.");
+          transition(STATE.WAITING_DESTINATION, "Where to?");
+          return;
+        }
+
+        // User spoke a new destination name directly (e.g. "Majestic City" or "No, Colombo Fort")
+        speak(`Looking up ${cleaned} on Mapbox…`);
+        const resolved = await resolveMapboxDestination(cleaned);
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        Memory.sessionSet("pending_destination", finalDest);
+        if (resolved?.coordinates) {
+          Memory.sessionSet("pending_dropoff_coords", JSON.stringify(resolved.coordinates));
+        }
+
+        speak(
+          `I found ${displayName}. Is this your destination? Say yes to continue, or tell me your destination again.`
+        );
+        transition(STATE.CONFIRMING_DESTINATION, `Destination: ${displayName}?`);
         return;
       }
 
