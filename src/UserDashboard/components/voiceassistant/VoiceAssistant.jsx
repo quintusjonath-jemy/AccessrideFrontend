@@ -141,6 +141,27 @@ const fetchLastRide = async (userId) => {
   return null;
 };
 
+// ─── Fetch Active Ride OTP for user ──────────────────────────────────────────
+const fetchActiveRideOtp = async (userId) => {
+  try {
+    const res = await fetch(`${API_BASE}/UserDashboard/api/active_ride.php?user_id=${userId}`);
+    const json = await res.json();
+    if (json.success && json.data && json.data.id) {
+      const rideId = json.data.id;
+      const otp = ((rideId * 127 + 3571) % 9000) + 1000;
+      return {
+        otp: otp.toString(),
+        spokenOtp: otp.toString().split("").join(", "),
+        driverName: json.data.driver_name || "your driver",
+        vehicleNumber: json.data.driver_vehicle_number || ""
+      };
+    }
+  } catch (e) {
+    console.warn("Failed to fetch active ride OTP:", e);
+  }
+  return null;
+};
+
 // ─── Match vehicle keyword from spoken text ───────────────────────────────────
 const matchVehicle = (text) => {
   for (const [keyword, type] of Object.entries(VEHICLE_KEYWORDS)) {
