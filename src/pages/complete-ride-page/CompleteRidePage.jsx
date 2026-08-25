@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -13,11 +13,11 @@ import { speakWithFallback } from "../../UserDashboard/components/voiceassistant
 // Helper to parse spoken star ratings
 const parseRatingFromSpeech = (text) => {
   const t = text.toLowerCase();
-  if (t.includes("5") || t.includes("five") || t.includes("excellent") || t.includes("great")) return 5;
+  if (t.includes("5") || t.includes("five") || t.includes("excellent") || t.includes("great") || t.includes("best") || t.includes("maximum")) return 5;
   if (t.includes("4") || t.includes("four") || t.includes("good")) return 4;
-  if (t.includes("3") || t.includes("three") || t.includes("okay") || t.includes("average")) return 3;
+  if (t.includes("3") || t.includes("three") || t.includes("okay") || t.includes("average") || t.includes("medium")) return 3;
   if (t.includes("2") || t.includes("two") || t.includes("bad") || t.includes("poor")) return 2;
-  if (t.includes("1") || t.includes("one") || t.includes("terrible") || t.includes("worst")) return 1;
+  if (t.includes("1") || t.includes("one") || t.includes("terrible") || t.includes("worst") || t.includes("minimum")) return 1;
   return null;
 };
 
@@ -33,6 +33,31 @@ const CompleteRidePage = () => {
   const [, setLoading] = useState(true);
 
   const tabs = ['All', 'Upcoming', 'Completed', 'Cancelled'];
+  const recRef = useRef(null);
+  const manualStopRef = useRef(false);
+  const isSpeakingRef = useRef(false);
+
+  const speak = (text, onFinish) => {
+    isSpeakingRef.current = true;
+    if (recRef.current) {
+      try { recRef.current.stop(); } catch (_) {}
+    }
+    speakWithFallback(
+      text,
+      () => setIsListening(false),
+      () => {
+        isSpeakingRef.current = false;
+        if (!manualStopRef.current && recRef.current) {
+          setTimeout(() => {
+            if (!manualStopRef.current && !isSpeakingRef.current && recRef.current) {
+              try { recRef.current.start(); } catch (_) {}
+            }
+          }, 300);
+        }
+        if (onFinish) onFinish();
+      }
+    );
+  };
 
   const handleRating = useCallback((value) => {
     setRating(value);
@@ -44,13 +69,10 @@ const CompleteRidePage = () => {
       .then(res => {
         if (res.data?.success) {
           setIsRated(true);
-        } else {
-          alert(res.data.message || "Failed to submit rating");
         }
       })
       .catch(err => {
         console.error("Error submitting rating:", err);
-        alert("An error occurred while submitting your rating.");
       });
     } else {
       setTimeout(() => {
@@ -58,6 +80,11 @@ const CompleteRidePage = () => {
       }, 500);
     }
   }, [ride]);
+
+  const handleRatingRef = useRef(handleRating);
+  useEffect(() => {
+    handleRatingRef.current = handleRating;
+  }, [handleRating]);
 
   useEffect(() => {
     const userId = sessionStorage.getItem("user_id") || "1";
@@ -86,24 +113,47 @@ const CompleteRidePage = () => {
       });
   }, []);
 
-  // Voice Assistant Rating Prompt Effect on Ride Completion
+  // Voice Assistant: Always-On Continuous Speech Recognition & Rating
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
 
     const rec = new SpeechRecognition();
     rec.lang = "en-US";
+    rec.continuous = true;
     rec.interimResults = false;
     rec.maxAlternatives = 1;
+    recRef.current = rec;
 
+    rec.onstart = () => setIsListening(true);
     rec.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
+      const lastIdx = e.results.length - 1;
+      const transcript = e.results[lastIdx][0].transcript.toLowerCase().trim();
+
+      // Check for navigation commands
+      if (transcript.includes("go home") || transcript.includes("dashboard") || transcript.includes("main menu") || transcript.includes("done")) {
+        speak("Heading back to your dashboard.");
+        setTimeout(() => navigate('/user/dashboard'), 1000);
+        return;
+      }
+      if (transcript.includes("book") || transcript.includes("new ride")) {
+        speak("Opening booking page.");
+        setTimeout(() => navigate('/user/booking', { state: { voiceMode: true, step: 1 } }), 1000);
+        return;
+      }
+      if (transcript.includes("history") || transcript.includes("my ride")) {
+        speak("Opening your ride history.");
+        setTimeout(() => navigate('/user/history'), 1000);
+        return;
+      }
+
+      // Check for 1 to 5 star ratings
       const stars = parseRatingFromSpeech(transcript);
       if (stars) {
-        handleRating(stars);
-        speakWithFallback(`Thank you! You rated your driver ${stars} ${stars === 1 ? "star" : "stars"}.`);
+        handleRatingRef.current(stars);
+        speak(`Thank you! You rated your driver ${stars} ${stars === 1 ? "star" : "stars"}.`);
       } else {
-        speakWithFallback("Please say a rating from 1 to 5 stars.");
+        speak("Please say a rating from 1 to 5 stars, or say dashboard to return home.");
       }
     };
 
@@ -111,38 +161,53 @@ const CompleteRidePage = () => {
       if (e.error === "no-speech" || e.error === "aborted") return;
     };
 
-    // Prompt user for rating after arrival
+    rec.onend = () => {
+      if (!manualStopRef.current && !isSpeakingRef.current) {
+        setTimeout(() => {
+          if (!manualStopRef.current && !isSpeakingRef.current && recRef.current) {
+            try { recRef.current.start(); } catch (_) {}
+          }
+        }, 300);
+      } else {
+        setIsListening(false);
+      }
+    };
+
+    manualStopRef.current = false;
+    
+    // Initial arrival prompt & start listening
     const timer = setTimeout(() => {
-      speakWithFallback(
-        "Thank you for riding with AccessRide! Your trip is complete. Please rate your driver from 1 to 5 stars.",
-        null,
-        () => {
-          try { rec.start(); } catch { /* ignore */ }
-        }
+      speak(
+        "Thank you for riding with AccessRide! Your trip is complete. Please rate your driver from 1 to 5 stars."
       );
-    }, 1200);
+    }, 800);
 
     return () => {
       clearTimeout(timer);
+      manualStopRef.current = true;
       rec.abort();
     };
-  }, [ride?.id, handleRating]);
+  }, [navigate]);
 
   const handleMicClick = () => {
-    setIsListening(true);
-    setTimeout(() => {
+    if (!recRef.current) return;
+    if (isListening) {
+      manualStopRef.current = true;
       setIsListening(false);
-      alert("Voice command recorded! Searching for your next ride...");
-    }, 3000);
+      try { recRef.current.stop(); } catch (_) {}
+    } else {
+      manualStopRef.current = false;
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      try { recRef.current.start(); } catch (_) {}
+    }
   };
 
   const handleDone = () => {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      alert("Redirecting to Home view...");
-      navigate('/user');
-    }, 800);
+      navigate('/user/dashboard');
+    }, 400);
   };
 
   // Format ride details from the fetched database record (or fallback to mockup data)
