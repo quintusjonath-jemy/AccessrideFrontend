@@ -19,6 +19,7 @@ const AGENT_BASE = `${API_BASE}/voiceassistant/agent.php`;
 const STATE = {
   IDLE: "IDLE",
   WAITING_DESTINATION: "WAITING_DESTINATION",
+  CONFIRMING_DESTINATION: "CONFIRMING_DESTINATION",
   WAITING_VEHICLE: "WAITING_VEHICLE",
   CONFIRMING_BOOKING: "CONFIRMING_BOOKING",
   EXECUTING_BOOKING: "EXECUTING_BOOKING",
@@ -140,10 +141,58 @@ const fetchLastRide = async (userId) => {
   return null;
 };
 
+// ─── Fetch Active Ride OTP for user ──────────────────────────────────────────
+const fetchActiveRideOtp = async (userId) => {
+  try {
+    const res = await fetch(`${API_BASE}/UserDashboard/api/active_ride.php?user_id=${userId}`);
+    const json = await res.json();
+    if (json.success && json.data && json.data.id) {
+      const rideId = json.data.id;
+      const otp = ((rideId * 127 + 3571) % 9000) + 1000;
+      return {
+        otp: otp.toString(),
+        spokenOtp: otp.toString().split("").join(", "),
+        driverName: json.data.driver_name || "your driver",
+        vehicleNumber: json.data.driver_vehicle_number || ""
+      };
+    }
+  } catch (e) {
+    console.warn("Failed to fetch active ride OTP:", e);
+  }
+  return null;
+};
+
 // ─── Match vehicle keyword from spoken text ───────────────────────────────────
 const matchVehicle = (text) => {
   for (const [keyword, type] of Object.entries(VEHICLE_KEYWORDS)) {
     if (text.includes(keyword)) return type;
+  }
+  return null;
+};
+
+// ─── Resolve spoken destination to exact Mapbox location ───────────────────────
+const resolveMapboxDestination = async (query) => {
+  if (!query || query.trim().length < 2) return null;
+  const token = import.meta.env.VITE_MAPBOX_TOKEN || "";
+  const proxLng = 79.8612;
+  const proxLat = 6.9271; // Colombo default proximity
+
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      query
+    )}.json?access_token=${token}&country=lk&proximity=${proxLng},${proxLat}&types=poi,address,neighborhood,locality,place&limit=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data?.features && data.features.length > 0) {
+      const top = data.features[0];
+      return {
+        placeName: top.place_name,
+        shortName: top.text || top.place_name,
+        coordinates: top.geometry.coordinates, // [lng, lat]
+      };
+    }
+  } catch (err) {
+    console.warn("Mapbox destination lookup error:", err);
   }
   return null;
 };
@@ -164,8 +213,11 @@ export const VoiceAssistantButton = ({
   const recognitionRef = useRef(null);
   const agentStateRef = useRef(STATE.IDLE); // always up-to-date in callbacks
   const manualStopRef = useRef(false);      // ALWAYS ON by default for blind users
+  const isListeningRef = useRef(false);     // track if recognition is currently active
+  const isSpeakingRef = useRef(false);      // track if TTS is currently speaking
+  const handleCommandRef = useRef(null);
 
-  // Keep ref in sync with state
+  // Keep refs in sync with state
   useEffect(() => {
     agentStateRef.current = agentState;
   }, [agentState]);
@@ -177,20 +229,27 @@ export const VoiceAssistantButton = ({
   // ── Speak helper that pauses mic while speaking then resumes ───────────────
   const speak = useCallback((text) => {
     setStatusText(text.length > 50 ? text.slice(0, 47) + "…" : text);
-    // Pause recognition while assistant speaks so mic doesn't hear computer speaker
-    if (recognitionRef.current) {
+    isSpeakingRef.current = true;
+    setIsSpeaking(true);
+
+    // Temporarily pause recognition so mic doesn't hear computer speaker
+    if (recognitionRef.current && isListeningRef.current) {
       try { recognitionRef.current.stop(); } catch (_) {}
     }
+
     speakWithFallback(
       text,
-      () => setIsSpeaking(true),
+      null,
       () => {
+        isSpeakingRef.current = false;
         setIsSpeaking(false);
-        // Resume listening after TTS finishes if user hasn't manually stopped
-        if (!manualStopRef.current && recognitionRef.current) {
+        // Resume listening after TTS finishes
+        if (!manualStopRef.current && recognitionRef.current && !isListeningRef.current) {
           setTimeout(() => {
-            try { recognitionRef.current.start(); } catch (_) {}
-          }, 300);
+            if (!manualStopRef.current && !isSpeakingRef.current && !isListeningRef.current && recognitionRef.current) {
+              try { recognitionRef.current.start(); } catch (_) {}
+            }
+          }, 200);
         }
       }
     );
@@ -334,35 +393,68 @@ export const VoiceAssistantButton = ({
           return;
         }
 
-        // ── BOOK A RIDE / BOOK IT ──────────────────────────────────────
+        // ── BOOK A RIDE / BOOK IT / VEHICLE STEP ──────────────────────
         if (
-          text.includes("book a ride") ||
-          text.includes("book ride") ||
+          text.includes("book") ||
           text.includes("i want a ride") ||
           text.includes("i need a ride") ||
           text.includes("get me a ride") ||
-          text.includes("go to booking")
+          text.includes("new ride") ||
+          text.includes("vehicle")
         ) {
-          speak("Opening booking page. Please say where you want to go or choose your vehicle.");
-          navigate("/user/booking", { state: { voiceMode: true } });
+          const toMatch = text.match(/(?:to|for|going to|drop me at|drop me to|i want to go to)\s+(.+)/i);
+          if (toMatch && toMatch[1].trim().length > 1) {
+            const rawDest = toMatch[1].trim();
+            speak(`Looking up ${rawDest} on Mapbox…`);
+            const resolved = await resolveMapboxDestination(rawDest);
+            const finalDest = resolved ? resolved.placeName : rawDest;
+            const displayName = resolved ? resolved.shortName : rawDest;
+
+            Memory.sessionSet("pending_destination", finalDest);
+            if (resolved?.coordinates) {
+              Memory.sessionSet("pending_dropoff_coords", JSON.stringify(resolved.coordinates));
+            }
+            speak(
+              `Found ${displayName}. Opening booking page to choose vehicle.`
+            );
+            setTimeout(() => {
+              navigate("/user/booking", {
+                state: { voiceMode: true, voiceDestination: finalDest, step: 1 },
+              });
+            }, 1000);
+            resetToIdle();
+            return;
+          }
+
+          speak("Opening booking page. Which vehicle would you like? Car, van, bike, or three wheeler?");
+          navigate("/user/booking", { state: { voiceMode: true, step: 1 } });
           resetToIdle();
           return;
         }
 
         // ── SCHEDULE A RIDE ────────────────────────────────────────────
-        if (text.includes("schedule") || text.includes("later") || text.includes("tomorrow")) {
-          speak("Sure, let's schedule a ride. What date? For example, say today, tomorrow, or a specific date.");
-          transition(STATE.WAITING_SCHEDULE_DATE, "Which date?");
+        if (
+          text.includes("schedule") ||
+          text.includes("later") ||
+          text.includes("tomorrow") ||
+          text.includes("future ride") ||
+          text.includes("plan ride")
+        ) {
+          speak("Opening schedule ride page.");
+          navigate("/user/schedule");
+          resetToIdle();
           return;
         }
 
-        // ── TRACK DRIVER ───────────────────────────────────────────────
+        // ── TRACK DRIVER / RIDE STATUS ─────────────────────────────────
         if (
           text.includes("track") ||
           text.includes("where is my driver") ||
           text.includes("driver location") ||
           text.includes("where is the driver") ||
-          text.includes("ride status")
+          text.includes("ride status") ||
+          text.includes("current ride") ||
+          text.includes("active ride")
         ) {
           speak("Opening live ride tracking.");
           navigate("/user/ride");
@@ -370,12 +462,40 @@ export const VoiceAssistantButton = ({
           return;
         }
 
-        // ── HISTORY ────────────────────────────────────────────────────
+        // ── TELL THE OTP / RIDE CONFIRMATION PIN ───────────────────────
+        if (
+          text.includes("otp") ||
+          text.includes("pin") ||
+          text.includes("code") ||
+          text.includes("passcode") ||
+          text.includes("confirm code") ||
+          text.includes("tell the otp") ||
+          text.includes("ride code")
+        ) {
+          speak("Checking your active ride OTP…");
+          const otpData = await fetchActiveRideOtp(userId);
+          if (otpData) {
+            speak(
+              `Your ride confirmation OTP is ${otpData.spokenOtp}. Please share this 4 digit code with your driver to start your ride.`
+            );
+          } else {
+            speak("You do not have an active ride at the moment. Say book a ride to request a trip.");
+          }
+          return;
+        }
+
+        // ── MY RIDES / RIDE HISTORY ────────────────────────────────────
         if (
           text.includes("history") ||
+          text.includes("my ride") ||
           text.includes("my rides") ||
+          text.includes("previous ride") ||
           text.includes("previous rides") ||
-          text.includes("past rides")
+          text.includes("past ride") ||
+          text.includes("past rides") ||
+          text.includes("my trip") ||
+          text.includes("my trips") ||
+          text.includes("trips")
         ) {
           speak("Opening your ride history.");
           navigate("/user/history");
@@ -384,25 +504,54 @@ export const VoiceAssistantButton = ({
         }
 
         // ── NOTIFICATIONS ──────────────────────────────────────────────
-        if (text.includes("notification") || text.includes("alerts") || text.includes("messages")) {
+        if (
+          text.includes("notification") ||
+          text.includes("notifications") ||
+          text.includes("alerts") ||
+          text.includes("messages") ||
+          text.includes("inbox")
+        ) {
           speak("Opening your notifications.");
           navigate("/user/notifications");
           resetToIdle();
           return;
         }
 
-        // ── PROFILE ────────────────────────────────────────────────────
-        if (text.includes("profile") || text.includes("account") || text.includes("my profile")) {
+        // ── PROFILE & SETTINGS ─────────────────────────────────────────
+        if (
+          text.includes("profile") ||
+          text.includes("account") ||
+          text.includes("my profile") ||
+          text.includes("my account") ||
+          text.includes("settings")
+        ) {
           speak("Opening your profile settings.");
           navigate("/user/profile");
           resetToIdle();
           return;
         }
 
+        // ── EMERGENCY SOS ──────────────────────────────────────────────
+        if (
+          text.includes("sos") ||
+          text.includes("emergency") ||
+          text.includes("help me") ||
+          text.includes("police") ||
+          text.includes("danger")
+        ) {
+          speak("Opening emergency SOS screen.");
+          navigate("/user/sos");
+          resetToIdle();
+          return;
+        }
+
         // ── DASHBOARD / HOME (navigation, not ride) ────────────────────
         if (
-          (text.includes("go home") || text.includes("dashboard") || text.includes("main menu") || text.includes("home page")) &&
-          !text.includes("ride")
+          text.includes("go home") ||
+          text.includes("dashboard") ||
+          text.includes("main menu") ||
+          text.includes("home page") ||
+          text.includes("home")
         ) {
           speak("Heading back to the dashboard.");
           navigate("/user/dashboard");
@@ -439,7 +588,7 @@ export const VoiceAssistantButton = ({
       if (currentState === STATE.WAITING_DESTINATION) {
         // Strip leading filler words
         const cleaned = text
-          .replace(/^(to|going to|i want to go to|drop me at|take me to)\s+/i, "")
+          .replace(/^(to|going to|i want to go to|drop me at|drop me to|take me to|take me)\s+/i, "")
           .trim();
 
         if (!cleaned || cleaned.length < 2) {
@@ -447,11 +596,69 @@ export const VoiceAssistantButton = ({
           return;
         }
 
-        Memory.sessionSet("pending_destination", cleaned);
+        speak(`Looking up ${cleaned} on Mapbox…`);
+
+        const resolved = await resolveMapboxDestination(cleaned);
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        Memory.sessionSet("pending_destination", finalDest);
+        if (resolved?.coordinates) {
+          Memory.sessionSet("pending_dropoff_coords", JSON.stringify(resolved.coordinates));
+        }
+
         speak(
-          `${cleaned}. Which vehicle would you like? Bike, three-wheeler, car, or van?`
+          `I found ${displayName}. Is this your destination? Say yes to continue, or tell me your destination again.`
         );
-        transition(STATE.WAITING_VEHICLE, "Which vehicle?");
+        transition(STATE.CONFIRMING_DESTINATION, `Destination: ${displayName}?`);
+        return;
+      }
+
+      // ══════════════════════════════════════════════════════════════════
+      // STATE: CONFIRMING_DESTINATION
+      // ══════════════════════════════════════════════════════════════════
+      if (currentState === STATE.CONFIRMING_DESTINATION) {
+        if (
+          text.includes("yes") ||
+          text.includes("correct") ||
+          text.includes("confirm") ||
+          text.includes("yeah") ||
+          text.includes("sure") ||
+          text.includes("right") ||
+          text.includes("okay") ||
+          text.includes("ok")
+        ) {
+          speak("Great! Which vehicle would you like? Bike, three-wheeler, car, or van?");
+          transition(STATE.WAITING_VEHICLE, "Which vehicle?");
+          return;
+        }
+
+        // If the user says "no" or provides a new destination directly
+        const cleaned = text
+          .replace(/^(no|not this|wrong|change|different|to|going to|take me to)\s+/i, "")
+          .trim();
+
+        if (!cleaned || cleaned === "no" || cleaned.length < 2) {
+          speak("Okay, please tell me your destination again.");
+          transition(STATE.WAITING_DESTINATION, "Where to?");
+          return;
+        }
+
+        // User spoke a new destination name directly (e.g. "Majestic City" or "No, Colombo Fort")
+        speak(`Looking up ${cleaned} on Mapbox…`);
+        const resolved = await resolveMapboxDestination(cleaned);
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        Memory.sessionSet("pending_destination", finalDest);
+        if (resolved?.coordinates) {
+          Memory.sessionSet("pending_dropoff_coords", JSON.stringify(resolved.coordinates));
+        }
+
+        speak(
+          `I found ${displayName}. Is this your destination? Say yes to continue, or tell me your destination again.`
+        );
+        transition(STATE.CONFIRMING_DESTINATION, `Destination: ${displayName}?`);
         return;
       }
 
@@ -604,6 +811,10 @@ export const VoiceAssistantButton = ({
     [navigate, speak, transition, resetToIdle, userId, pageName]
   );
 
+  useEffect(() => {
+    handleCommandRef.current = handleCommand;
+  }, [handleCommand]);
+
   // ── Set up Web Speech Recognition (Always-On Engine) ──────────────────────
   useEffect(() => {
     if (!SpeechRecognition) {
@@ -613,46 +824,43 @@ export const VoiceAssistantButton = ({
 
     const rec = new SpeechRecognition();
     rec.lang = "en-US";
+    rec.continuous = true; // Keep mic stream alive continuously without flapping
     rec.interimResults = false;
     rec.maxAlternatives = 1;
 
     rec.onstart = () => {
+      isListeningRef.current = true;
       setIsListening(true);
       setStatusText("Listening…");
     };
 
     rec.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
+      const lastResultIndex = event.results.length - 1;
+      const transcript = event.results[lastResultIndex][0].transcript;
       setStatusText(`"${transcript}"`);
-      handleCommand(transcript);
+      handleCommandRef.current?.(transcript);
     };
 
     rec.onerror = (event) => {
-      // 'no-speech' is expected when user is quiet — restart quietly
-      if (event.error === "no-speech") {
-        if (!manualStopRef.current) {
-          try { rec.start(); } catch (_) {}
-        }
+      // 'no-speech' and 'aborted' are normal lifecycle events — ignore in continuous mode
+      if (event.error === "no-speech" || event.error === "aborted") {
         return;
       }
-      console.error("Speech Recognition Error:", event.error);
-      setIsListening(false);
-      setStatusText("Mic error. Tap to try again.");
+      console.warn("Speech recognition notice:", event.error);
     };
 
     rec.onend = () => {
-      // Auto-restart mic unless the user manually tapped to stop
-      if (!manualStopRef.current) {
-        // Small delay so TTS can start before we listen again
+      isListeningRef.current = false;
+      // Auto-restart mic unless the user manually stopped or assistant is speaking
+      if (!manualStopRef.current && !isSpeakingRef.current) {
         setTimeout(() => {
-          try {
-            rec.start();
-          } catch (_) {
-            // Already running — ignore
+          if (!manualStopRef.current && !isSpeakingRef.current && !isListeningRef.current && recognitionRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (_) {}
           }
         }, 300);
-      } else {
-        // User tapped stop — stay off
+      } else if (manualStopRef.current) {
         setIsListening(false);
         setStatusText(
           agentStateRef.current === STATE.IDLE ? "Tap to speak" : statusText
@@ -661,23 +869,46 @@ export const VoiceAssistantButton = ({
     };
 
     recognitionRef.current = rec;
+    manualStopRef.current = false;
+
+    // Start listening immediately on mount
+    try {
+      rec.start();
+    } catch (_) {}
+
+    // Auto-unlock mic on first user interaction if browser enforces autoplay policy
+    const autoUnlock = () => {
+      if (!manualStopRef.current && !isSpeakingRef.current && !isListeningRef.current && recognitionRef.current) {
+        try {
+          recognitionRef.current.start();
+        } catch (_) {}
+      }
+    };
+    window.addEventListener("click", autoUnlock, { once: true });
+    window.addEventListener("touchstart", autoUnlock, { once: true });
+
     return () => {
+      window.removeEventListener("click", autoUnlock);
+      window.removeEventListener("touchstart", autoUnlock);
       manualStopRef.current = true;
+      isListeningRef.current = false;
       recognitionRef.current?.abort();
     };
-  }, [handleCommand]);
+  }, []);
 
   const toggleListen = () => {
     if (!recognitionRef.current) return;
-    if (isListening) {
-      // User wants to stop — set flag so onend doesn't restart
+    if (isListeningRef.current) {
       manualStopRef.current = true;
-      recognitionRef.current.stop();
+      isListeningRef.current = false;
+      setIsListening(false);
+      try { recognitionRef.current.stop(); } catch (_) {}
     } else {
-      // User wants to start — clear flag so onend auto-restarts
       manualStopRef.current = false;
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-      recognitionRef.current.start();
+      if (!isListeningRef.current) {
+        try { recognitionRef.current.start(); } catch (_) {}
+      }
     }
   };
 

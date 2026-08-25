@@ -46,6 +46,28 @@ const geocodeLocation = async (query, proximity = null) => {
   } catch (err) {
     console.error("Geocoding error for: " + query, err);
   }
+};
+
+// Resolve place name to exact Mapbox address and coordinates
+const resolveExactPlace = async (query, proximity = null) => {
+  if (!query || query.trim().length < 2) return null;
+  const [proxLng, proxLat] = proximity || [COLOMBO_LNG, COLOMBO_LAT];
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      query
+    )}.json?access_token=${MAPBOX_TOKEN}&country=lk&proximity=${proxLng},${proxLat}&types=poi,address,neighborhood,locality,place&limit=1`;
+    const res = await axios.get(url);
+    if (res.data?.features && res.data.features.length > 0) {
+      const top = res.data.features[0];
+      return {
+        placeName: top.place_name,
+        shortName: top.text || top.place_name,
+        coordinates: top.geometry.coordinates, // [lng, lat]
+      };
+    }
+  } catch (err) {
+    console.error("Mapbox resolveExactPlace error:", err);
+  }
   return null;
 };
 
@@ -108,11 +130,12 @@ const matchVehicleFromSpeech = (text) => {
 
 // ─── Voice guide states ───────────────────────────────────────────────────────
 const VSTATE = {
-  IDLE:       "IDLE",
-  VEHICLE:    "VEHICLE",    // waiting for vehicle type
-  PICKUP:     "PICKUP",     // waiting for pickup location
-  DROPOFF:    "DROPOFF",    // waiting for dropoff location
-  CONFIRMING: "CONFIRMING", // waiting for confirm / cancel
+  IDLE:            "IDLE",
+  VEHICLE:         "VEHICLE",         // waiting for vehicle type
+  PICKUP:          "PICKUP",          // waiting for pickup location
+  DROPOFF:         "DROPOFF",         // waiting for dropoff location
+  CONFIRM_DROPOFF: "CONFIRM_DROPOFF", // verifying first mapbox search result
+  CONFIRMING:      "CONFIRMING",      // waiting for confirm / cancel booking
 };
 
 // ─── Shared SpeechRecognition constructor ────────────────────────────────────
@@ -236,6 +259,56 @@ const BookingPage = () => {
       return;
     }
 
+    // ── Global Voice Page Navigation ─────────────────────────────────────────
+    if (
+      text.includes("my ride") ||
+      text.includes("history") ||
+      text.includes("past ride") ||
+      text.includes("previous ride") ||
+      text.includes("my trip") ||
+      text.includes("trips")
+    ) {
+      vSpeak("Opening your ride history.");
+      navigate("/user/history");
+      return;
+    }
+
+    if (text.includes("schedule") || text.includes("later") || text.includes("tomorrow")) {
+      vSpeak("Opening schedule ride page.");
+      navigate("/user/schedule");
+      return;
+    }
+
+    if (text.includes("track") || text.includes("where is my driver") || text.includes("driver location") || text.includes("active ride")) {
+      vSpeak("Opening live ride tracking.");
+      navigate("/user/ride");
+      return;
+    }
+
+    if (text.includes("profile") || text.includes("account") || text.includes("settings")) {
+      vSpeak("Opening your profile settings.");
+      navigate("/user/profile");
+      return;
+    }
+
+    if (text.includes("notification") || text.includes("alerts") || text.includes("messages")) {
+      vSpeak("Opening your notifications.");
+      navigate("/user/notifications");
+      return;
+    }
+
+    if (text.includes("sos") || text.includes("emergency") || text.includes("help me")) {
+      vSpeak("Opening emergency SOS.");
+      navigate("/user/sos");
+      return;
+    }
+
+    if (text.includes("go home") || text.includes("dashboard") || text.includes("main menu") || text === "home") {
+      vSpeak("Heading back to the dashboard.");
+      navigate("/user/dashboard");
+      return;
+    }
+
     // ── VEHICLE step ─────────────────────────────────────────────────────────
     if (cur === VSTATE.VEHICLE) {
       const v = matchVehicleFromSpeech(text);
@@ -249,6 +322,18 @@ const BookingPage = () => {
       setStep(2);
       stepRef.current = 2;
       requestGPS();
+
+      if (voiceDestination) {
+        // Destination was already provided via voice
+        setDropoff(voiceDestination);
+        dropoffRef.current = voiceDestination;
+        setVState(VSTATE.CONFIRMING);
+        vStateRef.current = VSTATE.CONFIRMING;
+        setVStatus("Say confirm to book or cancel");
+        vSpeak(`${v} selected. Booking to ${voiceDestination}. Say confirm to book, or cancel to start over.`);
+        return;
+      }
+
       // Go straight to asking for destination
       setVState(VSTATE.DROPOFF);
       vStateRef.current = VSTATE.DROPOFF;
@@ -286,20 +371,92 @@ const BookingPage = () => {
 
     // ── DROPOFF step ─────────────────────────────────────────────────────────
     if (cur === VSTATE.DROPOFF) {
-      const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff)\s+/i, "").trim();
+      const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff|take me to|take me)\s+/i, "").trim();
       if (!cleaned || cleaned.length < 2) {
         vSpeak("I didn't catch that. Please say your destination.");
         return;
       }
-      setDropoff(cleaned);
-      dropoffRef.current = cleaned;
-      setVState(VSTATE.CONFIRMING);
-      vStateRef.current = VSTATE.CONFIRMING;
-      setVStatus("Say confirm to book or cancel");
-      const vehicle = vTypeRef.current;
-      vSpeak(
-        `Great! Booking a ${vehicle} from ${pickupRef.current || cleaned} to ${cleaned}. Say confirm to book, or cancel to start over.`
-      );
+      
+      vSpeak(`Looking up ${cleaned} on Mapbox…`);
+
+      // Geocode and pick first result from Mapbox search
+      const prox = pickupCoords || null;
+      resolveExactPlace(cleaned, prox).then((resolved) => {
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        setDropoff(finalDest);
+        dropoffRef.current = finalDest;
+        if (resolved?.coordinates) {
+          setDropoffCoords(resolved.coordinates);
+        }
+
+        setVState(VSTATE.CONFIRM_DROPOFF);
+        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
+        setVStatus(`Destination: ${displayName}?`);
+        vSpeak(
+          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
+        );
+      });
+      return;
+    }
+
+    // ── CONFIRM_DROPOFF step ──────────────────────────────────────────────────
+    if (cur === VSTATE.CONFIRM_DROPOFF) {
+      if (
+        text.includes("yes") ||
+        text.includes("correct") ||
+        text.includes("confirm") ||
+        text.includes("yeah") ||
+        text.includes("sure") ||
+        text.includes("right") ||
+        text.includes("okay") ||
+        text.includes("ok")
+      ) {
+        setVState(VSTATE.CONFIRMING);
+        vStateRef.current = VSTATE.CONFIRMING;
+        setVStatus("Say confirm to book or cancel");
+        const vehicle = vTypeRef.current;
+        const dest = dropoffRef.current;
+        vSpeak(
+          `Great! Booking a ${vehicle} from ${pickupRef.current || 'your location'} to ${dest}. Say confirm to book, or cancel to start over.`
+        );
+        return;
+      }
+
+      // If user says "no" or provides a new destination directly
+      const cleaned = text
+        .replace(/^(no|not this|wrong|change|different|to|going to|take me to)\s+/i, "")
+        .trim();
+
+      if (!cleaned || cleaned === "no" || cleaned.length < 2) {
+        setVState(VSTATE.DROPOFF);
+        vStateRef.current = VSTATE.DROPOFF;
+        setVStatus("Where are you going?");
+        vSpeak("Okay, please tell me your destination again.");
+        return;
+      }
+
+      // User spoke a new destination name directly
+      vSpeak(`Looking up ${cleaned} on Mapbox…`);
+      const prox = pickupCoords || null;
+      resolveExactPlace(cleaned, prox).then((resolved) => {
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        setDropoff(finalDest);
+        dropoffRef.current = finalDest;
+        if (resolved?.coordinates) {
+          setDropoffCoords(resolved.coordinates);
+        }
+
+        setVState(VSTATE.CONFIRM_DROPOFF);
+        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
+        setVStatus(`Destination: ${displayName}?`);
+        vSpeak(
+          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
+        );
+      });
       return;
     }
 
@@ -325,13 +482,15 @@ const BookingPage = () => {
 
     const rec = new SpeechRecognition();
     rec.lang = "en-US";
+    rec.continuous = true;
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     vRecRef.current = rec;
 
     rec.onstart  = () => setVListening(true);
     rec.onresult = (e) => {
-      const t = e.results[0][0].transcript;
+      const lastIdx = e.results.length - 1;
+      const t = e.results[lastIdx][0].transcript;
       setVStatus(`"${t}"`);
       handleVCommand(t);
     };
@@ -643,13 +802,39 @@ const BookingPage = () => {
   };
 
   const handleConfirmBooking = () => {
-    // Ensure pickup and dropoff locations are non-empty before sending payload
-    const effectivePickup = pickup.trim() || lastGeocodedPickupRef.current || "Current Location";
-    const effectiveDropoff = dropoff.trim();
+    // 1. Verify pickup, dropoff, and vehicle fields have valid values
+    const effectivePickup = pickup.trim() || lastGeocodedPickupRef.current || pickupRef.current;
+    const effectiveDropoff = dropoff.trim() || dropoffRef.current;
+    const effectiveVehicle = vehicleType || vTypeRef.current || "car";
 
+    // Validate Vehicle Selection
+    if (!effectiveVehicle) {
+      const msg = "Please select a vehicle type first.";
+      setStep(1);
+      speakWithFallback(msg);
+      return;
+    }
+
+    // Validate Pickup Location
+    if (!effectivePickup) {
+      const msg = "Please provide your pickup location.";
+      if (voiceModeActive) {
+        setVState(VSTATE.PICKUP);
+        vStateRef.current = VSTATE.PICKUP;
+        setVStatus("Where should we pick you up?");
+      }
+      speakWithFallback(msg);
+      return;
+    }
+
+    // Validate Destination (Dropoff)
     if (!effectiveDropoff) {
       const msg = "Please specify a destination before confirming your ride.";
-      alert(msg);
+      if (voiceModeActive) {
+        setVState(VSTATE.DROPOFF);
+        vStateRef.current = VSTATE.DROPOFF;
+        setVStatus("Where are you going?");
+      }
       speakWithFallback(msg);
       return;
     }
@@ -661,7 +846,7 @@ const BookingPage = () => {
       user_id: userId,
       pickup_location: effectivePickup,
       dropoff_location: effectiveDropoff,
-      vehicle_type: vehicleType || "car",
+      vehicle_type: effectiveVehicle,
       distance_km: distance > 0 ? distance : 1.0,
       payment_method: paymentMethod || "cash",
       pickup_lat: pickupCoords ? pickupCoords[1] : 6.9271,
@@ -672,10 +857,11 @@ const BookingPage = () => {
       .then(res => {
         setIsBookingInProgress(false);
         if (res.data.success) {
+          speakWithFallback(`Ride confirmed to ${effectiveDropoff}. Finding a nearby driver for you.`);
+          // Move directly to the waiting / live tracking page
           navigate("/user/ride");
         } else {
           const errMsg = res.data.message || "Failed to book ride";
-          alert(errMsg);
           speakWithFallback(errMsg);
         }
       })
@@ -683,7 +869,6 @@ const BookingPage = () => {
         setIsBookingInProgress(false);
         console.error("Booking error:", err);
         const errMsg = err.response?.data?.message || err.message || "An error occurred while confirming booking.";
-        alert(errMsg);
         speakWithFallback(errMsg);
       });
   };

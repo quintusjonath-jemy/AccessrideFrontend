@@ -77,7 +77,6 @@ const MonthlyReport = () => {
   const [emailSending, setEmailSending] = useState(false);
   const [emailMsg, setEmailMsg] = useState("");
   const [emailStatus, setEmailStatus] = useState(""); // "success" | "error" | "info"
-  const [emailDebug, setEmailDebug] = useState([]);
 
   useEffect(() => {
     axios.get(`${API_BASE}/admin/api/admin.php`)
@@ -104,13 +103,11 @@ const MonthlyReport = () => {
     if (!email) {
       setEmailMsg("Please enter a valid email address.");
       setEmailStatus("error");
-      setEmailDebug([]);
       return;
     }
     setEmailSending(true);
     setEmailMsg("");
     setEmailStatus("");
-    setEmailDebug([]);
     axios.post(`${API_BASE}/admin/api/send_report_email.php`, {
       email,
       year: selYear,
@@ -120,17 +117,14 @@ const MonthlyReport = () => {
         if (res.data?.success) {
           setEmailMsg(res.data.message || "Report email sent!");
           setEmailStatus(res.data.mail_sent ? "success" : "info");
-          setEmailDebug(res.data.debug || []);
         } else {
           setEmailMsg(res.data?.message || "Failed to send email.");
           setEmailStatus("error");
-          setEmailDebug(res.data.debug || []);
         }
       })
       .catch(() => {
         setEmailMsg("Failed to reach email API.");
         setEmailStatus("error");
-        setEmailDebug([]);
       })
       .finally(() => setEmailSending(false));
   };
@@ -239,29 +233,25 @@ const MonthlyReport = () => {
 
       {/* ── EMAIL STATUS MESSAGE ── */}
       {emailMsg && (
-        <div className={`p-5 rounded-2xl border text-sm font-medium transition-all ${
+        <div className={`p-4 rounded-2xl border text-sm font-medium flex items-center justify-between transition-all ${
           emailStatus === "success" 
             ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/40 text-green-700 dark:text-green-400" 
             : emailStatus === "info"
-            ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/40 text-blue-750 dark:text-blue-400"
+            ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/40 text-blue-700 dark:text-blue-400"
             : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400"
         }`}>
-          <div className="flex gap-2 items-start">
+          <div className="flex gap-2.5 items-center">
             <span className="text-base leading-none">
               {emailStatus === "success" ? "✓" : emailStatus === "info" ? "ℹ" : "⚠"}
             </span>
-            <div className="flex-1 space-y-2">
-              <p>{emailMsg}</p>
-              {emailDebug && emailDebug.length > 0 && (
-                <div className="mt-3 p-3 bg-black/5 dark:bg-black/25 rounded-xl text-xs font-mono max-h-48 overflow-y-auto space-y-1 border border-black/5">
-                  <p className="font-bold border-b border-black/10 pb-1 mb-1 text-[10px] uppercase tracking-wider">SMTP Debug Diagnostics:</p>
-                  {emailDebug.map((log, i) => (
-                    <p key={i} className="opacity-85">{log}</p>
-                  ))}
-                </div>
-              )}
-            </div>
+            <p>{emailMsg}</p>
           </div>
+          <button 
+            onClick={() => setEmailMsg("")}
+            className="text-xs opacity-60 hover:opacity-100 font-bold px-2 py-1"
+          >
+            ✕
+          </button>
         </div>
       )}
 

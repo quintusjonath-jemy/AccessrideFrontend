@@ -150,12 +150,12 @@ const App = () => {
               <Route path="profile" element={<UserProfilePage />} />
               <Route path="notifications" element={<NotificationsPage />} />
             </Route>
-            <Route path="/ride" element={<RidePage />} />
             <Route path="/complete-ride" element={<CompleteRidePage />} />
           </Route>
 
           {/* Protected Driver Routes */}
           <Route element={<DriverProtectedRoute />}>
+            <Route path="/ride" element={<RidePage />} />
             <Route element={<DriverLayout />}>
               <Route path="/driver-dashboard" element={<DriverDashboard />} />
               <Route path="/driver-trips" element={<DriverTrips />} />
