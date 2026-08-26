@@ -166,14 +166,24 @@ const RideTrackingPage = () => {
       return;
     }
 
-    // 4. Distance / Location Query
-    if (text.includes("distance") || text.includes("how far") || text.includes("where")) {
+    // 4. Distance / Location / ETA Query
+    if (
+      text.includes("distance") ||
+      text.includes("how far") ||
+      text.includes("where") ||
+      text.includes("remaining") ||
+      text.includes("how much left") ||
+      text.includes("destination") ||
+      text.includes("reach") ||
+      text.includes("eta") ||
+      text.includes("how long")
+    ) {
       if (currentRide && currentRide.status === "active") {
-        const distStr = displayDistance !== null ? `${displayDistance.toFixed(1)} kilometers` : "short distance";
-        vaSpeak(`You are ${distStr} away from your destination.`);
+        const distStr = displayDistance !== null ? `${displayDistance.toFixed(1)} kilometers` : "a short distance";
+        vaSpeak(`You are currently ${distStr} away from your destination.`);
       } else if (currentRide) {
         const distStr = displayDistance !== null ? `${displayDistance.toFixed(1)} kilometers` : "nearby";
-        vaSpeak(`Your driver is ${distStr} away from your location.`);
+        vaSpeak(`Your driver is ${distStr} away from your pickup location.`);
       } else {
         vaSpeak("Location details are currently loading.");
       }
@@ -182,7 +192,7 @@ const RideTrackingPage = () => {
 
     // 5. Help
     if (text.includes("help") || text.includes("what can you do")) {
-      vaSpeak("You can ask: Tell the OTP, How much is the fare, Who is my driver, or Where is my driver.");
+      vaSpeak("You can ask: What is the remaining distance, Tell the OTP, How much is the fare, or Who is my driver.");
       return;
     }
   }, [displayDistance]);
@@ -211,12 +221,15 @@ const RideTrackingPage = () => {
       vaSpeak(`Your driver ${dName} has reached your location! Please share your OTP code.`);
     }
 
-    // 3. In-transit 1km Distance Milestone Updates
+    // 3. In-transit Distance Milestone Updates (every 1 km and 500m final stretch)
     if (ride.status === "active" && displayDistance !== null && displayDistance > 0) {
       const currentKm = Math.floor(displayDistance);
       if (currentKm > 0 && (lastAnnouncedKmRef.current === null || currentKm < lastAnnouncedKmRef.current)) {
         lastAnnouncedKmRef.current = currentKm;
         vaSpeak(`${currentKm} ${currentKm === 1 ? "kilometer" : "kilometers"} remaining to your destination.`);
+      } else if (displayDistance <= 0.5 && lastAnnouncedKmRef.current !== 0) {
+        lastAnnouncedKmRef.current = 0;
+        vaSpeak("Approaching your destination. About 500 meters remaining.");
       }
     }
 
