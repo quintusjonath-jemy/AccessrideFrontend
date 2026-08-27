@@ -73,20 +73,32 @@ export const speakWithFallback = async (text, onStart, onEnd) => {
       { signal, credentials: 'include' }  // credentials: send session cookie
     );
 
-    if (response.ok) {
+    const contentType = response.headers.get("content-type") || "";
+    if (response.ok && contentType.includes("audio")) {
       const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      currentAudio = audio;
+      if (blob && blob.size > 100) {
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        currentAudio = audio;
 
-      if (onStart) onStart();
-      audio.onended = () => {
-        URL.revokeObjectURL(url);
-        if (currentAudio === audio) currentAudio = null;
-        if (onEnd) onEnd();
-      };
-      await audio.play();
-      return;
+        if (onStart) onStart();
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          if (currentAudio === audio) currentAudio = null;
+          if (onEnd) onEnd();
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(url);
+          if (currentAudio === audio) currentAudio = null;
+        };
+        try {
+          await audio.play();
+          return;
+        } catch (playErr) {
+          URL.revokeObjectURL(url);
+          if (currentAudio === audio) currentAudio = null;
+        }
+      }
     }
   } catch (err) {
     if (err.name === "AbortError") return;

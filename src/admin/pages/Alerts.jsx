@@ -32,7 +32,7 @@ const Alerts = () => {
     const audio = new Audio(
       "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
     );
-    audio.play();
+    audio.play().catch(() => {});
   };
 
   useEffect(() => {
