@@ -473,6 +473,24 @@ export const VoiceAssistantButton = ({
           text.includes("plan ride") ||
           text.includes("book advance")
         ) {
+          const toMatch = text.match(/(?:to|for|going to|drop me at|drop me to|i want to go to)\s+(.+)/i);
+          if (toMatch && toMatch[1].trim().length > 1) {
+            const rawDest = toMatch[1].trim();
+            speak(`Looking up ${rawDest} on Mapbox…`);
+            const resolved = await resolveMapboxDestination(rawDest);
+            const finalDest = resolved ? resolved.placeName : rawDest;
+            const displayName = resolved ? resolved.shortName : rawDest;
+
+            speak(`I found ${displayName}. Opening schedule ride to choose vehicle and confirm.`);
+            setTimeout(() => {
+              navigate("/user/schedule", {
+                state: { activeTab: "form", voiceMode: true, voiceDestination: finalDest, step: 1 }
+              });
+            }, 1000);
+            resetToIdle();
+            return;
+          }
+
           speak("Opening schedule ride. Which vehicle would you like? Car, van, bike, or three wheeler?");
           navigate("/user/schedule", { state: { activeTab: "form", voiceMode: true, step: 1 } });
           resetToIdle();
