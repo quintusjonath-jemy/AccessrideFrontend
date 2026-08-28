@@ -33,8 +33,26 @@ const Dashboard = () => {
         setLoading(false);
       });
 
+    axios.get(`${API_BASE}/admin/api/rides.php`)
+      .then((res) => {
+        setRides(Array.isArray(res.data) ? res.data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Dashboard rides fetch error:", err);
+      });
+
+    axios.get(`${API_BASE}/admin/api/alerts.php`)
+      .then((res) => {
+        setAlerts(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
+        console.error("Dashboard alerts fetch error:", err);
+      });
+
     axios.get(`${API_BASE}/admin/api/dashboard_stats.php`)
-      .then((res) => setStats(res.data));
+      .then((res) => setStats(res.data))
+      .catch((err) => console.error("Dashboard stats fetch error:", err));
 
     const eventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=all`);
 

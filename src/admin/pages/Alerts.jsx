@@ -36,6 +36,16 @@ const Alerts = () => {
   };
 
   useEffect(() => {
+    axios.get(`${API_BASE}/admin/api/alerts.php`)
+      .then((res) => {
+        setAlerts(Array.isArray(res.data) ? res.data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Alerts initial fetch error:", err);
+        setLoading(false);
+      });
+
     const eventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=alerts`);
 
     eventSource.onmessage = (event) => {
