@@ -1,30 +1,58 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, UserCircle, CalendarRange, Clock } from "lucide-react";
 import axios from "axios";
 
 import ScheduleForm from "../components/ScheduleForm";
 import ScheduledRidesList from "../components/ScheduledRidesList";
 import API_BASE from "../../config/api";
+import { speakWithFallback } from "../components/voiceassistant/VoiceAssistant";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("form"); // "form" or "list"
+  const location = useLocation();
+  const initialTab = location.state?.activeTab || "form";
+  const [activeTab, setActiveTab] = useState(initialTab); // "form" or "list"
   const [scheduledRides, setScheduledRides] = useState([]);
   const [editingRide, setEditingRide] = useState(null);
+  const hasSpokenListRef = useRef(false);
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state?.activeTab]);
 
   useEffect(() => {
     const userId = sessionStorage.getItem("user_id") || "1";
     axios.get(`${API_BASE}/UserDashboard/api/schedule.php?user_id=${userId}`)
       .then(res => {
         if (res.data.success && res.data.data !== null) {
-          setScheduledRides(res.data.data || []);
+          const list = Array.isArray(res.data.data) ? res.data.data : [];
+          setScheduledRides(list);
+
+          // If requested via voice command ("show my schedule list"), read schedules one by one
+          if (location.state?.readSchedules && !hasSpokenListRef.current) {
+            hasSpokenListRef.current = true;
+            if (list.length === 0) {
+              speakWithFallback("You don't have any upcoming scheduled rides.");
+            } else {
+              let speechText = `You have ${list.length} upcoming scheduled ${list.length === 1 ? "ride" : "rides"}. `;
+              list.forEach((ride, idx) => {
+                const vehicle = ride.vehicle_type || ride.wheelchair_type || "Vehicle";
+                const dateStr = ride.ride_date || "Upcoming time";
+                const dest = ride.dropoff_location || "Destination";
+                speechText += `Schedule ${idx + 1}: ${vehicle} to ${dest} on ${dateStr}. `;
+              });
+              speakWithFallback(speechText);
+            }
+          }
         }
       })
       .catch(err => {
         console.error("Error loading schedules:", err);
       });
-  }, []);
+  }, [location.state?.readSchedules]);
 
   const handleAddSchedule = (newRide) => {
     setScheduledRides((prev) => [newRide, ...prev]);
@@ -124,6 +152,7 @@ const SchedulePage = () => {
                 onScheduleUpdated={handleUpdateSchedule}
                 editingRide={editingRide}
                 onCancelEdit={handleCancelEdit}
+                initialState={location.state}
               />
             ) : (
               <ScheduledRidesList
