@@ -6,7 +6,7 @@ import axios from "axios";
 import ScheduleForm from "../components/ScheduleForm";
 import ScheduledRidesList from "../components/ScheduledRidesList";
 import API_BASE from "../../config/api";
-import { speakWithFallback } from "../components/voiceassistant/VoiceAssistant";
+import { VoiceAssistantButton, speakWithFallback } from "../components/voiceassistant/VoiceAssistant";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -114,6 +114,14 @@ const SchedulePage = () => {
               <UserCircle size={28} />
             </button>
           </header>
+
+          {/* Voice Assistant UI below Header */}
+          <div className="px-5 mb-5">
+            <VoiceAssistantButton
+              pageName="Schedule"
+              welcomePrompt="Schedule a ride or say show my schedule list to hear your scheduled trips."
+            />
+          </div>
 
           {/* Tab Switcher */}
           <div className="px-5 mb-5">
