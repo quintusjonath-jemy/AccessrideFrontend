@@ -949,6 +949,46 @@ export const VoiceAssistantButton = ({
   const isWaitingForInput =
     agentState !== STATE.IDLE && agentState !== STATE.EXECUTING_BOOKING;
 
+  // ── Floating Button Design ─────────────────────────────────────────────
+  if (floating) {
+    return (
+      <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-2 select-none pointer-events-auto">
+        {/* Status Bubble */}
+        {(isListening || isWaitingForInput || isSpeaking) && (
+          <div className="bg-white/95 backdrop-blur-md border border-slate-200 shadow-xl px-3 py-1.5 rounded-2xl max-w-[200px] text-right animate-fade-in">
+            <p className="text-[11px] font-bold text-[#0B2F89] truncate">
+              {isSpeaking ? "Speaking…" : statusText}
+            </p>
+          </div>
+        )}
+
+        {/* Floating Mic Button */}
+        <button
+          onClick={toggleListen}
+          disabled={agentState === STATE.EXECUTING_BOOKING}
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 border-2 cursor-pointer focus:outline-none focus:ring-4 focus:ring-yellow-400
+            ${isListening
+              ? "bg-red-500 border-red-200 text-white animate-pulse scale-105"
+              : isWaitingForInput
+              ? "bg-[#0B2F89] border-blue-200 text-white hover:scale-105"
+              : agentState === STATE.EXECUTING_BOOKING
+              ? "bg-slate-300 border-slate-200 text-slate-500 cursor-not-allowed"
+              : "bg-[#FEC329] border-white text-slate-900 hover:scale-105 shadow-yellow-500/30"
+            }`}
+          aria-label={isListening ? "Voice Assistant Listening" : "Start Voice Assistant"}
+        >
+          {agentState === STATE.EXECUTING_BOOKING ? (
+            <Loader size={22} className="animate-spin" />
+          ) : isListening ? (
+            <Mic size={22} className="animate-pulse" />
+          ) : (
+            <MicOff size={22} />
+          )}
+        </button>
+      </div>
+    );
+  }
+
   // ── Original Classic Card Design ─────────────────────────────────────────
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-3xl shadow-sm max-w-sm mx-auto">
