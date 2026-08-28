@@ -405,7 +405,62 @@ export const VoiceAssistantButton = ({
           return;
         }
 
-        // ── BOOK A RIDE / BOOK IT / VEHICLE STEP ──────────────────────
+        // ── SHOW SCHEDULE LIST / READ SCHEDULES ────────────────────────
+        if (
+          text.includes("schedule list") ||
+          text.includes("my schedule") ||
+          text.includes("my schedules") ||
+          text.includes("show schedule") ||
+          text.includes("show my schedule") ||
+          text.includes("read my schedule") ||
+          text.includes("read schedule") ||
+          text.includes("list schedule") ||
+          text.includes("scheduled rides") ||
+          text.includes("scheduled trips") ||
+          text.includes("view schedule")
+        ) {
+          speak("Opening your schedule list.");
+          navigate("/user/schedule", { state: { activeTab: "list", readSchedules: true } });
+          resetToIdle();
+          return;
+        }
+
+        // ── SCHEDULE A RIDE / BOOK ADVANCE (Priority) ──────────────────
+        if (
+          pageName === "Schedule" ||
+          text.includes("book advance") ||
+          text.includes("book advanced") ||
+          text.includes("schedule") ||
+          text.includes("later") ||
+          text.includes("tomorrow") ||
+          text.includes("future ride") ||
+          text.includes("plan ride")
+        ) {
+          const toMatch = text.match(/(?:to|for|going to|drop me at|drop me to|i want to go to)\s+(.+)/i);
+          if (toMatch && toMatch[1].trim().length > 1) {
+            const rawDest = toMatch[1].trim();
+            speak(`Looking up ${rawDest} on Mapbox…`);
+            const resolved = await resolveMapboxDestination(rawDest);
+            const finalDest = resolved ? resolved.placeName : rawDest;
+            const displayName = resolved ? resolved.shortName : rawDest;
+
+            speak(`I found ${displayName}. Guiding you through Book Advance to choose vehicle and schedule your ride.`);
+            setTimeout(() => {
+              navigate("/user/schedule", {
+                state: { activeTab: "form", voiceMode: true, voiceDestination: finalDest, step: 1 }
+              });
+            }, 1000);
+            resetToIdle();
+            return;
+          }
+
+          speak("Welcome to Book Advance. Which vehicle would you like to schedule? Car, van, bike, or three wheeler?");
+          navigate("/user/schedule", { state: { activeTab: "form", voiceMode: true, step: 1 } });
+          resetToIdle();
+          return;
+        }
+
+        // ── BOOK A RIDE / INSTANT BOOKING ───────────────────────────────
         if (
           text.includes("book") ||
           text.includes("i want a ride") ||
@@ -440,59 +495,6 @@ export const VoiceAssistantButton = ({
 
           speak("Opening booking page. Which vehicle would you like? Car, van, bike, or three wheeler?");
           navigate("/user/booking", { state: { voiceMode: true, step: 1 } });
-          resetToIdle();
-          return;
-        }
-
-        // ── SHOW SCHEDULE LIST / READ SCHEDULES ────────────────────────
-        if (
-          text.includes("schedule list") ||
-          text.includes("my schedule") ||
-          text.includes("my schedules") ||
-          text.includes("show schedule") ||
-          text.includes("show my schedule") ||
-          text.includes("read my schedule") ||
-          text.includes("read schedule") ||
-          text.includes("list schedule") ||
-          text.includes("scheduled rides") ||
-          text.includes("scheduled trips") ||
-          text.includes("view schedule")
-        ) {
-          speak("Opening your schedule list.");
-          navigate("/user/schedule", { state: { activeTab: "list", readSchedules: true } });
-          resetToIdle();
-          return;
-        }
-
-        // ── SCHEDULE A RIDE ────────────────────────────────────────────
-        if (
-          text.includes("schedule") ||
-          text.includes("later") ||
-          text.includes("tomorrow") ||
-          text.includes("future ride") ||
-          text.includes("plan ride") ||
-          text.includes("book advance")
-        ) {
-          const toMatch = text.match(/(?:to|for|going to|drop me at|drop me to|i want to go to)\s+(.+)/i);
-          if (toMatch && toMatch[1].trim().length > 1) {
-            const rawDest = toMatch[1].trim();
-            speak(`Looking up ${rawDest} on Mapbox…`);
-            const resolved = await resolveMapboxDestination(rawDest);
-            const finalDest = resolved ? resolved.placeName : rawDest;
-            const displayName = resolved ? resolved.shortName : rawDest;
-
-            speak(`I found ${displayName}. Opening schedule ride to choose vehicle and confirm.`);
-            setTimeout(() => {
-              navigate("/user/schedule", {
-                state: { activeTab: "form", voiceMode: true, voiceDestination: finalDest, step: 1 }
-              });
-            }, 1000);
-            resetToIdle();
-            return;
-          }
-
-          speak("Opening schedule ride. Which vehicle would you like? Car, van, bike, or three wheeler?");
-          navigate("/user/schedule", { state: { activeTab: "form", voiceMode: true, step: 1 } });
           resetToIdle();
           return;
         }
