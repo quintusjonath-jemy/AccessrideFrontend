@@ -7,6 +7,7 @@ import LocationInputs from "./LocationInputs";
 import VehicleSelection from "./VehicleSelection";
 import PaymentSelection from "./PaymentSelection";
 import API_BASE from "../../config/api";
+import { speakWithFallback } from "./voiceassistant/VoiceAssistant";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
@@ -76,16 +77,30 @@ const calculateDistance = async (pickup, dropoff) => {
   return fallbackDistance;
 };
 
-const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCancelEdit }) => {
-  const [step, setStep] = useState(1); // Step 1: Vehicle selection, Step 2: Date, Time & Route
-  const [vehicleType, setVehicleType] = useState("");
-  const [pickup, setPickup] = useState("My Current Location (Central Library)");
-  const [dropoff, setDropoff] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCancelEdit, initialState = {} }) => {
+  const [step, setStep] = useState(initialState?.step || 1); // Step 1: Vehicle selection, Step 2: Date, Time & Route
+  const [vehicleType, setVehicleType] = useState(initialState?.voiceVehicle || "");
+  const [pickup, setPickup] = useState(initialState?.pickup || "My Current Location (Central Library)");
+  const [dropoff, setDropoff] = useState(initialState?.voiceDestination || initialState?.dropoff || "");
+  const [date, setDate] = useState(initialState?.voiceDate || "");
+  const [time, setTime] = useState(initialState?.voiceTime || "");
   const [distanceVal, setDistanceVal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isScheduling, setIsScheduling] = useState(false);
+
+  // Refs for voice recognition callbacks
+  const stepRef = useRef(step);
+  const vehicleTypeRef = useRef(vehicleType);
+  const dropoffRef = useRef(dropoff);
+  const dateRef = useRef(date);
+  const timeRef = useRef(time);
+  const handleSubmitRef = useRef(null);
+
+  useEffect(() => { stepRef.current = step; }, [step]);
+  useEffect(() => { vehicleTypeRef.current = vehicleType; }, [vehicleType]);
+  useEffect(() => { dropoffRef.current = dropoff; }, [dropoff]);
+  useEffect(() => { dateRef.current = date; }, [date]);
+  useEffect(() => { timeRef.current = time; }, [time]);
 
   const handlePickerClick = (e) => {
     try {
@@ -123,16 +138,16 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       }
       setStep(2); // Go straight to step 2 since we already have fields pre-loaded
     } else {
-      setStep(1);
-      setVehicleType("");
-      setPickup("My Current Location (Central Library)");
-      setDropoff("");
-      setDate("");
-      setTime("");
+      setStep(initialState?.step || 1);
+      setVehicleType(initialState?.voiceVehicle || "");
+      setPickup(initialState?.pickup || "My Current Location (Central Library)");
+      setDropoff(initialState?.voiceDestination || initialState?.dropoff || "");
+      setDate(initialState?.voiceDate || "");
+      setTime(initialState?.voiceTime || "");
       setDistanceVal(0);
       setPaymentMethod("cash");
     }
-  }, [editingRide]);
+  }, [editingRide, initialState]);
 
   // Fetch coordinates, route, and calculate distance (finding the shortest alternative route)
   useEffect(() => {
@@ -350,6 +365,10 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
             });
           }
 
+          if (initialState?.voiceMode) {
+            speakWithFallback("Your ride has been successfully scheduled!");
+          }
+
           // Reset form
           setStep(1);
           setVehicleType("");
@@ -367,6 +386,87 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
         alert("An error occurred. Please check database connectivity and try again.");
       });
   };
+
+  handleSubmitRef.current = handleScheduleSubmit;
+
+  // Voice Mode Guided Scheduling Effect
+  useEffect(() => {
+    if (!initialState?.voiceMode) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    let recognition = null;
+    try {
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+
+      recognition.onresult = async (event) => {
+        const lastIdx = event.results.length - 1;
+        const transcript = (event.results[lastIdx][0].transcript || "").toLowerCase().trim();
+
+        // 1. Select vehicle if on step 1 or not yet chosen
+        if (stepRef.current === 1 || !vehicleTypeRef.current) {
+          let chosen = null;
+          if (transcript.includes("car") || transcript.includes("sedan")) chosen = "car";
+          else if (transcript.includes("van")) chosen = "van";
+          else if (transcript.includes("three") || transcript.includes("tuk")) chosen = "three wheeler";
+          else if (transcript.includes("bike") || transcript.includes("motorcycle")) chosen = "bike";
+
+          if (chosen) {
+            setVehicleType(chosen);
+            vehicleTypeRef.current = chosen;
+            setStep(2);
+            stepRef.current = 2;
+            speakWithFallback(`Selected ${chosen}. What is your destination?`);
+            return;
+          }
+        }
+
+        // 2. Destination input
+        if (stepRef.current === 2 && !dropoffRef.current) {
+          const dest = transcript.replace(/^(to|take me to|go to|set destination to|schedule to)\s+/i, "").trim();
+          if (dest.length > 1 && !dest.includes("confirm") && !dest.includes("yes")) {
+            setDropoff(dest);
+            dropoffRef.current = dest;
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split("T")[0];
+            const defTime = "10:00";
+            if (!dateRef.current) {
+              setDate(tomorrowStr);
+              dateRef.current = tomorrowStr;
+            }
+            if (!timeRef.current) {
+              setTime(defTime);
+              timeRef.current = defTime;
+            }
+
+            speakWithFallback(`Destination set to ${dest}. Scheduled for tomorrow at 10:00 AM. Say confirm to schedule your ride.`);
+            return;
+          }
+        }
+
+        // 3. Confirmation
+        if (transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("schedule it") || transcript.includes("book")) {
+          handleSubmitRef.current?.();
+        }
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.warn("Schedule voice recognition error:", err);
+    }
+
+    return () => {
+      if (recognition) {
+        try { recognition.stop(); } catch (_) {}
+      }
+    };
+  }, [initialState?.voiceMode]);
 
   return (
     <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100 shadow-sm">

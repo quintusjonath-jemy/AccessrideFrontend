@@ -444,16 +444,37 @@ export const VoiceAssistantButton = ({
           return;
         }
 
+        // ── SHOW SCHEDULE LIST / READ SCHEDULES ────────────────────────
+        if (
+          text.includes("schedule list") ||
+          text.includes("my schedule") ||
+          text.includes("my schedules") ||
+          text.includes("show schedule") ||
+          text.includes("show my schedule") ||
+          text.includes("read my schedule") ||
+          text.includes("read schedule") ||
+          text.includes("list schedule") ||
+          text.includes("scheduled rides") ||
+          text.includes("scheduled trips") ||
+          text.includes("view schedule")
+        ) {
+          speak("Opening your schedule list.");
+          navigate("/user/schedule", { state: { activeTab: "list", readSchedules: true } });
+          resetToIdle();
+          return;
+        }
+
         // ── SCHEDULE A RIDE ────────────────────────────────────────────
         if (
           text.includes("schedule") ||
           text.includes("later") ||
           text.includes("tomorrow") ||
           text.includes("future ride") ||
-          text.includes("plan ride")
+          text.includes("plan ride") ||
+          text.includes("book advance")
         ) {
-          speak("Opening schedule ride page.");
-          navigate("/user/schedule");
+          speak("Opening schedule ride. Which vehicle would you like? Car, van, bike, or three wheeler?");
+          navigate("/user/schedule", { state: { activeTab: "form", voiceMode: true, step: 1 } });
           resetToIdle();
           return;
         }
