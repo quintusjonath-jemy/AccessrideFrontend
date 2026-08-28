@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Calendar, Clock, AlertCircle } from "lucide-react";
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
@@ -11,6 +12,60 @@ import { speakWithFallback } from "./voiceassistant/VoiceAssistant";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAPBOX_TOKEN = mapboxgl.accessToken;
+
+// ─── Vehicle keyword matching (matching BookingPage) ─────────────────────────
+const matchVehicleFromSpeech = (text) => {
+  const t = text.toLowerCase();
+  if (t.includes("van")) return "van";
+  if (t.includes("three wheeler") || t.includes("three-wheeler") || t.includes("three") ||
+      t.includes("tuk") || t.includes("auto") || t.includes("rickshaw") || t.includes("wheeler")) {
+    return "three wheeler";
+  }
+  if (t.includes("bike") || t.includes("motor") || t.includes("moto") || t.includes("cycle")) {
+    return "bike";
+  }
+  if (t.includes("car") || t.includes("sedan") || t.includes("cab") || t.includes("taxi") || t.includes("vehicle") || t.includes("ride")) {
+    return "car";
+  }
+  return null;
+};
+
+// ─── Voice Guide States ───────────────────────────────────────────────────────
+const VSTATE = {
+  IDLE: "IDLE",
+  VEHICLE: "VEHICLE",
+  DROPOFF: "DROPOFF",
+  CONFIRM_DROPOFF: "CONFIRM_DROPOFF",
+  DATE_TIME: "DATE_TIME",
+  CONFIRMING: "CONFIRMING",
+  SCHEDULING: "SCHEDULING",
+};
+
+// ─── Shared SpeechRecognition constructor ────────────────────────────────────
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+// Resolve place name to exact Mapbox address and coordinates
+const resolveExactPlace = async (query) => {
+  if (!query || query.trim().length < 2) return null;
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      query
+    )}.json?access_token=${MAPBOX_TOKEN}&country=lk&proximity=79.8612,6.9271&types=poi,address,neighborhood,locality,place&limit=1`;
+    const res = await axios.get(url);
+    if (res.data?.features && res.data.features.length > 0) {
+      const top = res.data.features[0];
+      return {
+        placeName: top.place_name,
+        shortName: top.text || top.place_name,
+        coordinates: top.geometry.coordinates, // [lng, lat]
+      };
+    }
+  } catch (err) {
+    console.error("Mapbox resolveExactPlace error in ScheduleForm:", err);
+  }
+  return null;
+};
 
 // Geocode a location text to [longitude, latitude]
 const geocodeLocation = async (query) => {
@@ -78,6 +133,9 @@ const calculateDistance = async (pickup, dropoff) => {
 };
 
 const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCancelEdit, initialState = {} }) => {
+  const navigate = useNavigate();
+  const voiceModeActive = !!initialState?.voiceMode;
+
   const [step, setStep] = useState(initialState?.step || 1); // Step 1: Vehicle selection, Step 2: Date, Time & Route
   const [vehicleType, setVehicleType] = useState(initialState?.voiceVehicle || "");
   const [pickup, setPickup] = useState(initialState?.pickup || "My Current Location (Central Library)");
@@ -88,9 +146,18 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isScheduling, setIsScheduling] = useState(false);
 
-  // Refs for voice recognition callbacks
+  // ── Voice Guide State (matching BookingPage) ───────────────────────────────
+  const [vState, setVState] = useState(VSTATE.IDLE);
+  const [vListening, setVListening] = useState(false);
+  const [vStatus, setVStatus] = useState("");
+  const vStateRef = useRef(VSTATE.IDLE);
+  const vRecRef = useRef(null);
+  const vStopRef = useRef(false);
+
+  // Refs for state synchronization in callbacks
   const stepRef = useRef(step);
   const vehicleTypeRef = useRef(vehicleType);
+  const pickupRef = useRef(pickup);
   const dropoffRef = useRef(dropoff);
   const dateRef = useRef(date);
   const timeRef = useRef(time);
@@ -98,9 +165,29 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
 
   useEffect(() => { stepRef.current = step; }, [step]);
   useEffect(() => { vehicleTypeRef.current = vehicleType; }, [vehicleType]);
+  useEffect(() => { pickupRef.current = pickup; }, [pickup]);
   useEffect(() => { dropoffRef.current = dropoff; }, [dropoff]);
   useEffect(() => { dateRef.current = date; }, [date]);
   useEffect(() => { timeRef.current = time; }, [time]);
+  useEffect(() => { vStateRef.current = vState; }, [vState]);
+
+  // ── Helper to speak TTS and pause mic while speaking to avoid audio feedback ──
+  const vSpeak = useCallback((text) => {
+    if (vRecRef.current) {
+      try { vRecRef.current.stop(); } catch (_) {}
+    }
+    speakWithFallback(
+      text,
+      () => setVListening(false),
+      () => {
+        if (!vStopRef.current && vRecRef.current) {
+          setTimeout(() => {
+            try { vRecRef.current.start(); } catch (_) {}
+          }, 300);
+        }
+      }
+    );
+  }, []);
 
   const handlePickerClick = (e) => {
     try {
@@ -366,7 +453,7 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
           }
 
           if (initialState?.voiceMode) {
-            speakWithFallback("Your ride has been successfully scheduled!");
+            vSpeak("Your ride has been successfully scheduled!");
           }
 
           // Reset form
@@ -389,84 +476,237 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
 
   handleSubmitRef.current = handleScheduleSubmit;
 
-  // Voice Mode Guided Scheduling Effect
-  useEffect(() => {
-    if (!initialState?.voiceMode) return;
+  // ── Voice Guide Command Handler (Matching BookingPage architecture) ────────
+  const handleVCommand = useCallback((rawText) => {
+    const text = rawText.toLowerCase().trim();
+    const cur = vStateRef.current;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    console.log(`[ScheduleVoiceGuide] State: ${cur} | Heard: "${text}"`);
 
-    let recognition = null;
-    try {
-      recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false;
-      recognition.lang = "en-US";
-
-      recognition.onresult = async (event) => {
-        const lastIdx = event.results.length - 1;
-        const transcript = (event.results[lastIdx][0].transcript || "").toLowerCase().trim();
-
-        // 1. Select vehicle if on step 1 or not yet chosen
-        if (stepRef.current === 1 || !vehicleTypeRef.current) {
-          let chosen = null;
-          if (transcript.includes("car") || transcript.includes("sedan")) chosen = "car";
-          else if (transcript.includes("van")) chosen = "van";
-          else if (transcript.includes("three") || transcript.includes("tuk")) chosen = "three wheeler";
-          else if (transcript.includes("bike") || transcript.includes("motorcycle")) chosen = "bike";
-
-          if (chosen) {
-            setVehicleType(chosen);
-            vehicleTypeRef.current = chosen;
-            setStep(2);
-            stepRef.current = 2;
-            speakWithFallback(`Selected ${chosen}. What is your destination?`);
-            return;
-          }
-        }
-
-        // 2. Destination input
-        if (stepRef.current === 2 && !dropoffRef.current) {
-          const dest = transcript.replace(/^(to|take me to|go to|set destination to|schedule to)\s+/i, "").trim();
-          if (dest.length > 1 && !dest.includes("confirm") && !dest.includes("yes")) {
-            setDropoff(dest);
-            dropoffRef.current = dest;
-
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split("T")[0];
-            const defTime = "10:00";
-            if (!dateRef.current) {
-              setDate(tomorrowStr);
-              dateRef.current = tomorrowStr;
-            }
-            if (!timeRef.current) {
-              setTime(defTime);
-              timeRef.current = defTime;
-            }
-
-            speakWithFallback(`Destination set to ${dest}. Scheduled for tomorrow at 10:00 AM. Say confirm to schedule your ride.`);
-            return;
-          }
-        }
-
-        // 3. Confirmation
-        if (transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("schedule it") || transcript.includes("book")) {
-          handleSubmitRef.current?.();
-        }
-      };
-
-      recognition.start();
-    } catch (err) {
-      console.warn("Schedule voice recognition error:", err);
+    // Cancel command
+    if (text.includes("cancel") || text.includes("stop") || text.includes("never mind")) {
+      vSpeak("Schedule cancelled. You can fill in the details manually.");
+      setVState(VSTATE.IDLE);
+      vStateRef.current = VSTATE.IDLE;
+      setVStatus("Voice guide stopped");
+      return;
     }
 
-    return () => {
-      if (recognition) {
-        try { recognition.stop(); } catch (_) {}
+    // Global navigation commands
+    if (text.includes("my ride") || text.includes("history") || text.includes("past ride") || text.includes("trips")) {
+      vSpeak("Opening your ride history.");
+      navigate("/user/history");
+      return;
+    }
+
+    if (text.includes("schedule list") || text.includes("my schedule") || text.includes("my schedules") || text.includes("show schedule")) {
+      vSpeak("Opening your schedule list.");
+      onCancelEdit?.();
+      return;
+    }
+
+    if (text.includes("track") || text.includes("where is my driver") || text.includes("driver location")) {
+      vSpeak("Opening live ride tracking.");
+      navigate("/user/ride");
+      return;
+    }
+
+    if (text.includes("go home") || text.includes("dashboard") || text.includes("main menu") || text === "home") {
+      vSpeak("Heading back to the dashboard.");
+      navigate("/user/dashboard");
+      return;
+    }
+
+    if (text.includes("sos") || text.includes("emergency") || text.includes("help me")) {
+      vSpeak("Opening emergency SOS.");
+      navigate("/user/sos");
+      return;
+    }
+
+    // Step 1: Vehicle selection
+    if (cur === VSTATE.VEHICLE) {
+      const v = matchVehicleFromSpeech(text);
+      if (!v) {
+        vSpeak("Sorry, I didn't catch that. Please say car, van, bike, or three wheeler.");
+        return;
+      }
+      setVehicleType(v);
+      vehicleTypeRef.current = v;
+      setStep(2);
+      stepRef.current = 2;
+
+      setVState(VSTATE.DROPOFF);
+      vStateRef.current = VSTATE.DROPOFF;
+      setVStatus("Where are you going?");
+      vSpeak(`${v} selected. Using your current location for pickup. Where are you going?`);
+      return;
+    }
+
+    // Step 2: Dropoff destination
+    if (cur === VSTATE.DROPOFF) {
+      const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff|take me to|take me|schedule to)\s+/i, "").trim();
+      if (!cleaned || cleaned.length < 2) {
+        vSpeak("I didn't catch that. Please say your destination.");
+        return;
+      }
+
+      vSpeak(`Looking up ${cleaned} on Mapbox…`);
+      resolveExactPlace(cleaned).then((resolved) => {
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        setDropoff(finalDest);
+        dropoffRef.current = finalDest;
+        if (resolved?.coordinates) {
+          setDropoffCoords(resolved.coordinates);
+        }
+
+        // Set default tomorrow at 10:00 AM if date/time empty
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split("T")[0];
+        const defTime = "10:00";
+        if (!dateRef.current) {
+          setDate(tomorrowStr);
+          dateRef.current = tomorrowStr;
+        }
+        if (!timeRef.current) {
+          setTime(defTime);
+          timeRef.current = defTime;
+        }
+
+        setVState(VSTATE.CONFIRM_DROPOFF);
+        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
+        setVStatus(`Destination: ${displayName}?`);
+        vSpeak(
+          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
+        );
+      });
+      return;
+    }
+
+    // Step 3: Confirm Destination & ask for Date/Time
+    if (cur === VSTATE.CONFIRM_DROPOFF) {
+      if (
+        text.includes("yes") ||
+        text.includes("correct") ||
+        text.includes("confirm") ||
+        text.includes("yeah") ||
+        text.includes("sure") ||
+        text.includes("right") ||
+        text.includes("okay") ||
+        text.includes("ok")
+      ) {
+        setVState(VSTATE.CONFIRMING);
+        vStateRef.current = VSTATE.CONFIRMING;
+        setVStatus("Say confirm to schedule or cancel");
+        const vehicle = vehicleTypeRef.current || "car";
+        const dest = dropoffRef.current;
+        const sDate = dateRef.current || "tomorrow";
+        const sTime = timeRef.current || "10:00 AM";
+        vSpeak(
+          `Great! Scheduling a ${vehicle} from ${pickupRef.current || 'your location'} to ${dest} for ${sDate} at ${sTime}. Say confirm to schedule your ride, or cancel to start over.`
+        );
+        return;
+      }
+
+      // If user says "no" or provides a new destination directly
+      const cleaned = text.replace(/^(no|not this|wrong|change|different|to|going to|take me to)\s+/i, "").trim();
+      if (!cleaned || cleaned === "no" || cleaned.length < 2) {
+        setVState(VSTATE.DROPOFF);
+        vStateRef.current = VSTATE.DROPOFF;
+        setVStatus("Where are you going?");
+        vSpeak("Okay, please tell me your destination again.");
+        return;
+      }
+
+      // User spoke a new destination name directly
+      vSpeak(`Looking up ${cleaned} on Mapbox…`);
+      resolveExactPlace(cleaned).then((resolved) => {
+        const finalDest = resolved ? resolved.placeName : cleaned;
+        const displayName = resolved ? resolved.shortName : cleaned;
+
+        setDropoff(finalDest);
+        dropoffRef.current = finalDest;
+        if (resolved?.coordinates) {
+          setDropoffCoords(resolved.coordinates);
+        }
+
+        setVState(VSTATE.CONFIRM_DROPOFF);
+        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
+        setVStatus(`Destination: ${displayName}?`);
+        vSpeak(
+          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
+        );
+      });
+      return;
+    }
+
+    // Step 4: Final Confirmation
+    if (cur === VSTATE.CONFIRMING) {
+      if (
+        text.includes("confirm") ||
+        text.includes("yes") ||
+        text.includes("schedule") ||
+        text.includes("book") ||
+        text.includes("sure") ||
+        text.includes("okay") ||
+        text.includes("ok")
+      ) {
+        setVState(VSTATE.SCHEDULING);
+        vStateRef.current = VSTATE.SCHEDULING;
+        setVStatus("Scheduling your ride…");
+        vSpeak("Scheduling your ride now.");
+        setTimeout(() => {
+          handleSubmitRef.current?.();
+        }, 800);
+      }
+    }
+  }, [navigate, onCancelEdit, vSpeak]);
+
+  // Voice Guide Continuous Listening Effect (matching BookingPage)
+  useEffect(() => {
+    if (!voiceModeActive) return;
+    if (!SpeechRecognition) return;
+
+    const rec = new SpeechRecognition();
+    rec.lang = "en-US";
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    vRecRef.current = rec;
+
+    rec.onstart = () => setVListening(true);
+    rec.onresult = (e) => {
+      const last = e.results.length - 1;
+      const transcript = e.results[last][0].transcript;
+      handleVCommand(transcript);
+    };
+    rec.onerror = (e) => {
+      if (e.error === "no-speech" || e.error === "aborted") return;
+      setVListening(false);
+    };
+    rec.onend = () => {
+      if (!vStopRef.current) {
+        setTimeout(() => {
+          try { rec.start(); } catch (_) {}
+        }, 300);
+      } else {
+        setVListening(false);
       }
     };
-  }, [initialState?.voiceMode]);
+
+    vStopRef.current = false;
+    setVState(VSTATE.VEHICLE);
+    vStateRef.current = VSTATE.VEHICLE;
+    setVStatus("Which vehicle would you like to schedule?");
+    vSpeak("Which vehicle would you like to schedule? Car, van, bike, or three wheeler?");
+
+    return () => {
+      vStopRef.current = true;
+      try { rec.abort(); } catch (_) {}
+    };
+  }, [voiceModeActive, handleVCommand, vSpeak]);
 
   return (
     <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100 shadow-sm">
