@@ -34,11 +34,75 @@ const matchVehicleFromSpeech = (text) => {
 const VSTATE = {
   IDLE: "IDLE",
   VEHICLE: "VEHICLE",
+  PICKUP: "PICKUP",
   DROPOFF: "DROPOFF",
   CONFIRM_DROPOFF: "CONFIRM_DROPOFF",
   DATE_TIME: "DATE_TIME",
   CONFIRMING: "CONFIRMING",
   SCHEDULING: "SCHEDULING",
+};
+
+// ─── Intelligent Date & Time Speech Parser ───────────────────────────────────
+const parseDateAndTimeString = (text) => {
+  const t = text.toLowerCase();
+  const now = new Date();
+  let targetDate = new Date(now);
+  targetDate.setDate(targetDate.getDate() + 1); // default tomorrow
+  let targetTime = "10:00"; // default 10:00 AM
+
+  // Parse Date
+  if (t.includes("today") || t.includes("tonight")) {
+    targetDate = new Date(now);
+  } else if (t.includes("day after tomorrow")) {
+    targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + 2);
+  } else if (t.includes("tomorrow")) {
+    targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + 1);
+  } else {
+    // Check day of week (e.g. monday, tuesday...)
+    const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    for (let i = 0; i < days.length; i++) {
+      if (t.includes(days[i])) {
+        const currentDay = now.getDay();
+        let diff = (i - currentDay + 7) % 7;
+        if (diff === 0) diff = 7; // Next week's day
+        targetDate = new Date(now);
+        targetDate.setDate(now.getDate() + diff);
+        break;
+      }
+    }
+  }
+
+  // Parse Time (e.g. "10:30 am", "2:15 pm", "10 am", "3 pm", "9 o'clock")
+  const timeMatch = t.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (timeMatch && (timeMatch[3] || t.includes("at") || t.includes("o'clock") || t.includes("pm") || t.includes("am"))) {
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = timeMatch[2] ? timeMatch[2].padStart(2, "0") : "00";
+    const mer = timeMatch[3] ? timeMatch[3].toLowerCase() : (hours < 7 ? "pm" : (hours < 12 ? "am" : "pm"));
+    
+    if (mer === "pm" && hours < 12) hours += 12;
+    if (mer === "am" && hours === 12) hours = 0;
+    
+    targetTime = `${hours.toString().padStart(2, "0")}:${minutes}`;
+  } else if (t.includes("morning")) {
+    targetTime = "09:00";
+  } else if (t.includes("noon") || t.includes("lunch")) {
+    targetTime = "12:00";
+  } else if (t.includes("afternoon")) {
+    targetTime = "14:00";
+  } else if (t.includes("evening")) {
+    targetTime = "18:00";
+  } else if (t.includes("night")) {
+    targetTime = "20:00";
+  }
+
+  const yyyy = targetDate.getFullYear();
+  const mm = (targetDate.getMonth() + 1).toString().padStart(2, "0");
+  const dd = targetDate.getDate().toString().padStart(2, "0");
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+
+  return { dateStr, timeStr: targetTime };
 };
 
 // ─── Shared SpeechRecognition constructor ────────────────────────────────────
@@ -535,25 +599,50 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       setStep(2);
       stepRef.current = 2;
 
-      if (dropoffRef.current) {
-        const dest = dropoffRef.current;
-        setVState(VSTATE.CONFIRM_DROPOFF);
-        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
-        setVStatus(`Destination: ${dest}?`);
-        vSpeak(
-          `${v} selected. I found ${dest}. Is this destination correct? Say yes to proceed, or tell me another destination.`
-        );
-        return;
-      }
-
-      setVState(VSTATE.DROPOFF);
-      vStateRef.current = VSTATE.DROPOFF;
-      setVStatus("Where are you going?");
-      vSpeak(`${v} selected. Using your current location for pickup. Where are you going?`);
+      setVState(VSTATE.PICKUP);
+      vStateRef.current = VSTATE.PICKUP;
+      setVStatus("Where should we pick you up?");
+      vSpeak(`${v} selected. Where should we pick you up? Say your pickup location, or say use my current location.`);
       return;
     }
 
-    // Step 2: Dropoff destination
+    // Step 2: Pickup location
+    if (cur === VSTATE.PICKUP) {
+      if (
+        text.includes("current location") ||
+        text.includes("my location") ||
+        text.includes("here") ||
+        text.includes("gps") ||
+        text.includes("current") ||
+        text.includes("use my current") ||
+        text.includes("same location")
+      ) {
+        const curLoc = "My Current Location (Central Library)";
+        setPickup(curLoc);
+        pickupRef.current = curLoc;
+        setVState(VSTATE.DROPOFF);
+        vStateRef.current = VSTATE.DROPOFF;
+        setVStatus("Where are you going?");
+        vSpeak("Pickup set to your current location. Where are you going?");
+        return;
+      }
+
+      const cleaned = text.replace(/^(from|at|my pickup is|pickup|starting from)\s+/i, "").trim();
+      if (!cleaned || cleaned.length < 2) {
+        vSpeak("I didn't catch that. Please say your pickup location, or say use my current location.");
+        return;
+      }
+
+      setPickup(cleaned);
+      pickupRef.current = cleaned;
+      setVState(VSTATE.DROPOFF);
+      vStateRef.current = VSTATE.DROPOFF;
+      setVStatus("Where are you going?");
+      vSpeak(`Pickup set to ${cleaned}. Where are you going?`);
+      return;
+    }
+
+    // Step 3: Dropoff destination
     if (cur === VSTATE.DROPOFF) {
       const cleaned = text.replace(/^(to|going to|drop me at|drop me to|destination is|dropoff|take me to|take me|schedule to)\s+/i, "").trim();
       if (!cleaned || cleaned.length < 2) {
@@ -572,20 +661,6 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
           setDropoffCoords(resolved.coordinates);
         }
 
-        // Set default tomorrow at 10:00 AM if date/time empty
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split("T")[0];
-        const defTime = "10:00";
-        if (!dateRef.current) {
-          setDate(tomorrowStr);
-          dateRef.current = tomorrowStr;
-        }
-        if (!timeRef.current) {
-          setTime(defTime);
-          timeRef.current = defTime;
-        }
-
         setVState(VSTATE.CONFIRM_DROPOFF);
         vStateRef.current = VSTATE.CONFIRM_DROPOFF;
         setVStatus(`Destination: ${displayName}?`);
@@ -596,7 +671,7 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       return;
     }
 
-    // Step 3: Confirm Destination & ask for Date/Time
+    // Step 4: Confirm Destination & move to Date/Time
     if (cur === VSTATE.CONFIRM_DROPOFF) {
       if (
         text.includes("yes") ||
@@ -608,15 +683,11 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
         text.includes("okay") ||
         text.includes("ok")
       ) {
-        setVState(VSTATE.CONFIRMING);
-        vStateRef.current = VSTATE.CONFIRMING;
-        setVStatus("Say confirm to schedule or cancel");
-        const vehicle = vehicleTypeRef.current || "car";
-        const dest = dropoffRef.current;
-        const sDate = dateRef.current || "tomorrow";
-        const sTime = timeRef.current || "10:00 AM";
+        setVState(VSTATE.DATE_TIME);
+        vStateRef.current = VSTATE.DATE_TIME;
+        setVStatus("Which date and time?");
         vSpeak(
-          `Great! Scheduling a ${vehicle} from ${pickupRef.current || 'your location'} to ${dest} for ${sDate} at ${sTime}. Say confirm to schedule your ride, or cancel to start over.`
+          "Destination confirmed. What date and time would you like to schedule? You can say tomorrow at 10 AM, next Friday at 2 PM, or any date and time."
         );
         return;
       }
@@ -653,7 +724,27 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       return;
     }
 
-    // Step 4: Final Confirmation
+    // Step 5: Parse and set Date and Time
+    if (cur === VSTATE.DATE_TIME) {
+      const { dateStr, timeStr } = parseDateAndTimeString(text);
+      setDate(dateStr);
+      dateRef.current = dateStr;
+      setTime(timeStr);
+      timeRef.current = timeStr;
+
+      setVState(VSTATE.CONFIRMING);
+      vStateRef.current = VSTATE.CONFIRMING;
+      setVStatus("Say confirm to schedule or cancel");
+      const vehicle = vehicleTypeRef.current || "car";
+      const dest = dropoffRef.current;
+      const pLoc = pickupRef.current || "your location";
+      vSpeak(
+        `Scheduled for ${dateStr} at ${timeStr}. Ready to schedule a ${vehicle} from ${pLoc} to ${dest}. Say confirm to schedule your ride, or cancel to start over.`
+      );
+      return;
+    }
+
+    // Step 6: Final Confirmation
     if (cur === VSTATE.CONFIRMING) {
       if (
         text.includes("confirm") ||
