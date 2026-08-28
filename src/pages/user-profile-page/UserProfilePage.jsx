@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Mic, AudioLines, LocateFixed, Bell, LogOut, ChevronRight } from 'lucide-react';
+import { Menu, AudioLines, LocateFixed, Bell, LogOut, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './UserProfilePage.css';
 import DashboardHeader from '../../UserDashboard/components/DashboardHeader';
@@ -8,6 +8,7 @@ import AccessibilityCard from './components/AccessibilityCard';
 import VoiceSettingsCard from './components/VoiceSettingsCard';
 import { userData } from './data/userData';
 import API_BASE from "../../config/api";
+import { VoiceAssistantButton } from '../../UserDashboard/components/voiceassistant/VoiceAssistant';
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
@@ -91,10 +92,6 @@ const UserProfilePage = () => {
     alert(`Action: ${action}`);
   };
 
-  const handleVoiceSearch = () => {
-    alert("Voice search activated. Listening...");
-  };
-
   return (
     <div className="bg-slate-100 text-slate-800 m-0 p-0 flex justify-center min-h-screen font-sans">
       <div className="w-full max-w-md bg-slate-100 min-h-screen pb-[90px] relative flex flex-col">
@@ -104,15 +101,12 @@ const UserProfilePage = () => {
         {/* Main Content */}
         <main className="flex-1 px-5 pb-5 flex flex-col gap-4">
           
-          {/* Voice Search FAB */}
-          <div className="flex flex-col items-center mt-7 mb-5">
-            <button 
-              onClick={handleVoiceSearch}
-              className="w-[90px] h-[90px] bg-[#FEC329] rounded-full flex items-center justify-center shadow-[0_6px_16px_rgba(255,183,3,0.4)] active:scale-95 transition-transform mb-4 border-none"
-            >
-              <Mic className="w-8 h-8 text-[#0B2F89]" />
-            </button>
-            <span className="font-extrabold text-[#0B2F89] text-lg">Search rides by voice</span>
+          {/* Voice Assistant UI */}
+          <div className="mt-4 mb-2">
+            <VoiceAssistantButton
+              pageName="Profile"
+              welcomePrompt="Welcome to your profile. Say edit profile, change address, book a ride, or SOS."
+            />
           </div>
 
           {/* Status Banner */}

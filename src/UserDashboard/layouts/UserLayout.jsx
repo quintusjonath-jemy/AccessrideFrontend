@@ -4,16 +4,22 @@ import { VoiceAssistantButton } from "../components/voiceassistant/VoiceAssistan
 
 const UserLayout = () => {
   const location = useLocation();
-  const isDashboard =
-    location.pathname === "/user/dashboard" ||
-    location.pathname === "/user" ||
-    location.pathname === "/user/";
+  const pagesWithInlineVoiceCard = [
+    "/user",
+    "/user/",
+    "/user/dashboard",
+    "/user/schedule",
+    "/user/history",
+    "/user/profile",
+    "/user/booking",
+  ];
+  const showFloatingVoice = !pagesWithInlineVoiceCard.includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-slate-100 pb-16 relative">
       <Outlet />
-      {/* Floating Voice Assistant on all user pages (Schedule, History/My Rides, Profile, Notifications, SOS) */}
-      {!isDashboard && <VoiceAssistantButton floating={true} />}
+      {/* Floating Voice Assistant for remaining pages (Notifications, Ride Tracking, SOS) */}
+      {showFloatingVoice && <VoiceAssistantButton floating={true} />}
       <BottomNavigation />
     </div>
   );

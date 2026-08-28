@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mic } from 'lucide-react';
 import './HistoryPage.css';
 import DashboardHeader from '../../UserDashboard/components/DashboardHeader';
 import HistoryFilters from './components/HistoryFilters';
 import RideCard from './components/RideCard';
 import API_BASE from "../../config/api";
+import { VoiceAssistantButton } from '../../UserDashboard/components/voiceassistant/VoiceAssistant';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -86,15 +86,12 @@ const HistoryPage = () => {
         {/* Filters */}
         <HistoryFilters activeFilter={activeFilter} handleFilterClick={setActiveFilter} />
 
-        {/* Voice Search FAB */}
-        <div className="flex flex-col items-center mt-2 mb-6 px-4">
-          <button 
-            className="w-[85px] h-[85px] bg-gradient-to-br from-[#FEC329] to-[#FEC329] rounded-full flex items-center justify-center shadow-[0_8px_25px_rgba(255,183,3,0.4)] hover:shadow-[0_12px_30px_rgba(255,183,3,0.6)] active:scale-95 transition-all duration-300 mb-3 border-none group"
-            onClick={() => alert("Voice search activated. Listening...")}
-          >
-            <Mic className="w-8 h-8 text-[#0B2F89] group-hover:scale-110 transition-transform duration-300" />
-          </button>
-          <span className="font-extrabold text-[#0B2F89] text-lg tracking-tight">Book new ride by voice</span>
+        {/* Voice Assistant UI */}
+        <div className="mt-2 mb-6 px-4">
+          <VoiceAssistantButton
+            pageName="My Rides"
+            welcomePrompt="Welcome to your ride history. Say book a ride, same as last time, schedule a ride, or SOS."
+          />
         </div>
 
         {/* Main Content */}
