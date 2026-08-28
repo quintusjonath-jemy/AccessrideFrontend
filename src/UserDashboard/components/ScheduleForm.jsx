@@ -50,8 +50,39 @@ const parseDateAndTimeString = (text) => {
   targetDate.setDate(targetDate.getDate() + 1); // default tomorrow
   let targetTime = "10:00"; // default 10:00 AM
 
-  // Parse Date
-  if (t.includes("today") || t.includes("tonight")) {
+  // 1. Month names (e.g. "August 30", "30th August", "Sept 12")
+  const months = [
+    { name: "january", short: "jan", idx: 0 },
+    { name: "february", short: "feb", idx: 1 },
+    { name: "march", short: "mar", idx: 2 },
+    { name: "april", short: "apr", idx: 3 },
+    { name: "may", short: "may", idx: 4 },
+    { name: "june", short: "jun", idx: 5 },
+    { name: "july", short: "jul", idx: 6 },
+    { name: "august", short: "aug", idx: 7 },
+    { name: "september", short: "sep", idx: 8 },
+    { name: "october", short: "oct", idx: 9 },
+    { name: "november", short: "nov", idx: 10 },
+    { name: "december", short: "dec", idx: 11 },
+  ];
+
+  let matchedMonth = null;
+  for (const m of months) {
+    if (t.includes(m.name) || t.includes(` ${m.short} `) || t.startsWith(`${m.short} `) || t.endsWith(` ${m.short}`)) {
+      matchedMonth = m.idx;
+      break;
+    }
+  }
+
+  const dayNumberMatch = t.match(/\b(\d{1,2})(?:st|nd|rd|th)?\b/);
+  if (matchedMonth !== null && dayNumberMatch) {
+    const dayNum = parseInt(dayNumberMatch[1], 10);
+    const yr = now.getFullYear();
+    targetDate = new Date(yr, matchedMonth, dayNum);
+    if (targetDate < now) {
+      targetDate.setFullYear(yr + 1);
+    }
+  } else if (t.includes("today") || t.includes("tonight")) {
     targetDate = new Date(now);
   } else if (t.includes("day after tomorrow")) {
     targetDate = new Date(now);
@@ -209,6 +240,7 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
   const [distanceVal, setDistanceVal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isScheduling, setIsScheduling] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   // ── Voice Guide State (matching BookingPage) ───────────────────────────────
   const [vState, setVState] = useState(VSTATE.IDLE);
@@ -217,6 +249,21 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
   const vStateRef = useRef(VSTATE.IDLE);
   const vRecRef = useRef(null);
   const vStopRef = useRef(false);
+
+  // Mapbox & GPS Refs
+  const mapContainerRef = useRef(null);
+  const [map, setMap] = useState(null);
+  const pickupMarkerRef = useRef(null);
+  const dropoffMarkerRef = useRef(null);
+  const mapInitRef = useRef(false);
+  const pickupCoordsRef = useRef(null);
+  const dropoffCoordsRef = useRef(null);
+  const lastGeocodedPickupRef = useRef("");
+
+  // Coordinates and Route State
+  const [pickupCoords, setPickupCoords] = useState(null);
+  const [dropoffCoords, setDropoffCoords] = useState(null);
+  const [routeGeoJSON, setRouteGeoJSON] = useState(null);
 
   // Refs for state synchronization in callbacks
   const stepRef = useRef(step);
@@ -234,6 +281,49 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
   useEffect(() => { dateRef.current = date; }, [date]);
   useEffect(() => { timeRef.current = time; }, [time]);
   useEffect(() => { vStateRef.current = vState; }, [vState]);
+  useEffect(() => { pickupCoordsRef.current = pickupCoords; }, [pickupCoords]);
+  useEffect(() => { dropoffCoordsRef.current = dropoffCoords; }, [dropoffCoords]);
+
+  // ── GPS Request (matching BookingPage with Mapbox reverse geocoding) ──────
+  const requestGPS = useCallback(() => {
+    if (!navigator.geolocation) return;
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const coords = [longitude, latitude];
+        pickupCoordsRef.current = coords;
+        setPickupCoords(coords);
+        try {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+          const res = await axios.get(url);
+          if (res.data?.features && res.data.features.length > 0) {
+            const feature = res.data.features[0];
+            const placeName = feature.place_name || feature.text;
+            lastGeocodedPickupRef.current = placeName;
+            setPickup(placeName);
+            pickupRef.current = placeName;
+          } else {
+            const coordsStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            lastGeocodedPickupRef.current = coordsStr;
+            setPickup(coordsStr);
+            pickupRef.current = coordsStr;
+          }
+        } catch {
+          const coordsStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          lastGeocodedPickupRef.current = coordsStr;
+          setPickup(coordsStr);
+          pickupRef.current = coordsStr;
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      () => {
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }, []);
 
   // ── Helper to speak TTS and pause mic while speaking to avoid audio feedback ──
   const vSpeak = useCallback((text) => {
@@ -262,18 +352,6 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       console.warn("showPicker is not supported:", err);
     }
   };
-
-  // Mapbox Refs & State
-  const mapContainerRef = useRef(null);
-  const [map, setMap] = useState(null);
-  const pickupMarkerRef = useRef(null);
-  const dropoffMarkerRef = useRef(null);
-  const mapInitRef = useRef(false);
-
-  // Coordinates and Route State
-  const [pickupCoords, setPickupCoords] = useState(null);
-  const [dropoffCoords, setDropoffCoords] = useState(null);
-  const [routeGeoJSON, setRouteGeoJSON] = useState(null);
 
   useEffect(() => {
     if (editingRide) {
@@ -617,7 +695,8 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
         text.includes("use my current") ||
         text.includes("same location")
       ) {
-        const curLoc = "My Current Location (Central Library)";
+        requestGPS();
+        const curLoc = pickupRef.current || "My Current Location (Central Library)";
         setPickup(curLoc);
         pickupRef.current = curLoc;
         setVState(VSTATE.DROPOFF);
@@ -738,8 +817,12 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       const vehicle = vehicleTypeRef.current || "car";
       const dest = dropoffRef.current;
       const pLoc = pickupRef.current || "your location";
+
+      const dObj = new Date(dateStr);
+      const friendlyDate = dObj.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+
       vSpeak(
-        `Scheduled for ${dateStr} at ${timeStr}. Ready to schedule a ${vehicle} from ${pLoc} to ${dest}. Say confirm to schedule your ride, or cancel to start over.`
+        `Scheduled for ${friendlyDate} at ${timeStr}. Ready to schedule a ${vehicle} from ${pLoc} to ${dest}. Say confirm to schedule your ride, or cancel to start over.`
       );
       return;
     }
@@ -842,13 +925,16 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
             </div>
           </div>
 
-          {/* Location Inputs */}
+          {/* Location Inputs with GPS Current Location Picker */}
           <LocationInputs
             pickup={pickup}
             dropoff={dropoff}
             onChangePickup={setPickup}
             onChangeDropoff={setDropoff}
             onSwap={handleSwapLocations}
+            isLocating={isLocating}
+            userCoords={pickupCoords}
+            onRequestGPS={requestGPS}
           />
 
           {/* Live Route Map */}
