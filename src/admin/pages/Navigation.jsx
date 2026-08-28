@@ -24,6 +24,24 @@ const NavigationPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    axios.get(`${API_BASE}/admin/api/rides.php`)
+      .then((res) => {
+        setRides(Array.isArray(res.data) ? res.data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Navigation rides fetch error:", err);
+        setLoading(false);
+      });
+
+    axios.get(`${API_BASE}/admin/api/drivers.php`)
+      .then((res) => {
+        setDrivers(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
+        console.error("Navigation drivers fetch error:", err);
+      });
+
     const ridesEventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=rides`);
     const driversEventSource = new EventSource(`${API_BASE}/admin/api/stream.php?type=drivers`);
 
