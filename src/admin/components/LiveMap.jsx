@@ -163,12 +163,12 @@ const LiveMap = ({ rides = [], allDrivers = [], center = [79.8612, 6.9271], driv
       let updated = false;
 
       for (const ride of rides) {
-        // Filter out completed rides with successful payment complete immediately
-        if (ride.status?.toLowerCase() === "completed" && ride.payment_status?.toLowerCase() === "completed") {
+        const status = (ride.status || "").toLowerCase().trim();
+        // Only draw live routes for active, accepted, emergency, or pending rides
+        if (status === "completed" || status === "cancelled") {
           continue;
         }
 
-        const status = ride.status?.toLowerCase().trim();
         const driverLng = parseFloat(ride.longitude);
         const driverLat = parseFloat(ride.latitude);
         let driverCoords = driverLng && driverLat ? [driverLng, driverLat] : null;
@@ -184,15 +184,22 @@ const LiveMap = ({ rides = [], allDrivers = [], center = [79.8612, 6.9271], driv
             driverCoords = await geocodeLocation(ride.driver_current_location);
           }
 
-          let start = null;
-          let end = null;
+          let start = pickup;
+          let end = dropoff;
 
-          if (status === "accepted" || status === "emergency") {
-            start = driverCoords;
-            end = pickup;
-          } else if (status === "active") {
-            start = pickup; // Active ride route starts at original pickup location
-            end = dropoff;  // and connects to dropoff destination
+          if (status === "accepted" && driverCoords) {
+            const distToPickup = haversineDistance(driverCoords, pickup);
+            // If driver is nearby (< 30km), draw route from driver to pickup; otherwise draw pickup to destination
+            if (distToPickup <= 30) {
+              start = driverCoords;
+              end = pickup;
+            } else {
+              start = pickup;
+              end = dropoff;
+            }
+          } else if (status === "emergency") {
+            start = driverCoords || pickup;
+            end = dropoff || pickup;
           } else {
             start = pickup;
             end = dropoff;
@@ -310,10 +317,10 @@ const LiveMap = ({ rides = [], allDrivers = [], center = [79.8612, 6.9271], driv
       }
 
       rides.forEach((ride) => {
-        const status = ride.status?.toLowerCase().trim();
+        const status = (ride.status || "").toLowerCase().trim();
         
-        // Remove from map if completed and payment complete
-        if (status === "completed" && ride.payment_status?.toLowerCase() === "completed") {
+        // Only display active, accepted, pending, and emergency rides on the live navigation map
+        if (status === "completed" || status === "cancelled") {
           return;
         }
 
