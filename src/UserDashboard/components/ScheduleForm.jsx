@@ -535,6 +535,17 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       setStep(2);
       stepRef.current = 2;
 
+      if (dropoffRef.current) {
+        const dest = dropoffRef.current;
+        setVState(VSTATE.CONFIRM_DROPOFF);
+        vStateRef.current = VSTATE.CONFIRM_DROPOFF;
+        setVStatus(`Destination: ${dest}?`);
+        vSpeak(
+          `${v} selected. I found ${dest}. Is this destination correct? Say yes to proceed, or tell me another destination.`
+        );
+        return;
+      }
+
       setVState(VSTATE.DROPOFF);
       vStateRef.current = VSTATE.DROPOFF;
       setVStatus("Where are you going?");
@@ -579,7 +590,7 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
         vStateRef.current = VSTATE.CONFIRM_DROPOFF;
         setVStatus(`Destination: ${displayName}?`);
         vSpeak(
-          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
+          `I found ${displayName}. Is this destination correct? Say yes to proceed, or tell me another destination.`
         );
       });
       return;
@@ -636,7 +647,7 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
         vStateRef.current = VSTATE.CONFIRM_DROPOFF;
         setVStatus(`Destination: ${displayName}?`);
         vSpeak(
-          `I found ${displayName}. Is this your destination? Say yes to proceed, or tell me another destination.`
+          `I found ${displayName}. Is this destination correct? Say yes to proceed, or tell me another destination.`
         );
       });
       return;
