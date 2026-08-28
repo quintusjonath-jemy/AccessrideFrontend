@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes, Outlet, Navigate } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import MainLayout from "./admin/layouts/MainLayout";
 import UserLayout from "./UserDashboard/layouts/UserLayout";
@@ -169,6 +170,7 @@ const App = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <SpeedInsights />
     </BrowserRouter>
   );
 };
