@@ -396,7 +396,7 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
   const fareVal = distanceVal * 80;
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
     if (!pickup || !dropoff || !date || !time) return;
 
     setIsScheduling(true);
@@ -474,7 +474,7 @@ const ScheduleForm = ({ onScheduleAdded, onScheduleUpdated, editingRide, onCance
       });
   };
 
-  handleSubmitRef.current = handleScheduleSubmit;
+  handleSubmitRef.current = handleSubmit;
 
   // ── Voice Guide Command Handler (Matching BookingPage architecture) ────────
   const handleVCommand = useCallback((rawText) => {
