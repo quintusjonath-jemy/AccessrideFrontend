@@ -7,119 +7,194 @@ import API_BASE from "../../../config/api";
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-// ─── Global audio singleton (prevents overlap) ────────────────────────────────
+// ─── Global audio & speech synchronization singleton (strictly prevents 2 voices) ──────────
 let currentAudio = null;
 let currentUtterance = null;
 let currentAbortController = null;
+let activeSpeechSessionId = 0;
 
-// ─── Agent backend URL ────────────────────────────────────────────────────────
-const AGENT_BASE = `${API_BASE}/voiceassistant/agent.php`;
-
-// ─── Conversation States ──────────────────────────────────────────────────────
-const STATE = {
-  IDLE: "IDLE",
-  WAITING_DESTINATION: "WAITING_DESTINATION",
-  CONFIRMING_DESTINATION: "CONFIRMING_DESTINATION",
-  WAITING_VEHICLE: "WAITING_VEHICLE",
-  CONFIRMING_BOOKING: "CONFIRMING_BOOKING",
-  EXECUTING_BOOKING: "EXECUTING_BOOKING",
-  WAITING_SOS_CONFIRM: "WAITING_SOS_CONFIRM",
-  WAITING_SCHEDULE_DATE: "WAITING_SCHEDULE_DATE",
-  WAITING_SCHEDULE_TIME: "WAITING_SCHEDULE_TIME",
+export const stopAllSpeech = () => {
+  activeSpeechSessionId++;
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio.src = "";
+    } catch (_) {}
+    currentAudio = null;
+  }
+  if ("speechSynthesis" in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (_) {}
+  }
+  currentUtterance = null;
 };
 
-// ─── Vehicle keyword map ──────────────────────────────────────────────────────
-const VEHICLE_KEYWORDS = {
-  bike: "bike",
-  motorcycle: "bike",
-  "three-wheeler": "three-wheeler",
-  "three wheeler": "three-wheeler",
-  tuk: "three-wheeler",
-  "tuk-tuk": "three-wheeler",
-  tuktuk: "three-wheeler",
-  car: "car",
-  sedan: "car",
-  van: "van",
+// ─── Single unified voice selector across Google Chrome, Brave, Edge, Safari ──────────────
+const getBestBrowserVoice = () => {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  // Prefer natural / high quality English voices across Chrome, Edge, Safari, Brave
+  const preferredVoice = voices.find((v) => {
+    const name = (v.name || "").toLowerCase();
+    const lang = (v.lang || "").toLowerCase();
+    return (
+      lang.startsWith("en") &&
+      (name.includes("natural") ||
+       name.includes("google us english") ||
+       name.includes("google uk english female") ||
+       name.includes("samantha") ||
+       name.includes("karen") ||
+       name.includes("jenny") ||
+       name.includes("aria") ||
+       name.includes("guy"))
+    );
+  });
+
+  if (preferredVoice) return preferredVoice;
+
+  // Fallback to any en-US / en English voice
+  const anyEnglish = voices.find((v) => (v.lang || "").toLowerCase().startsWith("en-us") || (v.lang || "").toLowerCase().startsWith("en"));
+  return anyEnglish || voices[0];
 };
 
-// ─── Memory helpers ───────────────────────────────────────────────────────────
-const Memory = {
-  get: (key) => localStorage.getItem(`va_${key}`) || "",
-  set: (key, value) => localStorage.setItem(`va_${key}`, value),
-  sessionGet: (key) => sessionStorage.getItem(`va_${key}`) || "",
-  sessionSet: (key, value) => sessionStorage.setItem(`va_${key}`, value),
-  sessionClear: (...keys) =>
-    keys.forEach((k) => sessionStorage.removeItem(`va_${k}`)),
+if ("speechSynthesis" in window) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    getBestBrowserVoice();
+  };
+}
+
+// ─── Browser TTS fallback with consistent voice ─────────────────────────────────────────────
+const playBrowserSpeech = (text, sessionId, onStart, onEnd) => {
+  if (sessionId !== activeSpeechSessionId) return;
+
+  if ("speechSynthesis" in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (_) {}
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    currentUtterance = utterance;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    const selectedVoice = getBestBrowserVoice();
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+      utterance.lang = selectedVoice.lang || "en-US";
+    }
+
+    if (onStart) utterance.onstart = onStart;
+
+    utterance.onend = () => {
+      if (currentUtterance === utterance) currentUtterance = null;
+      if (sessionId === activeSpeechSessionId && onEnd) onEnd();
+    };
+
+    utterance.onerror = () => {
+      if (currentUtterance === utterance) currentUtterance = null;
+      if (sessionId === activeSpeechSessionId && onEnd) onEnd();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  } else {
+    if (onEnd) onEnd();
+  }
 };
 
-// ─── TTS: speak text via agent.php (OpenAI TTS with native fallback) ──────────
+// ─── TTS: speak text cleanly with single-voice guarantee ─────────────────────────────────────
 export const speakWithFallback = async (text, onStart, onEnd) => {
-  // Cancel any pending request
-  if (currentAbortController) currentAbortController.abort();
+  if (!text || !text.trim()) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  // Generate a new unique session ID to cancel any prior or racing voice calls
+  const sessionId = ++activeSpeechSessionId;
+
+  // Immediately stop any existing audio / speech synthesis
+  if (currentAbortController) {
+    currentAbortController.abort();
+  }
   currentAbortController = new AbortController();
   const { signal } = currentAbortController;
 
-  // Stop any playing audio
   if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.src = "";
+    try {
+      currentAudio.pause();
+      currentAudio.src = "";
+    } catch (_) {}
     currentAudio = null;
   }
-  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+
+  if ("speechSynthesis" in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (_) {}
+  }
+
+  let playedRemoteAudio = false;
 
   try {
     const response = await fetch(
-      `${AGENT_BASE}?action=speak&text=${encodeURIComponent(text)}`,
-      { signal, credentials: 'include' }  // credentials: send session cookie
+      `${AGENT_BASE}?action=speak&text=${encodeURIComponent(text.trim())}`,
+      { signal, credentials: "include" }
     );
+
+    // If another speech request happened while fetching, drop this one
+    if (sessionId !== activeSpeechSessionId || signal.aborted) {
+      return;
+    }
 
     const contentType = response.headers.get("content-type") || "";
     if (response.ok && contentType.includes("audio")) {
       const blob = await response.blob();
-      if (blob && blob.size > 100) {
+      if (blob && blob.size > 100 && sessionId === activeSpeechSessionId) {
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         currentAudio = audio;
 
+        playedRemoteAudio = true;
         if (onStart) onStart();
+
         audio.onended = () => {
           URL.revokeObjectURL(url);
           if (currentAudio === audio) currentAudio = null;
-          if (onEnd) onEnd();
+          if (sessionId === activeSpeechSessionId && onEnd) onEnd();
         };
+
         audio.onerror = () => {
           URL.revokeObjectURL(url);
           if (currentAudio === audio) currentAudio = null;
+          if (sessionId === activeSpeechSessionId) {
+            playBrowserSpeech(text, sessionId, onStart, onEnd);
+          }
         };
+
         try {
           await audio.play();
           return;
         } catch (playErr) {
           URL.revokeObjectURL(url);
           if (currentAudio === audio) currentAudio = null;
+          playedRemoteAudio = false;
         }
       }
     }
   } catch (err) {
-    if (err.name === "AbortError") return;
-    console.warn("OpenAI TTS unavailable, using browser speech synthesis.");
+    if (err.name === "AbortError" || sessionId !== activeSpeechSessionId) return;
   }
 
-  // Browser fallback
-  if (signal.aborted) return;
-  if ("speechSynthesis" in window) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    currentUtterance = utterance;
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    if (onStart) utterance.onstart = onStart;
-    utterance.onend = () => {
-      currentUtterance = null;
-      if (onEnd) onEnd();
-    };
-    window.speechSynthesis.speak(utterance);
-  } else {
-    if (onEnd) onEnd();
+  // Fallback to unified single browser voice if remote audio didn't play
+  if (!playedRemoteAudio && sessionId === activeSpeechSessionId && !signal.aborted) {
+    playBrowserSpeech(text, sessionId, onStart, onEnd);
   }
 };
 
