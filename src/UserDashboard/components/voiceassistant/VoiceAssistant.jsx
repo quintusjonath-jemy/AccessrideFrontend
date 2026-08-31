@@ -13,6 +13,46 @@ let currentUtterance = null;
 let currentAbortController = null;
 let activeSpeechSessionId = 0;
 
+// ─── Agent backend URL ────────────────────────────────────────────────────────
+const AGENT_BASE = `${API_BASE}/voiceassistant/agent.php`;
+
+// ─── Conversation States ──────────────────────────────────────────────────────
+const STATE = {
+  IDLE: "IDLE",
+  WAITING_DESTINATION: "WAITING_DESTINATION",
+  CONFIRMING_DESTINATION: "CONFIRMING_DESTINATION",
+  WAITING_VEHICLE: "WAITING_VEHICLE",
+  CONFIRMING_BOOKING: "CONFIRMING_BOOKING",
+  EXECUTING_BOOKING: "EXECUTING_BOOKING",
+  WAITING_SOS_CONFIRM: "WAITING_SOS_CONFIRM",
+  WAITING_SCHEDULE_DATE: "WAITING_SCHEDULE_DATE",
+  WAITING_SCHEDULE_TIME: "WAITING_SCHEDULE_TIME",
+};
+
+// ─── Vehicle keyword map ──────────────────────────────────────────────────────
+const VEHICLE_KEYWORDS = {
+  bike: "bike",
+  motorcycle: "bike",
+  "three-wheeler": "three-wheeler",
+  "three wheeler": "three-wheeler",
+  tuk: "three-wheeler",
+  "tuk-tuk": "three-wheeler",
+  tuktuk: "three-wheeler",
+  car: "car",
+  sedan: "car",
+  van: "van",
+};
+
+// ─── Memory helpers ───────────────────────────────────────────────────────────
+const Memory = {
+  get: (key) => localStorage.getItem(`va_${key}`) || "",
+  set: (key, value) => localStorage.setItem(`va_${key}`, value),
+  sessionGet: (key) => sessionStorage.getItem(`va_${key}`) || "",
+  sessionSet: (key, value) => sessionStorage.setItem(`va_${key}`, value),
+  sessionClear: (...keys) =>
+    keys.forEach((k) => sessionStorage.removeItem(`va_${k}`)),
+};
+
 export const stopAllSpeech = () => {
   activeSpeechSessionId++;
   if (currentAbortController) {
