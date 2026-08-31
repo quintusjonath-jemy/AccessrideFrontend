@@ -16,6 +16,7 @@ function Register() {
     lastName: "",
     email: "",
     phone: "",
+    homeAddress: "",
     password: "",
     confirmPassword: "",
     guardianName: "",
@@ -29,6 +30,7 @@ function Register() {
     lastName: "",
     email: "",
     phone: "",
+    homeAddress: "",
     password: "",
     confirmPassword: "",
     guardianName: "",
@@ -37,7 +39,7 @@ function Register() {
   });
 
   // Voice Guidance States
-  const [voiceStep, setVoiceStep] = useState("idle"); // idle | firstName | lastName | email | phone | guardianName | guardianNumber | password | confirmPassword | confirm
+  const [voiceStep, setVoiceStep] = useState("idle"); // idle | firstName | lastName | email | phone | homeAddress | guardianName | guardianNumber | password | confirmPassword | confirm
   const voiceStepRef = useRef("idle");
   const [isListening, setIsListening] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState("Tap to use Voice Registration");
@@ -92,7 +94,15 @@ function Register() {
     } else if (currentStep === "phone") {
       const phoneVal = cleanText.replace(/\s+/g, ""); // remove spaces
       updateField("phone", phoneVal);
-      speakWithFallback(`Phone number set to ${phoneVal.split("").join(" ")}. What is your emergency contact's name?`, null, () => {
+      speakWithFallback(`Phone number set. What is your home address?`, null, () => {
+        voiceStepRef.current = "homeAddress";
+        setVoiceStep("homeAddress");
+        startListeningForStep("homeAddress");
+      });
+    } else if (currentStep === "homeAddress") {
+      const address = text.trim();
+      updateField("homeAddress", address);
+      speakWithFallback(`Home address set to ${address}. What is your emergency contact's name?`, null, () => {
         voiceStepRef.current = "guardianName";
         setVoiceStep("guardianName");
         startListeningForStep("guardianName");
@@ -468,6 +478,20 @@ function Register() {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="e.g. +94 123456789"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-blue-900 font-semibold mb-1">
+                Home Address
+              </label>
+              <input
+                type="text"
+                name="homeAddress"
+                value={formData.homeAddress}
+                onChange={handleChange}
+                placeholder="e.g. 123 Main Street, Colombo 03"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900"
               />
             </div>
