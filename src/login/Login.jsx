@@ -75,16 +75,7 @@ const Login = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        let errMsg = result.error || "Login failed";
-        if (
-          errMsg.toLowerCase().includes("incorrect password") ||
-          errMsg.toLowerCase().includes("invalid password") ||
-          errMsg.toLowerCase().includes("user not found") ||
-          errMsg.toLowerCase().includes("invalid phone") ||
-          errMsg.toLowerCase().includes("login failed")
-        ) {
-          errMsg = "Username or password invalid";
-        }
+        const errMsg = "Username or password is invalid";
         setUserError(errMsg);
         speakWithFallback(
           `Login failed. ${errMsg}. Please check your credentials and try again.`,

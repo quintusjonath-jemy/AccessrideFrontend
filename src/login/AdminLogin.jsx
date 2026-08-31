@@ -37,7 +37,7 @@ const AdminLogin = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error || "Login failed");
+        setError("Username or password is invalid");
         return;
       }
 
