@@ -445,34 +445,24 @@ function Register() {
   };
 
   const voiceReadForm = () => {
-    if (!window.speechSynthesis) {
-      alert("Speech synthesis not supported");
-      return;
-    }
-
     const fields = [
       `First Name: ${formData.firstName || "empty"}`,
       `Last Name: ${formData.lastName || "empty"}`,
       `Email: ${formData.email || "empty"}`,
       `Phone: ${formData.phone || "empty"}`,
+      `Home Address: ${formData.homeAddress || "empty"}`,
       `Guardian Name: ${formData.guardianName || "empty"}`,
       `Guardian Number: ${formData.guardianNumber || "empty"}`,
       `Password: ${formData.password ? "set" : "not set"}`,
     ];
 
     let index = 0;
-
     const speakNext = () => {
       if (index >= fields.length) return;
-
-      const utterance = new SpeechSynthesisUtterance(fields[index]);
-
-      utterance.onend = () => {
+      speakWithFallback(fields[index], null, () => {
         index++;
         speakNext();
-      };
-
-      window.speechSynthesis.speak(utterance);
+      });
     };
 
     speakNext();
