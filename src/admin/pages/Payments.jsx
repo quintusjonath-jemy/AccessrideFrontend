@@ -424,16 +424,16 @@ const Payments = () => {
                 <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
                   <span className="text-xs text-slate-400 dark:text-slate-450 block">Customer</span>
                   <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block">{selectedPayment.user_name || "N/A"}</span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500">ID: #{selectedPayment.user_id}</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono">ID: {selectedPayment.user_id ? `ur_${selectedPayment.user_id}` : "N/A"}</span>
                 </div>
                 <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
                   <span className="text-xs text-slate-400 dark:text-slate-450 block">Driver Received</span>
                   <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block">{selectedPayment.driver_name || "Unassigned"}</span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500">ID: #{selectedPayment.driver_id || "N/A"}</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono">ID: {selectedPayment.driver_id ? `dr_${selectedPayment.driver_id}` : "N/A"}</span>
                 </div>
                 <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
                   <span className="text-xs text-slate-400 dark:text-slate-450 block">Ride ID</span>
-                  <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block">#{selectedPayment.ride_id}</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-200 mt-0.5 block font-mono">{selectedPayment.ride_id ? `rd_${selectedPayment.ride_id}` : "N/A"}</span>
                 </div>
                 <div className="bg-slate-50/50 dark:bg-slate-900/40 p-3 border border-slate-100/50 dark:border-slate-750 rounded-xl">
                   <span className="text-xs text-slate-400 dark:text-slate-450 block">Transaction Date</span>

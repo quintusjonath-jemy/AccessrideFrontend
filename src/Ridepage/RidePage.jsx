@@ -263,7 +263,7 @@ const RidePage = () => {
     fetch(`${API_BASE}/Driverdashboard/api/arrive.php`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ride_id: rideInfo.id, otp: enteredOtp, driver_id: parseInt(driverId) })
+      body: JSON.stringify({ ride_id: rideInfo.id, otp: enteredOtp, driver_id: driverId })
     })
       .then((res) => res.json())
       .then((data) => {

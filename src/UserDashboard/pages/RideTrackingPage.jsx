@@ -393,7 +393,7 @@ const RideTrackingPage = () => {
     try {
       const res = await axios.post(`${API_BASE}/UserDashboard/api/cancel_ride.php`, {
         ride_id: ride.id,
-        user_id: parseInt(userId)
+        user_id: userId
       });
       if (res.data.success) {
         alert("Ride cancelled and deleted successfully.");

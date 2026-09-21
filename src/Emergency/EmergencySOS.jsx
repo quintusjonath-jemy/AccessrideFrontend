@@ -26,7 +26,7 @@ const EmergencySOS = () => {
 
   // Get user ID from localStorage or session
   const getUserId = () => {
-    return sessionStorage.getItem("user_id") || 1;
+    return sessionStorage.getItem("user_id") || "ur_1";
   };
 
   useEffect(() => {
