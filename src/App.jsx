@@ -170,7 +170,7 @@ const App = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
-      <SpeedInsights />
+      {import.meta.env.PROD && <SpeedInsights />}
     </BrowserRouter>
   );
 };

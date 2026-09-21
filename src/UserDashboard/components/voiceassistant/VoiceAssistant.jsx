@@ -53,10 +53,49 @@ const Memory = {
     keys.forEach((k) => sessionStorage.removeItem(`va_${k}`)),
 };
 
+// ─── Network Speed Adaptive Engine ────────────────────────────────────────────
+export const isFastNetwork = () => {
+  if (typeof navigator === "undefined") return false;
+  if (!navigator.onLine) return false;
+
+  const conn =
+    navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection;
+
+  // If Network Information API is not supported, use local browser speech for guaranteed single voice
+  if (!conn) {
+    return false;
+  }
+
+  // If user enabled data saver mode, treat as slow
+  if (conn.saveData) return false;
+
+  // Check effective connection type: 'slow-2g', '2g', '3g', '4g'
+  const effectiveType = (conn.effectiveType || "").toLowerCase();
+  if (effectiveType === "2g" || effectiveType === "slow-2g" || effectiveType === "3g") {
+    return false;
+  }
+
+  // Check Round Trip Time (rtt > 350ms is slow/unstable)
+  if (typeof conn.rtt === "number" && conn.rtt > 350) {
+    return false;
+  }
+
+  // Check downlink bandwidth (< 2.0 Mbps is slow)
+  if (typeof conn.downlink === "number" && conn.downlink < 2.0) {
+    return false;
+  }
+
+  return true;
+};
+
 export const stopAllSpeech = () => {
   activeSpeechSessionId++;
   if (currentAbortController) {
-    currentAbortController.abort();
+    try {
+      currentAbortController.abort();
+    } catch (_) {}
     currentAbortController = null;
   }
   if (currentAudio) {
@@ -111,45 +150,69 @@ if ("speechSynthesis" in window) {
   };
 }
 
-// ─── Browser TTS fallback with consistent voice ─────────────────────────────────────────────
+// ─── Browser TTS with consistent single voice ─────────────────────────────────────────────
 const playBrowserSpeech = (text, sessionId, onStart, onEnd) => {
-  if (sessionId !== activeSpeechSessionId) return;
+  if (sessionId && sessionId !== activeSpeechSessionId) return;
 
-  if ("speechSynthesis" in window) {
+  if (!("speechSynthesis" in window)) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  // Cancel any stuck utterances and unpause speech engine
+  try {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.resume();
+  } catch (_) {}
+
+  // Execute in next tick so browser audio pipeline cleanly initializes
+  setTimeout(() => {
+    if (sessionId && sessionId !== activeSpeechSessionId) return;
+
     try {
-      window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
     } catch (_) {}
 
     const utterance = new SpeechSynthesisUtterance(text);
     currentUtterance = utterance;
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
+    utterance.volume = 1.0;
 
     const selectedVoice = getBestBrowserVoice();
     if (selectedVoice) {
       utterance.voice = selectedVoice;
       utterance.lang = selectedVoice.lang || "en-US";
+    } else {
+      utterance.lang = "en-US";
     }
 
-    if (onStart) utterance.onstart = onStart;
+    utterance.onstart = () => {
+      if (onStart) onStart();
+    };
 
     utterance.onend = () => {
       if (currentUtterance === utterance) currentUtterance = null;
       if (sessionId === activeSpeechSessionId && onEnd) onEnd();
     };
 
-    utterance.onerror = () => {
+    utterance.onerror = (e) => {
       if (currentUtterance === utterance) currentUtterance = null;
       if (sessionId === activeSpeechSessionId && onEnd) onEnd();
     };
 
-    window.speechSynthesis.speak(utterance);
-  } else {
-    if (onEnd) onEnd();
-  }
+    try {
+      window.speechSynthesis.speak(utterance);
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    } catch (err) {
+      if (onEnd) onEnd();
+    }
+  }, 20);
 };
 
-// ─── TTS: speak text cleanly with single-voice guarantee ─────────────────────────────────────
+// ─── TTS: strictly run ONE voice assistant depending on network speed ───────────────────────
 export const speakWithFallback = async (text, onStart, onEnd) => {
   if (!text || !text.trim()) {
     if (onEnd) onEnd();
@@ -159,12 +222,13 @@ export const speakWithFallback = async (text, onStart, onEnd) => {
   // Generate a new unique session ID to cancel any prior or racing voice calls
   const sessionId = ++activeSpeechSessionId;
 
-  // Immediately stop any existing audio / speech synthesis
+  // Stop any active audio / speech synthesis immediately
   if (currentAbortController) {
-    currentAbortController.abort();
+    try {
+      currentAbortController.abort();
+    } catch (_) {}
+    currentAbortController = null;
   }
-  currentAbortController = new AbortController();
-  const { signal } = currentAbortController;
 
   if (currentAudio) {
     try {
@@ -174,29 +238,52 @@ export const speakWithFallback = async (text, onStart, onEnd) => {
     currentAudio = null;
   }
 
-  if ("speechSynthesis" in window) {
-    try {
+  try {
+    if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-    } catch (_) {}
+    }
+  } catch (_) {}
+
+  // Check network condition dynamically
+  const networkIsFast = isFastNetwork();
+
+  // If network is not fast, or by default, directly use local browser speech
+  if (!networkIsFast) {
+    playBrowserSpeech(text, sessionId, onStart, onEnd);
+    return;
   }
 
+  // If fast network, check if cloud TTS audio is available within 800ms
   let playedRemoteAudio = false;
+  const abortController = new AbortController();
+  currentAbortController = abortController;
+
+  const timeoutId = setTimeout(() => {
+    try {
+      abortController.abort();
+    } catch (_) {}
+  }, 800);
 
   try {
     const response = await fetch(
       `${AGENT_BASE}?action=speak&text=${encodeURIComponent(text.trim())}`,
-      { signal, credentials: "include" }
+      { 
+        signal: abortController.signal, 
+        credentials: "include",
+        headers: { "Accept": "audio/mpeg, audio/wav, audio/*" }
+      }
     );
 
-    // If another speech request happened while fetching, drop this one
-    if (sessionId !== activeSpeechSessionId || signal.aborted) {
+    clearTimeout(timeoutId);
+
+    if (sessionId !== activeSpeechSessionId || abortController.signal.aborted) {
       return;
     }
 
     const contentType = response.headers.get("content-type") || "";
     if (response.ok && contentType.includes("audio")) {
       const blob = await response.blob();
-      if (blob && blob.size > 100 && sessionId === activeSpeechSessionId) {
+      if (blob && blob.size > 200 && sessionId === activeSpeechSessionId) {
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         currentAudio = audio;
@@ -229,11 +316,12 @@ export const speakWithFallback = async (text, onStart, onEnd) => {
       }
     }
   } catch (err) {
-    if (err.name === "AbortError" || sessionId !== activeSpeechSessionId) return;
+    clearTimeout(timeoutId);
+    if (sessionId !== activeSpeechSessionId) return;
   }
 
-  // Fallback to unified single browser voice if remote audio didn't play
-  if (!playedRemoteAudio && sessionId === activeSpeechSessionId && !signal.aborted) {
+  // If remote audio did not play, play browser speech directly
+  if (!playedRemoteAudio && sessionId === activeSpeechSessionId) {
     playBrowserSpeech(text, sessionId, onStart, onEnd);
   }
 };
@@ -883,7 +971,7 @@ export const VoiceAssistantButton = ({
               headers: { "Content-Type": "application/json" },
               credentials: "include",
               body: JSON.stringify({
-                user_id: parseInt(userId, 10),
+                user_id: userId,
                 pickup_location: pickupName,
                 dropoff_location: dest,
                 pickup_lat: parseFloat(userLat),
@@ -1044,16 +1132,22 @@ export const VoiceAssistantButton = ({
       rec.start();
     } catch (_) {}
 
-    // Auto-unlock mic on first user interaction if browser enforces autoplay policy
+    // Auto-unlock mic and speech audio on first user interaction if browser enforces autoplay policy
     const autoUnlock = () => {
+      try {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.resume();
+        }
+      } catch (_) {}
+
       if (!manualStopRef.current && !isSpeakingRef.current && !isListeningRef.current && recognitionRef.current) {
         try {
           recognitionRef.current.start();
         } catch (_) {}
       }
     };
-    window.addEventListener("click", autoUnlock, { once: true });
-    window.addEventListener("touchstart", autoUnlock, { once: true });
+    window.addEventListener("click", autoUnlock);
+    window.addEventListener("touchstart", autoUnlock);
 
     return () => {
       window.removeEventListener("click", autoUnlock);
